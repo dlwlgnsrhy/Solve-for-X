@@ -1,0 +1,6 @@
+# Security credentials
+.env
+venv/
+__pycache__/
+*.pyc
+*.log

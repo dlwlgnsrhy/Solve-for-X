@@ -4,7 +4,7 @@ echo "🚀 SRE Auto-Blogger Launchd (Mac OS) 백그라운드 등록 스크립트
 echo "=================================================="
 
 PLIST_FILE="$HOME/Library/LaunchAgents/com.soluni.dailysrebot.plist"
-SCRIPT_PATH="$(pwd)/test_run.sh"
+SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)/test_run.sh"
 
 echo "1. 백그라운드 스케줄러 설정(plist) 파일을 생성합니다..."
 
@@ -26,9 +26,9 @@ cat <<EOF > "$PLIST_FILE"
     <key>StartCalendarInterval</key>
     <dict>
         <key>Hour</key>
-        <integer>23</integer>
+        <integer>09</integer>
         <key>Minute</key>
-        <integer>55</integer>
+        <integer>00</integer>
     </dict>
     
     <key>StandardErrorPath</key>
