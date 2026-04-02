@@ -1,4 +1,6 @@
 #!/bin/bash
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
 echo "=================================================="
 echo "🚀 SRE Daily Auto-Blogger 테스트 런 스크립트"
 echo "=================================================="

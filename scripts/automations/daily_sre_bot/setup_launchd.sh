@@ -26,7 +26,7 @@ cat <<EOF > "$PLIST_FILE"
     <key>StartCalendarInterval</key>
     <dict>
         <key>Hour</key>
-        <integer>09</integer>
+        <integer>05</integer>
         <key>Minute</key>
         <integer>00</integer>
     </dict>
@@ -53,7 +53,7 @@ launchctl load "$PLIST_FILE"
 
 echo "--------------------------------------------------"
 echo "🎉 세팅이 완벽히 끝났습니다."
-echo "이제 매일 밤 11시 55분에 스크립트가 동작합니다."
-echo "[중요] 만약 밤 11시 55분에 맥북이 자고(Sleep) 있었다면,"
-echo "다음 날 아침 맥북 뚜껑을 열고 전원이 들어오는 즉시 전날의 밀린 작업을 실행합니다!"
+echo "이제 매일 아침 05시 00분에 스크립트가 동작합니다."
+echo "[중요] 만약 아침 05시 00분에 맥북이 자고(Sleep) 있었다면,"
+echo "맥북 뚜껑을 열고 전원이 들어오는 즉시 밀린 작업을 실행합니다!"
 echo "--------------------------------------------------"
