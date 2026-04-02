@@ -64,6 +64,32 @@ const productDetails: Record<string, any> = {
 export default function Home() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [sreStatus, setSreStatus] = useState<"LIVE" | "OFFLINE" | "CHECKING">("CHECKING");
+  const [sreLatency, setSreLatency] = useState<number | null>(null);
+
+  // SRE Health Check Polling
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const res = await fetch('/api/sre/health');
+        if (res.ok) {
+          const data = await res.json();
+          setSreStatus("LIVE");
+          setSreLatency(data.latency);
+        } else {
+          setSreStatus("OFFLINE");
+          setSreLatency(null);
+        }
+      } catch (e) {
+        setSreStatus("OFFLINE");
+        setSreLatency(null);
+      }
+    };
+    
+    checkHealth();
+    const interval = setInterval(checkHealth, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   // 대화형 배경 (Spotlight) 마우스 트래킹
   useEffect(() => {
@@ -171,8 +197,9 @@ export default function Home() {
               <div className={styles.appHeader}>
                 <div className={styles.appName}>SFX Core Engine</div>
                 <div className={styles.appStatus}>
-                  <span className={`${styles.statusDot} ${styles.statusLive}`}></span>
-                  System Live
+                  <span className={`${styles.statusDot} ${sreStatus === 'LIVE' ? styles.statusLive : sreStatus === 'OFFLINE' ? styles.statusOffline : styles.statusWait}`}></span>
+                  {sreStatus === 'LIVE' ? 'System Live' : sreStatus === 'OFFLINE' ? 'System Offline' : 'Checking Status...'}
+                  {sreStatus === 'LIVE' && sreLatency && ` (${sreLatency}ms)`}
                 </div>
               </div>
               <p className={styles.appDesc}>

@@ -8,15 +8,15 @@
 
 ## 📌 Phase 1: Base Camp & Identity (4월~5월)
 *방향: 'The Tech of Human Dignity' 가치관의 시각화 및 배포 파이프라인 선행 확보*
-- [ ] Next.js 기반 공식 브랜드 웹사이트 MVP 개발 및 배포 (`apps/brand-web`)
-- [ ] Vercel/GitHub Actions 기반 CI/CD 구축 (SRE 배포 자동화 원칙 조기 도입)
-- [ ] 사업자 정보 게시 및 지훈 님의 '레거시 설계자' 선언문 게시 (포트폴리오 베이스 캠프 확립)
+- [x] Next.js 기반 공식 브랜드 웹사이트 MVP 개발 및 배포 (`apps/brand-web`)
+- [] Vercel/GitHub Actions 기반 CI/CD 구축 (SRE 배포 자동화 원칙 조기 도입)
+- [x] 사업자 정보 게시 및 지훈 님의 '레거시 설계자' 선언문 게시 (포트폴리오 베이스 캠프 확립)
 
 ## 📌 Phase 2: Data Foundation & Automation (5월~6월)
 *방향: 지식 자산을 자동으로 기록하고 관리하는 통합 인프라/데이터 저장소 구축*
-- [ ] PostgreSQL 기반 `Legacy_Core` DDL(자산, 기억, 가치관 테이블) 스키마 설계
-- [ ] 공통 API 인터페이스 설계 및 구현 (`libs/`)
-- [ ] Git Commit 메시지 파싱 및 AI Agent(상시 동작) 연동을 통한 기술 블로그 초안 자동 전송 파이프라인 구축
+- [x] PostgreSQL 기반 `Legacy_Core` DDL(자산, 기억, 가치관 테이블) 스키마 설계
+- [x] 공통 API 인터페이스 설계 및 구현 (`libs/` 및 Controller 계층)
+- [x] Git Commit 메시지 파싱 및 AI Agent(상시 동작) 연동을 통한 기술 블로그 초안 자동 전송 파이프라인 구축
 
 ## 📌 Phase 3: Finance & Memory Modules (7월~8월)
 *방향: 가장 비싼 '수동 시간'을 대체할 핵심 알고리즘 시각화 및 데이터 수집*
