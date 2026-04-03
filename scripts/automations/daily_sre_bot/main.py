@@ -74,10 +74,11 @@ def generate_omnichannel_content(commits, diff_text, target_date):
         "아래 제공된 [Macro Blueprint(로드맵)]와 [로그/Diff]를 분석하여 생태계 관점의 글로 영문(English) 작성하십시오.\n\n"
         "작업 지시사항 (반드시 순서대로 작성):\n"
         "1. [PHASE_ANALYSIS]\n"
-        "   글을 쓰기 전, 제공된 로드맵을 참고하여 오늘 코드가 어느 단계(Phase)의 어떤 '세부 챕터(Chapter)'를 진척시켰는지 스스로 분석하십시오. (한국어로 작성해도 무방)\n\n"
+        "   글을 쓰기 전, 제공된 로드맵을 참고하여 오늘 코드가 어느 단계(Phase)의 어떤 '세부 핵심 작업'을 진척시켰는지 스스로 분석하십시오. (한국어로 작성해도 무방)\n\n"
         "2. [BLOG_TITLE] (MUST BE WRITTEN IN PROFESSIONAL ENGLISH)\n"
-        "   Phase와 Chapter 진행 상황을 반영한 매력적이고 직관적인 영문 블로그 제목을 작성하십시오.\n"
-        "   예: [Phase 1.5 | Chapter: UI Polish] Building the Omnichannel Automation\n\n"
+        "   Phase와 핵심 작업 키워드를 반영한 매력적이고 직관적인 영문 블로그 제목을 작성하십시오.\n"
+        "   예: [Phase 1.5 | SRE Automation] Building the Omnichannel Pipeline\n"
+        "   🔥주의: 절대 'Chapter 1', 'Chapter 2' 같은 무의미한 숫자 넘버링을 쓰지 마십시오! 대신 그 자리에 오늘 작업의 '가장 핵심적인 영문 키워드(예: Backend Setup, UI Polish 등)'를 넣어주세요.\n\n"
         "3. [BLOG_CONTENT] (MUST BE WRITTEN IN PROFESSIONAL ENGLISH)\n"
         "   위 Phase Analysis 결과를 유기적으로 녹여낸 아키텍처 중심의 마크다운 블로그 본문을 '영어'로 작성하십시오. 이모지는 절대 금지합니다.\n"
         "   글로벌 엔지니어들이 읽을 수 있도록 명확하고 세련된 미국식 비즈니스 영어를 구사하십시오.\n\n"
@@ -224,7 +225,10 @@ def send_telegram_notifications(date_str, filepath, devto_url, linkedin_summary,
         f"1. 안전 격리 구역(Drafts)에 초안 저장 및 커밋 완료.\n"
         f"2. Dev.to 글로벌 (Draft) 업로드 완료.\n\n"
         f"📁 위치: {filepath.split('Solve-for-X/')[1]}\n"
-        f"🌐 Dev.to 링크: {devto_url}"
+        f"🌐 Dev.to 원본 링크: {devto_url}\n"
+        f"⚠️ (미발행 Draft 상태이므로, 텔레그램 등 비로그인 브라우저에서는 404 에러로 보이지 않습니다.)\n\n"
+        f"🛠️ [Dev.to 대시보드에서 직접 확인 & 발행하기]\n"
+        f"👉 https://dev.to/dashboard"
     )
     requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": msg1})
     
