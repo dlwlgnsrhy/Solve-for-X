@@ -47,21 +47,39 @@ jobs:
         run: |
           cd apps/brand-web
           sed -i "s/\/\/ export const dynamic = 'force-static';/export const dynamic = 'force-static';/" src/app/api/sre/health/route.ts
-          echo "Checking patched file content..."
-          cat src/app/api/sre/health/route.ts | head -n 10
+          echo ">>> API ROUTE PATCHED:"
+          head -n 10 src/app/api/sre/health/route.ts
 
-      - name: Build with Next.js
+      - name: Build with Next.js (Force Environment)
         run: |
           cd apps/brand-web
-          npm run build
+          echo ">>> CURRENT ENV NEXT_OUTPUT: $NEXT_OUTPUT"
+          npx next build
         
-      - name: Verify build output
+      - name: "[DIAGNOSTIC] Locate Build Outputs"
         run: |
-          echo "Listing 'out' directory content..."
+          echo ">>> DIAGNOSTIC: Searching for build artifacts..."
+          echo "1. Checking apps/brand-web/out:"
+          ls -la apps/brand-web/out || echo "apps/brand-web/out NOT FOUND"
+          
+          echo "2. Checking apps/brand-web/.next/out:"
+          ls -la apps/brand-web/.next/out || echo "apps/brand-web/.next/out NOT FOUND"
+          
+          echo "3. Searching for index.html in the entire repository..."
+          find . -name "index.html" -not -path "*/node_modules/*"
+          
+          echo "4. Searching for any directory named 'out'..."
+          find . -name "out" -type d -not -path "*/node_modules/*"
+
+      - name: Verify build output and Prepare
+        run: |
           if [ -d "apps/brand-web/out" ]; then
-            ls -R apps/brand-web/out
+            echo "Success: out directory found at expected location."
+          elif [ -d "apps/brand-web/.next/out" ]; then
+            echo "Redirect: out directory found in .next. Moving to expected location..."
+            mv apps/brand-web/.next/out apps/brand-web/out
           else
-            echo "Error: 'out' directory not found!"
+            echo "FATAL: Could not locate build output even in diagnostic mode."
             exit 1
           fi
 
