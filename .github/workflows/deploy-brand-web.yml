@@ -18,7 +18,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      NEXT_OUTPUT: export
+      GITHUB_PAGES: true # GitHub Pages 배포 플래그 설정
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,10 +38,10 @@ jobs:
           cd apps/brand-web
           npm ci
           
-      - name: Cleanup build artifacts
+      - name: FORCE CLEAR CACHE
         run: |
           cd apps/brand-web
-          rm -rf .next out
+          rm -rf .next out _site # 이전 빌드 잔재 완전 제거
           
       - name: Patch API route for static export
         run: |
@@ -50,43 +50,42 @@ jobs:
           echo ">>> API ROUTE PATCHED:"
           head -n 10 src/app/api/sre/health/route.ts
 
-      - name: Build with Next.js (Force Environment)
+      - name: Build with Next.js (Safe Mode)
         run: |
           cd apps/brand-web
-          echo ">>> CURRENT ENV NEXT_OUTPUT: $NEXT_OUTPUT"
           npx next build
         
-      - name: "[DIAGNOSTIC] Locate Build Outputs"
+      - name: Verify and Prepare Artifacts
         run: |
-          echo ">>> DIAGNOSTIC: Searching for build artifacts..."
-          echo "1. Checking apps/brand-web/out:"
-          ls -la apps/brand-web/out || echo "apps/brand-web/out NOT FOUND"
-          
-          echo "2. Checking apps/brand-web/.next/out:"
-          ls -la apps/brand-web/.next/out || echo "apps/brand-web/.next/out NOT FOUND"
-          
-          echo "3. Searching for index.html in the entire repository..."
-          find . -name "index.html" -not -path "*/node_modules/*"
-          
-          echo "4. Searching for any directory named 'out'..."
-          find . -name "out" -type d -not -path "*/node_modules/*"
-
-      - name: Verify build output and Prepare
-        run: |
+          echo ">>> Locating and moving build results..."
+          mkdir -p _site
           if [ -d "apps/brand-web/out" ]; then
-            echo "Success: out directory found at expected location."
+            cp -r apps/brand-web/out/* _site/
+            echo "Success: Moved results from apps/brand-web/out to root _site"
           elif [ -d "apps/brand-web/.next/out" ]; then
-            echo "Redirect: out directory found in .next. Moving to expected location..."
-            mv apps/brand-web/.next/out apps/brand-web/out
+            cp -r apps/brand-web/.next/out/* _site/
+            echo "Redirect: Moved results from apps/brand-web/.next/out to root _site"
           else
-            echo "FATAL: Could not locate build output even in diagnostic mode."
-            exit 1
+            echo "Searching for index.html as a fallback..."
+            INDEX_PATH=$(find . -name "index.html" -not -path "*/node_modules/*" | head -n 1)
+            if [ ! -z "$INDEX_PATH" ]; then
+              BUILD_DIR=$(dirname "$INDEX_PATH")
+              cp -r "$BUILD_DIR"/* _site/
+              echo "Fallback: Found index.html in $BUILD_DIR. Moved content to _site"
+            else
+              echo "FATAL: Could not find build results anywhere."
+              exit 1
+            fi
           fi
+          
+          # 최종 파일 구조 확인
+          echo ">>> Final Artifact Structure in root _site:"
+          ls -R _site | head -n 50
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/brand-web/out
+          path: _site
 
   deploy:
     environment:
