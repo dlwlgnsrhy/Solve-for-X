@@ -17,9 +17,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/brand-web
+    env:
+      NEXT_OUTPUT: export
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,18 +34,37 @@ jobs:
         uses: actions/configure-pages@v5
         
       - name: Install dependencies
-        run: npm ci
-        
+        run: |
+          cd apps/brand-web
+          npm ci
+          
+      - name: Cleanup build artifacts
+        run: |
+          cd apps/brand-web
+          rm -rf .next out
+          
       - name: Patch API route for static export
-        run: sed -i "s/\/\/ export const dynamic = 'force-static';/export const dynamic = 'force-static';/" src/app/api/sre/health/route.ts
-        env:
-          NEXT_OUTPUT: export
+        run: |
+          cd apps/brand-web
+          sed -i "s/\/\/ export const dynamic = 'force-static';/export const dynamic = 'force-static';/" src/app/api/sre/health/route.ts
+          echo "Checking patched file content..."
+          cat src/app/api/sre/health/route.ts | head -n 10
 
       - name: Build with Next.js
-        run: npm run build
-        env:
-          NEXT_OUTPUT: export
+        run: |
+          cd apps/brand-web
+          npm run build
         
+      - name: Verify build output
+        run: |
+          echo "Listing 'out' directory content..."
+          if [ -d "apps/brand-web/out" ]; then
+            ls -R apps/brand-web/out
+          else
+            echo "Error: 'out' directory not found!"
+            exit 1
+          fi
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
