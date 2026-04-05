@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAGES: true # GitHub Pages 배포 플래그 설정
+      NEXT_PUBLIC_BASE_PATH: /Solve-for-X
+      NEXT_OUTPUT: export
     steps:
       - name: Checkout
         uses: actions/checkout@v4

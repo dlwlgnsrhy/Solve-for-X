@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
-// GitHub Pages 배포를 위한 정적 빌드 시에는 아래 주석이 해제되어야 함 (sed 등으로 처리 권장)
-// export const dynamic = 'force-static';
+export const dynamic = 'force-static';
 
 const isExport = process.env.NEXT_OUTPUT === 'export';
 
