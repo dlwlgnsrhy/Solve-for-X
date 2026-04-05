@@ -71,7 +71,8 @@ export default function Home() {
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const res = await fetch('/api/sre/health');
+        const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+        const res = await fetch(`${basePath}/api/sre/health`);
         if (res.ok) {
           const data = await res.json();
           setSreStatus("LIVE");
@@ -163,18 +164,18 @@ export default function Home() {
           
           <div className={styles.appGrid}>
             {/* Life-Log App */}
-            <div className={styles.appCard} onClick={() => setActiveModal('lifelog')}>
+            <div className={styles.appCard} onClick={() => window.open('https://play.google.com/store/apps/details?id=com.moon_whisper.mw', '_blank')}>
               <div className={styles.appHeader}>
                 <div className={styles.appName}>SFX Life-Log</div>
                 <div className={styles.appStatus}>
-                  <span className={`${styles.statusDot} ${styles.statusWait}`}></span>
-                  Coming 2026 Q3
+                  <span className={`${styles.statusDot} ${styles.statusLive}`}></span>
+                  Available on Play Store
                 </div>
               </div>
               <p className={styles.appDesc}>
                 나의 흩어진 감정과 서사를 온전히 기록하고 보존하는 멀티모달 AI 아이덴티티 프로덕트. 잃어버리는 기억 없이 영원한 레거시를 완성합니다.
               </p>
-              <div className={styles.cardAction}>자세히 보기 <span>→</span></div>
+              <div className={styles.cardAction}>Google Play 설치 <span>↗</span></div>
             </div>
 
             {/* Finance Dashboard */}
@@ -192,8 +193,23 @@ export default function Home() {
               <div className={styles.cardAction}>자세히 보기 <span>→</span></div>
             </div>
 
+            {/* SRE Blog - New Card */}
+            <div className={styles.appCard} onClick={() => window.open('https://medium.com/@dlwlgnsrhy/ai-transformation-chapter1-3a4b88302aef', '_blank')}>
+              <div className={styles.appHeader}>
+                <div className={styles.appName}>SRE Blog</div>
+                <div className={styles.appStatus}>
+                  <span className={`${styles.statusDot} ${styles.statusLive}`}></span>
+                  Latest Chapter
+                </div>
+              </div>
+              <p className={styles.appDesc}>
+                기술과 철학의 융합. AI 자동화 시스템을 구축하며 얻은 아키텍처적 통찰과 SRE 여정을 기록합니다.
+              </p>
+              <div className={styles.cardAction}>Medium 읽기 <span>↗</span></div>
+            </div>
+
             {/* Core Engine */}
-            <div className={styles.appCard} style={{ gridColumn: '1 / -1' }} onClick={() => setActiveModal('core')}>
+            <div className={styles.appCard} onClick={() => setActiveModal('core')}>
               <div className={styles.appHeader}>
                 <div className={styles.appName}>SFX Core Engine</div>
                 <div className={styles.appStatus}>
