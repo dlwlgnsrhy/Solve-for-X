@@ -10,7 +10,7 @@
 현재 하드코딩된 모달(Modal) 창의 텍스트와 UI, 그리고 `[🟢 System Live]` 배지들을 수동 타이핑이 아닌, 향후 백엔드 및 라이브 파이프라인과 API 로직으로 연결합니다.
 1. **[✅ 구축 완료] Tech Blog 옴니채널(Omnichannel) 자동화 연계:** Git Commit 파싱 스크립트가 단순히 외부 블로그에 송출하는 데 그치지 않고, 로컬 AI(LM Studio)의 4단계 추론(Phase Analysis)을 거쳐 완벽한 영문 서사로 Next.js 웹사이트 방어막(`drafts/`) 및 Dev.to(Canonical SEO)로 동시 배포되는 시스템을 완성했습니다.
    👉 상세 아키텍처 및 코어 워크플로우는 `01-1-phase1.5-sre-automation-details.md` 하위 문서 참조.
-2. **모달 리소스 치환:** 추후 Flutter 앱의 UX/UI 프론트엔드가 설계되면 스크린샷 에셋만 캡처하여 메인 페이지 모달의 `Image Placeholder` 부분에 넣어 완벽한 쇼케이스 카드를 완성합니다.
+2. **[✅ 구축 완료] 모달 및 실서비스 리소스 연동:** Google Play Store(Life-Log) 및 Medium(SRE Blog) 링크를 메인 페이지 카드에 직접 결속하여 즉시 접근 가능한 베이스캠프 기능을 강화했습니다.
 
 ### 📍 Phase 2: 『Legacy_Core』 엔진 개발 (Java/Spring Boot)
 모든 앱 데이터의 불변성을 유지할 중앙 허브 서버이자 권력의 핵심 설계 단계입니다.

@@ -23,6 +23,17 @@ cat <<EOF > "$PLIST_FILE"
         <string>${SCRIPT_PATH}</string>
     </array>
 
+    <key>WorkingDirectory</key>
+    <string>$(dirname "${SCRIPT_PATH}")/../..</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>LANG</key>
+        <string>ko_KR.UTF-8</string>
+    </dict>
+
     <key>StartCalendarInterval</key>
     <dict>
         <key>Hour</key>
@@ -37,7 +48,6 @@ cat <<EOF > "$PLIST_FILE"
     <key>StandardOutPath</key>
     <string>/tmp/soluni_sre_bot.out</string>
     
-    <!-- Sleep 모드에서 놓친 작업은 깨어났을 때 바로 실행되게 만듭니다 -->
     <key>RunAtLoad</key>
     <false/>
 </dict>

@@ -56,11 +56,22 @@ def get_git_diff(target_date):
     return result.stdout
 
 def get_roadmap_context():
-    roadmap_path = os.path.join(REPO_PATH, "docs/roadmap/01-macro-blueprint.md")
-    if os.path.exists(roadmap_path):
-        with open(roadmap_path, "r", encoding="utf-8") as f:
-            return f.read()[:1500] 
-    return "(생태계 로드맵 정보를 읽을 수 없습니다.)"
+    # 1순위: 메인 ROADMAP.md (현재 진행 상태 파악용)
+    main_roadmap_path = os.path.join(REPO_PATH, "ROADMAP.md")
+    # 2순위: 상세 로드맵 (거시적 설계 파악용)
+    macro_roadmap_path = os.path.join(REPO_PATH, "docs/roadmap/01-macro-blueprint.md")
+    
+    context = "### Current Project Progress (ROADMAP.md) ###\n"
+    if os.path.exists(main_roadmap_path):
+        with open(main_roadmap_path, "r", encoding="utf-8") as f:
+            context += f.read()[:2000]
+            
+    context += "\n\n### Macroscopic Blueprint ###\n"
+    if os.path.exists(macro_roadmap_path):
+        with open(macro_roadmap_path, "r", encoding="utf-8") as f:
+            context += f.read()[:1500]
+            
+    return context if len(context) > 100 else "(로드맵 정보를 읽을 수 없습니다.)"
 
 # ==========================================
 # 2. LM Studio 통신 (Phase Validation & COPE)
@@ -220,13 +231,12 @@ def send_telegram_notifications(date_str, filepath, devto_url, linkedin_summary,
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     
     msg1 = (
-        f"🟢 [Daily SRE Draft 1차 대기 완료]\n"
+        f"✅ [Daily SRE Draft 1차 대기 완료]\n"
         f"📍 로드맵 타겟 식별: {assigned_phase}\n\n"
         f"1. 안전 격리 구역(Drafts)에 초안 저장 및 커밋 완료.\n"
         f"2. Dev.to 글로벌 (Draft) 업로드 완료.\n\n"
         f"📁 위치: {filepath.split('Solve-for-X/')[1]}\n"
         f"🌐 Dev.to 원본 링크: {devto_url}\n"
-        f"⚠️ (미발행 Draft 상태이므로, 텔레그램 등 비로그인 브라우저에서는 404 에러로 보이지 않습니다.)\n\n"
         f"🛠️ [Dev.to 대시보드에서 직접 확인 & 발행하기]\n"
         f"👉 https://dev.to/dashboard"
     )
@@ -239,33 +249,49 @@ def send_telegram_notifications(date_str, filepath, devto_url, linkedin_summary,
     )
     requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": msg2})
 
+def send_telegram_alert(message):
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        return
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    try:
+        requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": message})
+    except Exception as e:
+        logging.error(f"Telegram Alert 실패: {e}")
+
 # ==========================================
 # 실행부 (Entry Point)
 # ==========================================
 if __name__ == "__main__":
     logging.info("--------------------------------------------------")
     logging.info("🚀 SRE COPE Omnichannel Auto-Blogger 기상...")
+    send_telegram_alert("🚀 [SRE Bot] 정기 자동화 스케줄링을 시작합니다.")
     
     target_date = get_target_date()
-    commits = get_todays_commits(target_date)
-    if not commits:
-        logging.info("오늘 수행된 Git 커밋이 없습니다. 봇을 종료합니다.")
-        exit(0)
+    try:
+        commits = get_todays_commits(target_date)
+        if not commits:
+            logging.info("오늘 수행된 Git 커밋이 없습니다. 봇을 종료합니다.")
+            send_telegram_alert("ℹ️ [SRE Bot] 오늘 수행된 Git 커밋이 없어 작업을 조기 종료합니다.")
+            exit(0)
+            
+        diff_text = get_git_diff(target_date)
+        logging.info("LM Studio Qwen3 30B 통신 시작: Phase Validation 2-Step 추론 가동 중...")
         
-    diff_text = get_git_diff(target_date)
-    logging.info("LM Studio Qwen3 30B 통신 시작: Phase Validation 2-Step 추론 가동 중...")
-    
-    content_dict = generate_omnichannel_content(commits, diff_text, target_date)
-    
-    if content_dict:
-        # AI가 도출해낸 Phase/Chapter 맞춤형 영문 블로그 제목 사용
-        doc_title = content_dict['title']
+        content_dict = generate_omnichannel_content(commits, diff_text, target_date)
         
-        logging.info(f"선언된 페이즈({content_dict['phase']})와 챕터를 타겟팅하여 글로벌 배포를 시도합니다...")
-        devto_url = publish_to_devto(content_dict["blog"], doc_title, target_date)
-        
-        logging.info("로컬 안전 구역(Drafts) 저장 및 텔레그램 배달 로직을 가동합니다...")
-        save_and_commit_blog(content_dict["blog"], devto_url, content_dict["linkedin"], target_date, content_dict["phase"])
-        logging.info("모든 파이프라인 연계 종료. 성공!")
-    else:
-        logging.error("AI 초안 및 페이즈 분석 작성 오류 발생.")
+        if content_dict:
+            doc_title = content_dict['title']
+            logging.info(f"선언된 페이즈({content_dict['phase']})와 챕터를 타겟팅하여 글로벌 배포를 시도합니다...")
+            devto_url = publish_to_devto(content_dict["blog"], doc_title, target_date)
+            
+            logging.info("로컬 안전 구역(Drafts) 저장 및 텔레그램 배달 로직을 가동합니다...")
+            save_and_commit_blog(content_dict["blog"], devto_url, content_dict["linkedin"], target_date, content_dict["phase"])
+            logging.info("모든 파이프라인 연계 종료. 성공!")
+        else:
+            raise Exception("AI 초안 및 페이즈 분석 작성 오류 발생.")
+            
+    except Exception as e:
+        error_msg = f"❌ [SRE Bot] 파이프라인 중단 에러: {str(e)}"
+        logging.error(error_msg)
+        send_telegram_alert(error_msg)
+        exit(1)

@@ -9,8 +9,9 @@
 ## 📌 Phase 1: Base Camp & Identity (4월~5월)
 *방향: 'The Tech of Human Dignity' 가치관의 시각화 및 배포 파이프라인 선행 확보*
 - [x] Next.js 기반 공식 브랜드 웹사이트 MVP 개발 및 배포 (`apps/brand-web`)
-- [] GitHub Actions 기반 CI/CD 구축 (SRE 배포 자동화 원칙 조기 도입)
+- [x] GitHub Actions 기반 CI/CD 구축 (SRE 배포 자동화 원칙 조기 도입)
 - [x] 사업자 정보 게시 및 지훈 님의 '레거시 설계자' 선언문 게시 (포트폴리오 베이스 캠프 확립)
+- [x] 실서비스 연동: SFX Life-Log (Play Store) 및 SRE Blog (Medium) 링크 활성화
 
 ## 📌 Phase 2: Data Foundation & Automation (5월~6월)
 *방향: 지식 자산을 자동으로 기록하고 관리하는 통합 인프라/데이터 저장소 구축*
