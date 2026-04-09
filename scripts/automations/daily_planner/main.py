@@ -130,13 +130,18 @@ def generate_today_plan(
     )
 
     logger.info(f"[Planner] 외부 Gemma 31B로 오늘 계획 생성 중...")
-    plan = llm.ask(
-        user_prompt=user_prompt,
-        system_prompt=system_prompt,
-        use_external=True,
-        max_tokens=1200,
-        temperature=0.4,
-    )
+    try:
+        plan = llm.ask(
+            user_prompt=user_prompt,
+            system_prompt=system_prompt,
+            use_external=True,
+            max_tokens=1200,
+            temperature=0.4,
+        )
+    except Exception as e:
+        logger.error(f"[Planner] 계획 생성 중 예외 발생: {e}")
+        plan = None
+        
     return plan or "(계획 생성 실패 — 로그를 확인하세요)"
 
 
@@ -184,13 +189,18 @@ def generate_evening_retrospective(
     )
 
     logger.info("[Planner] 외부 Gemma 31B로 저녁 회고 제안 생성 중...")
-    retro = llm.ask(
-        user_prompt=user_prompt,
-        system_prompt=system_prompt,
-        use_external=True,
-        max_tokens=800,
-        temperature=0.4,
-    )
+    try:
+        retro = llm.ask(
+            user_prompt=user_prompt,
+            system_prompt=system_prompt,
+            use_external=True,
+            max_tokens=800,
+            temperature=0.4,
+        )
+    except Exception as e:
+        logger.error(f"[Planner] 회고 생성 중 예외 발생: {e}")
+        retro = None
+        
     return retro or "(회고 제안 생성 실패 — 로그를 확인하세요)"
 
 
@@ -214,8 +224,17 @@ def run_morning_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
     roadmap = get_roadmap_context()
     plan_md = generate_today_plan(yesterday_log, roadmap, llm, today_str, week_summary)
 
+    if "(계획 생성 실패" in plan_md:
+        logger.error("[Planner] LLM 계획 생성 실패. 알림 발송 후 종료.")
+        telegram.send(f"🚨 [Daily Planner 아침 장애]\nLLM(Gemma 31B) 연결 또는 토큰 오류로 인해 계획 초안을 생성하지 못했습니다. 노트북 상태나 네트워크를 확인해주세요.")
+        return
+
     logger.info("[Planner] Notion에 오늘 페이지 작성 중...")
     page_url = notion.create_daily_page(today_str, plan_md)
+    if not page_url:
+        logger.error("[Planner] Notion 페이지 생성 실패. 알림 발송 후 종료.")
+        telegram.send(f"🚨 [Daily Planner 아침 장애]\nNotion API 통신 실패 또는 권한 문제로 인해 페이지를 생성하지 못했습니다.")
+        return
 
     preview = "\n".join(plan_md.split("\n")[:15])
     if len(plan_md.split("\n")) > 15:
@@ -249,8 +268,17 @@ def run_evening_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
 
     retro_md = generate_evening_retrospective(git_commits, llm, today_str)
 
+    if "(회고 제안 생성 실패" in retro_md:
+        logger.error("[Planner] LLM 회고 생성 실패. 알림 발송 후 종료.")
+        telegram.send(f"🚨 [Daily Planner 저녁 장애]\nLLM(Gemma 31B) 연결 오류로 인해 회고 제안을 생성하지 못했습니다. 네트워크를 확인해주세요.")
+        return
+
     logger.info(f"[Planner] Notion 오늘 페이지({page_id})에 회고 제안 추가 중...")
     success = notion.append_markdown_to_page(page_id, retro_md)
+    if not success:
+        logger.error("[Planner] Notion 회고 본문 추가 실패. 알림 발송 후 종료.")
+        telegram.send(f"🚨 [Daily Planner 저녁 장애]\nNotion API 통신 실패로 오늘 생성된 페이지에 회고 내용을 추가하지 못했습니다.")
+        return
 
     preview = "\n".join(retro_md.split("\n")[:15])
     if len(retro_md.split("\n")) > 15:
@@ -279,10 +307,18 @@ def main():
     today_str = datetime.date.today().strftime("%Y-%m-%d")
     current_hour = datetime.datetime.now().hour
 
-    if current_hour < 12:
-        run_morning_routine(notion, llm, telegram, today_str)
-    else:
-        run_evening_routine(notion, llm, telegram, today_str)
+    try:
+        if current_hour < 12:
+            run_morning_routine(notion, llm, telegram, today_str)
+        else:
+            run_evening_routine(notion, llm, telegram, today_str)
+    except Exception as e:
+        err_msg = str(e)[:300]
+        logger.error(f"[Planner] 예기치 않은 시스템 치명적 오류 발생:\n{e}", exc_info=True)
+        try:
+            telegram.send(f"🚨 [Daily Planner 시스템 장애]\n예기치 않은 치명적 오류가 발생했습니다.\n서버 상태나 코드를 확인해주세요.\n\n요약: {err_msg}")
+        except:
+            pass
 
 if __name__ == "__main__":
     main()
