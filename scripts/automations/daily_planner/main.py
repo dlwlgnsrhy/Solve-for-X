@@ -129,7 +129,7 @@ def generate_today_plan(
         f"위 데이터를 바탕으로 오늘({today_str})의 실행 계획 초안을 작성하세요."
     )
 
-    logger.info("[Planner] 외부 Gemma 31B로 오늘 계획 생성 중...")
+    logger.info(f"[Planner] 외부 Gemma 31B로 오늘 계획 생성 중...")
     plan = llm.ask(
         user_prompt=user_prompt,
         system_prompt=system_prompt,
@@ -140,46 +140,83 @@ def generate_today_plan(
     return plan or "(계획 생성 실패 — 로그를 확인하세요)"
 
 
-def main():
-    config.load_env()
-    logger.info("=" * 50)
-    logger.info("📋 Daily Planner (아침 버전) 시작")
+def get_git_commits_today() -> str:
+    """오늘 수행한 git 커밋들을 가져옵니다."""
+    import subprocess
+    try:
+        # 오늘 05:00 이후 커밋
+        since_time = datetime.datetime.now().strftime("%Y-%m-%d 05:00:00")
+        result = subprocess.run(
+            ["git", "-C", str(REPO_PATH), "log", f"--since={since_time}", "--oneline", "--no-merges"],
+            capture_output=True, text=True, check=True
+        )
+        commits = result.stdout.strip()
+        return commits if commits else "(오늘의 커밋 없음)"
+    except Exception as e:
+        logger.error(f"[Git] 커밋 조회 실패: {e}")
+        return "(커밋 내역을 가져올 수 없습니다)"
 
-    llm      = LLMClient()
-    telegram = TelegramClient()
-    notion   = NotionClient()
 
-    today_str     = datetime.date.today().strftime("%Y-%m-%d")
-    yesterday_str = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+def generate_evening_retrospective(
+    git_commits: str,
+    llm: LLMClient,
+    today_str: str,
+) -> str:
+    """
+    오늘의 커밋 등을 바탕으로 저녁 회고 제안을 작성합니다.
+    """
+    system_prompt = (
+        "당신은 1인 개발자 레거시 설계자의 생산성 코치입니다.\n"
+        "오늘 진행된 작업 내역(Git 커밋 등)을 보고, 지훈님이 저녁 회고를 쉽게 작성할 수 있도록\n"
+        "오늘의 성과 요약과 성찰을 위한 질문을 제공합니다.\n\n"
+        "출력 형식:\n"
+        "## 🌅 오늘의 작업 요약\n"
+        "- (커밋 기반 주요 작업 1~3줄 요약)\n\n"
+        "## 💡 코치의 회고 제안 (성찰 질문)\n"
+        "1. (잘한 점, 혹은 더 깊이 생각해볼 질문)\n"
+        "2. (내일 개선하면 좋을 부분)"
+    )
 
+    user_prompt = (
+        f"오늘 날짜: {today_str}\n\n"
+        f"=== 오늘 작업 내역 (Git Commits) ===\n{git_commits[:2000]}\n\n"
+        f"위 데이터를 바탕으로 오늘 하루를 마무리하는 회고 및 성찰 제안을 작성해 주세요."
+    )
+
+    logger.info("[Planner] 외부 Gemma 31B로 저녁 회고 제안 생성 중...")
+    retro = llm.ask(
+        user_prompt=user_prompt,
+        system_prompt=system_prompt,
+        use_external=True,
+        max_tokens=800,
+        temperature=0.4,
+    )
+    return retro or "(회고 제안 생성 실패 — 로그를 확인하세요)"
+
+
+def run_morning_routine(notion: NotionClient, llm: LLMClient, telegram: TelegramClient, today_str: str):
+    logger.info("🌅 [아침 루틴] 오늘의 계획 생성 시작")
     telegram.send(f"☀️ [Daily Planner] {today_str} 오늘의 계획 초안을 생성합니다...")
 
-    # 1. 전날 Daily Log 읽기
+    yesterday_str = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     logger.info(f"[Planner] 전날({yesterday_str}) Daily Log 읽는 중...")
     yesterday_log = notion.get_yesterday_log()
+    
     if yesterday_log:
         yd = yesterday_log[0]
         logger.info(f"[Planner] 전날 컨디션: {yd.get('condition')}/10 | 1가지: {yd.get('one_thing', '')[:40]}")
     else:
         logger.info("[Planner] 전날 기록 없음 — 로드맵만으로 계획 생성")
 
-    # 2. 이번 주 Weekly System 읽기
     logger.info("[Planner] 이번 주 Weekly 목표 읽는 중...")
     week_summary = notion.get_week_summary()
-    if week_summary:
-        logger.info(f"[Planner] 주간 목표: {week_summary.get('weekly_goal', '')[:50]}")
 
-    # 3. ROADMAP 읽기
     roadmap = get_roadmap_context()
-
-    # 4. Gemma 31B로 오늘 계획 생성
     plan_md = generate_today_plan(yesterday_log, roadmap, llm, today_str, week_summary)
 
-    # 5. Notion에 오늘 페이지 생성
     logger.info("[Planner] Notion에 오늘 페이지 작성 중...")
     page_url = notion.create_daily_page(today_str, plan_md)
 
-    # 6. Telegram 알림 (앞 15줄 미리보기)
     preview = "\n".join(plan_md.split("\n")[:15])
     if len(plan_md.split("\n")) > 15:
         preview += "\n..."
@@ -189,14 +226,63 @@ def main():
         f"{preview}\n\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         f"📝 Notion 확인 후 하루를 시작하세요!\n"
-        f"(저녁 회고는 직접 작성)\n"
     )
     if page_url:
         msg += f"🔗 {page_url}"
 
     telegram.send(msg)
-    logger.info(f"✅ Daily Planner 완료 — {today_str} 오늘 페이지 생성됨")
+    logger.info(f"✅ Daily Planner (아침 루틴) 완료")
 
+
+def run_evening_routine(notion: NotionClient, llm: LLMClient, telegram: TelegramClient, today_str: str):
+    logger.info("🌆 [저녁 루틴] 오늘 성과 정리 및 회고 제안 시작")
+    
+    page_id = notion.get_today_page_id()
+    if not page_id:
+        logger.warning("[Planner] 오늘 날짜의 Notion 페이지를 찾을 수 없습니다. 회고를 추가할 수 없습니다.")
+        telegram.send(f"🌙 [Daily Planner] {today_str} 오늘 페이지가 없어 회고를 추가하지 못했습니다.")
+        return
+
+    logger.info("[Planner] 오늘 수행한 Git 커밋 조회 중...")
+    git_commits = get_git_commits_today()
+    logger.info(f"[Git] {len(git_commits.splitlines())}줄의 커밋 발견 (있는 경우)")
+
+    retro_md = generate_evening_retrospective(git_commits, llm, today_str)
+
+    logger.info(f"[Planner] Notion 오늘 페이지({page_id})에 회고 제안 추가 중...")
+    success = notion.append_markdown_to_page(page_id, retro_md)
+
+    preview = "\n".join(retro_md.split("\n")[:15])
+    if len(retro_md.split("\n")) > 15:
+        preview += "\n..."
+
+    msg = (
+        f"🌙 [{today_str}] 저녁 회고 제안\n\n"
+        f"{preview}\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📝 Notion 페이지에 추가되었습니다. 직접 회고를 완료해보세요!\n"
+    )
+    
+    telegram.send(msg)
+    logger.info(f"✅ Daily Planner (저녁 루틴) 완료")
+
+
+def main():
+    config.load_env()
+    logger.info("=" * 50)
+    logger.info("📋 Daily Planner 시작")
+
+    llm      = LLMClient()
+    telegram = TelegramClient()
+    notion   = NotionClient()
+
+    today_str = datetime.date.today().strftime("%Y-%m-%d")
+    current_hour = datetime.datetime.now().hour
+
+    if current_hour < 12:
+        run_morning_routine(notion, llm, telegram, today_str)
+    else:
+        run_evening_routine(notion, llm, telegram, today_str)
 
 if __name__ == "__main__":
     main()

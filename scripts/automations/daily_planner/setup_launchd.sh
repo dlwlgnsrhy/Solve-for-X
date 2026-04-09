@@ -10,7 +10,7 @@
 # =============================================================================
 
 echo "=================================================="
-echo "📋 Daily Planner Launchd 등록 스크립트 v3 (아침 07:00)"
+echo "📋 Daily Planner Launchd 등록 스크립트 v4 (1일 2회)"
 echo "=================================================="
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -58,14 +58,22 @@ cat <<EOF > "$PLIST_FILE"
         <string>ko_KR.UTF-8</string>
     </dict>
 
-    <!-- 매일 07:00 실행 — 하루 시작 전 오늘 계획 준비 -->
+    <!-- 매일 05:00(아침 계획), 18:00(저녁 회고) 2회 실행 -->
     <key>StartCalendarInterval</key>
-    <dict>
-        <key>Hour</key>
-        <integer>7</integer>
-        <key>Minute</key>
-        <integer>0</integer>
-    </dict>
+    <array>
+        <dict>
+            <key>Hour</key>
+            <integer>5</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <dict>
+            <key>Hour</key>
+            <integer>18</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+    </array>
 
     <key>StandardErrorPath</key>
     <string>/tmp/soluni_daily_planner.err</string>
@@ -86,10 +94,10 @@ launchctl unload "$PLIST_FILE" 2>/dev/null || true
 launchctl load "$PLIST_FILE"
 
 echo "--------------------------------------------------"
-echo "🎉 등록 완료! 매일 07:00에 오늘 계획이 Notion에 작성됩니다."
+echo "🎉 등록 완료! 1일 2회 (05:00, 18:00) 자동 실행됩니다."
 echo ""
-echo "  전날 기록 → Gemma 31B → 오늘 Notion 페이지 → Telegram 알림"
-echo "  저녁 회고는 지훈님이 직접 작성하세요."
+echo "  [05:00 아침 루틴]: 전날 기록 → 오늘 계획 노션에 생성"
+echo "  [18:00 저녁 루틴]: Git 커밋 분석 → 오늘자 노션에 회고 제안 추가"
 echo "--------------------------------------------------"
 echo ""
 echo "수동 테스트: python3 \"$MAIN_SCRIPT\""

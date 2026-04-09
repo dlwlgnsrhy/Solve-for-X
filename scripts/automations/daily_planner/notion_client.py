@@ -106,12 +106,34 @@ class NotionClient:
             logger.info(f"[Notion] 어제({yesterday}) Daily Log {len(records)}건 조회 완료")
             return records
 
-        except requests.exceptions.HTTPError as e:
-            logger.error(f"[Notion] API 오류 {e.response.status_code}: {e.response.text[:200]}")
-            return []
         except Exception as e:
             logger.error(f"[Notion] 어제 기록 조회 실패: {e}")
             return []
+
+    # ------------------------------------------------------------------
+    def get_today_page_id(self) -> str:
+        """오늘 날짜로 생성된 Daily Log 페이지 ID를 반환합니다."""
+        today = datetime.date.today().isoformat()
+        try:
+            resp = requests.post(
+                f"{NOTION_BASE_URL}/databases/{self._daily_db_id}/query",
+                headers=self._headers,
+                json={
+                    "filter": {
+                        "property": self._prop_date,
+                        "date": {"equals": today},
+                    }
+                },
+                timeout=15,
+            )
+            resp.raise_for_status()
+            results = resp.json().get("results", [])
+            if results:
+                return results[0].get("id", "")
+            return ""
+        except Exception as e:
+            logger.error(f"[Notion] 오늘 페이지 조회 실패: {e}")
+            return ""
 
     # ------------------------------------------------------------------
     def get_week_summary(self) -> Optional[dict]:
@@ -213,7 +235,7 @@ class NotionClient:
             resp.raise_for_status()
             page_data = resp.json()
             page_url = page_data.get("url", "")
-            logger.info(f"[Notion] 내일 페이지 생성 완료: {page_url}")
+            logger.info(f"[Notion] 오늘 페이지 생성 완료: {page_url}")
             return page_url
 
         except requests.exceptions.HTTPError as e:
@@ -222,6 +244,30 @@ class NotionClient:
         except Exception as e:
             logger.error(f"[Notion] 페이지 생성 실패: {e}")
             return ""
+
+    # ------------------------------------------------------------------
+    def append_markdown_to_page(self, page_id: str, markdown: str) -> bool:
+        """기존 Notion 페이지에 마크다운 내용을 블록으로 추가합니다."""
+        try:
+            blocks = self._markdown_to_blocks(markdown)
+            if not blocks:
+                return True
+                
+            resp = requests.patch(
+                f"{NOTION_BASE_URL}/blocks/{page_id}/children",
+                headers=self._headers,
+                json={"children": blocks[:100]}, # 최대 100개
+                timeout=20,
+            )
+            resp.raise_for_status()
+            logger.info(f"[Notion] 페이지({page_id})에 내용 추가 완료")
+            return True
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"[Notion] 페이지 내용 추가 HTTP 오류 {e.response.status_code}: {e.response.text[:300]}")
+            return False
+        except Exception as e:
+            logger.error(f"[Notion] 페이지 내용 추가 실패: {e}")
+            return False
 
     # ------------------------------------------------------------------
     @staticmethod
