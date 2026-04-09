@@ -1,0 +1,89 @@
+# ================================================================
+# Daily News Curator — RSS Feed Configuration
+# ================================================================
+# 관심 키워드: 이 단어 중 하나라도 포함된 글만 로컬 LLM 필터를 통과합니다.
+# ================================================================
+
+keywords:
+  - LLM
+  - AI
+  - Rust
+  - Go
+  - SRE
+  - Kubernetes
+  - k8s
+  - System Design
+  - Architecture
+  - DevOps
+  - Backend
+  - infrastructure
+  - observability
+  - reliability
+  - automation
+  - Flutter
+  - mobile
+
+feeds:
+  # ── 종합 테크 / 커뮤니티 ──────────────────────────────────────
+  - name: "Hacker News (Best)"
+    url: "https://hnrss.org/best"
+    category: "community"
+
+  - name: "TechCrunch"
+    url: "https://techcrunch.com/feed/"
+    category: "news"
+
+  # ── FAANG 엔지니어링 블로그 ────────────────────────────────────
+  - name: "Google AI Blog"
+    url: "https://blog.google/technology/ai/rss/"
+    category: "engineering"
+
+  - name: "Netflix Tech Blog"
+    url: "https://netflixtechblog.com/feed"
+    category: "engineering"
+
+  - name: "Meta Engineering"
+    url: "https://engineering.fb.com/feed/"
+    category: "engineering"
+
+  - name: "AWS Architecture Blog"
+    url: "https://aws.amazon.com/blogs/architecture/feed/"
+    category: "engineering"
+
+  - name: "Uber Engineering"
+    url: "https://www.uber.com/blog/engineering/rss/"
+    category: "engineering"
+
+  - name: "Cloudflare Blog"
+    url: "https://blog.cloudflare.com/rss/"
+    category: "engineering"
+
+  - name: "LinkedIn Engineering"
+    url: "https://engineering.linkedin.com/blog.rss"
+    category: "engineering"
+
+  # ── 개인 엔지니어링 뉴스레터 ───────────────────────────────────
+  - name: "The Pragmatic Engineer"
+    url: "https://newsletter.pragmaticengineer.com/feed"
+    category: "newsletter"
+
+  - name: "ByteByteGo"
+    url: "https://blog.bytebytego.com/feed"
+    category: "newsletter"
+
+  - name: "TLDR Tech"
+    url: "https://tldr.tech/api/rss/tech"
+    category: "newsletter"
+
+  # ── AI / LLM 특화 ──────────────────────────────────────────────
+  - name: "Hugging Face Blog"
+    url: "https://huggingface.co/blog/feed.xml"
+    category: "ai"
+
+  - name: "OpenAI Blog"
+    url: "https://openai.com/blog/rss/"
+    category: "ai"
+
+  - name: "Anthropic News"
+    url: "https://www.anthropic.com/news/rss"
+    category: "ai"
