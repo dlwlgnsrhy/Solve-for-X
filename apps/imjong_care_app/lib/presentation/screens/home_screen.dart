@@ -5,8 +5,8 @@ class HomeScreen extends ConsumerWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, ScopedReader watch, Widget child) {
-    final userListProvider = watch(userListProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userListProvider = ref.watch(userListProvider);
     if (userListProvider.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
