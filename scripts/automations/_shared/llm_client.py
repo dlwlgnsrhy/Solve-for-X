@@ -3,6 +3,15 @@ _shared/llm_client.py
 =====================
 로컬/외부 LLM 라우터 — 용도에 따라 두 엔드포인트를 전환합니다.
 
+모델 라우팅 전략:
+  - use_external=False (기본): 로컬 LM Studio (Qwen 14B) — 속도 우선
+  - use_external=True        : 외부 A100 서버 (Gemma 31B) — 품질 우선
+
+# 버그 수정 (v2):
+  - __init__에서 외부 LLM 변수를 Lazy하게 로드하도록 변경
+    → LOCAL_LLM_* 만 설정된 환경에서도 인스턴스 생성 가능
+    → EXTERNAL_LLM_* 는 use_external=True 호출 시점에만 검증
+
 사용 방법:
     from _shared.llm_client import LLMClient
     client = LLMClient()
@@ -20,19 +29,17 @@ logger = logging.getLogger(__name__)
 
 
 class LLMClient:
-    """
-    모델 라우팅 전략:
-      - use_external=False (기본): 로컬 LM Studio (Qwen 14B) — 속도 우선
-      - use_external=True        : 외부 A100 서버 (Gemma 31B) — 품질 우선
-    """
-
     def __init__(self):
         config.load_env()
+        # 로컬 LLM — 반드시 필요 (없으면 시작 시점에 fail-fast)
         self._local_url   = config.require("LOCAL_LLM_URL")
         self._local_model = config.require("LOCAL_LLM_MODEL")
-        self._ext_url     = config.require("EXTERNAL_LLM_URL")
-        self._ext_model   = config.require("EXTERNAL_LLM_MODEL")
-        self._ext_api_key = config.require("EXTERNAL_LLM_API_KEY")
+
+        # 외부 LLM — Lazy 로드 (use_external=True 호출 시에만 검증)
+        # 로컬만 사용하는 시나리오(Git Hook 등)에서도 인스턴스 생성 허용
+        self._ext_url     = config.get("EXTERNAL_LLM_URL")
+        self._ext_model   = config.get("EXTERNAL_LLM_MODEL")
+        self._ext_api_key = config.get("EXTERNAL_LLM_API_KEY")
 
     # ------------------------------------------------------------------
     def ask(
@@ -49,6 +56,13 @@ class LLMClient:
         실패 시 None을 반환합니다 (예외를 올리지 않음).
         """
         if use_external:
+            # 외부 LLM 사용 시점에 환경변수 검증
+            if not self._ext_url or self._ext_url.startswith("<"):
+                logger.error("[LLM] EXTERNAL_LLM_URL이 .env.shared에 설정되지 않았습니다.")
+                return None
+            if not self._ext_model or self._ext_model.startswith("<"):
+                logger.error("[LLM] EXTERNAL_LLM_MODEL이 .env.shared에 설정되지 않았습니다.")
+                return None
             url, model, api_key = self._ext_url, self._ext_model, self._ext_api_key
             label = "External (Gemma 31B)"
         else:
@@ -68,7 +82,7 @@ class LLMClient:
         }
 
         headers = {"Content-Type": "application/json"}
-        if api_key:
+        if api_key and not api_key.startswith("<"):
             headers["Authorization"] = f"Bearer {api_key}"
 
         try:
@@ -87,6 +101,8 @@ class LLMClient:
             logger.error(f"[LLM] {label} 연결 실패 — 서버가 실행 중인지 확인하세요.")
         except requests.exceptions.Timeout:
             logger.error(f"[LLM] {label} 타임아웃 ({timeout}초 초과)")
+        except KeyError:
+            logger.error(f"[LLM] {label} 응답 형식 오류 — 예상치 못한 JSON 구조")
         except Exception as e:
             logger.error(f"[LLM] {label} 오류: {e}")
         return None
@@ -96,7 +112,23 @@ class LLMClient:
         """로컬 LM Studio가 응답 가능한지 빠르게 확인합니다."""
         try:
             base = self._local_url.replace("/v1/chat/completions", "")
-            requests.get(f"{base}/v1/models", timeout=3)
+            resp = requests.get(f"{base}/v1/models", timeout=3)
+            resp.raise_for_status()
+            return True
+        except Exception:
+            return False
+
+    def is_external_available(self) -> bool:
+        """외부 LLM 서버가 응답 가능한지 빠르게 확인합니다."""
+        if not self._ext_url or self._ext_url.startswith("<"):
+            return False
+        try:
+            base = self._ext_url.replace("/v1/chat/completions", "")
+            headers = {}
+            if self._ext_api_key and not self._ext_api_key.startswith("<"):
+                headers["Authorization"] = f"Bearer {self._ext_api_key}"
+            resp = requests.get(f"{base}/v1/models", headers=headers, timeout=5)
+            resp.raise_for_status()
             return True
         except Exception:
             return False

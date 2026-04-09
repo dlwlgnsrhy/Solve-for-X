@@ -51,21 +51,19 @@ class NotionClient:
         }
 
     # ------------------------------------------------------------------
-    def get_today_tasks(self) -> list:
+    def get_yesterday_log(self) -> list:
         """
-        오늘 날짜의 Daily Log 기록을 가져옵니다.
+        어제 날짜의 Daily Log 기록을 가져옵니다.
+        아침에 실행하여 전날 기록을 바탕으로 오늘 계획을 세우는 용도입니다.
 
-        실제 Daily Log DB 구조:
-          - Name      : title (페이지 제목, 보통 "Daily Template")
-          - Date      : date (날짜)
-          - Condition : number (오늘의 컨디션 점수 1~10)
-          - 오늘의 1가지 : rich_text (오늘의 핵심 목표)
+        Daily Log DB 구조:
+          - Name      : title
+          - Date      : date
+          - Condition : number (컨디션 점수 1~10)
+          - 오늘의 1가지 : rich_text (전날의 핵심 목표)
           - 태그      : multi_select
-          - Weekly System : relation
-
-        반환: 오늘 기록 dict 목록 (LLM context용)
         """
-        today = datetime.date.today().isoformat()
+        yesterday = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
         try:
             resp = requests.post(
                 f"{NOTION_BASE_URL}/databases/{self._daily_db_id}/query",
@@ -73,7 +71,7 @@ class NotionClient:
                 json={
                     "filter": {
                         "property": self._prop_date,
-                        "date": {"equals": today},
+                        "date": {"equals": yesterday},
                     }
                 },
                 timeout=15,
@@ -81,45 +79,38 @@ class NotionClient:
             resp.raise_for_status()
             results = resp.json().get("results", [])
 
-            tasks = []
+            records = []
             for page in results:
                 props = page.get("properties", {})
 
-                # 제목 (Name)
                 title_raw = props.get(self._prop_title, {}).get("title", [])
                 title = "".join(t.get("plain_text", "") for t in title_raw)
 
-                # 컨디션 점수 (Condition — number)
                 condition = props.get("Condition", {}).get("number") or 0
 
-                # 오늘의 1가지 (rich_text)
                 one_thing_raw = props.get("오늘의 1가지", {}).get("rich_text", [])
                 one_thing = "".join(t.get("plain_text", "") for t in one_thing_raw)
 
-                # 태그 (multi_select)
                 tags_raw = props.get("태그", {}).get("multi_select", [])
                 tags = [t.get("name", "") for t in tags_raw]
 
-                # page_url
-                page_url = page.get("url", "")
-
-                tasks.append({
+                records.append({
+                    "date": yesterday,
                     "title": title or "(제목 없음)",
                     "condition": condition,
                     "one_thing": one_thing,
                     "tags": tags,
-                    "page_url": page_url,
-                    "page_id": page.get("id", ""),
+                    "page_url": page.get("url", ""),
                 })
 
-            logger.info(f"[Notion] 오늘({today}) Daily Log {len(tasks)}건 조회 완료")
-            return tasks
+            logger.info(f"[Notion] 어제({yesterday}) Daily Log {len(records)}건 조회 완료")
+            return records
 
         except requests.exceptions.HTTPError as e:
             logger.error(f"[Notion] API 오류 {e.response.status_code}: {e.response.text[:200]}")
             return []
         except Exception as e:
-            logger.error(f"[Notion] 오늘 태스크 조회 실패: {e}")
+            logger.error(f"[Notion] 어제 기록 조회 실패: {e}")
             return []
 
     # ------------------------------------------------------------------

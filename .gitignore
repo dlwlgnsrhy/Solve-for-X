@@ -1,1 +1,7 @@
 /oh-my-openagent-dev/
+
+# Security: env files must never be committed
+.env
+.env.*
+*.env
+.env.shared

@@ -15,6 +15,7 @@ import datetime
 import feedparser
 import yaml
 from pathlib import Path
+from typing import List, Optional
 
 # 공통 모듈 경로 추가
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -42,7 +43,7 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
-def fetch_recent_articles(feeds: list, hours: int = COLLECT_HOURS) -> list[dict]:
+def fetch_recent_articles(feeds: list, hours: int = COLLECT_HOURS) -> List[dict]:
     """모든 RSS 피드에서 최근 N시간 이내 기사를 수집합니다."""
     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=hours)
     articles = []
@@ -78,7 +79,7 @@ def fetch_recent_articles(feeds: list, hours: int = COLLECT_HOURS) -> list[dict]
 
 
 # ── 2단계: 로컬 LLM 1차 필터링 ───────────────────────────────
-def filter_relevant(articles: list[dict], keywords: list[str], client: LLMClient) -> list[dict]:
+def filter_relevant(articles: List[dict], keywords: List[str], client: LLMClient) -> List[dict]:
     """
     로컬 Qwen 14B로 키워드 관련성을 판단합니다.
     빠른 yes/no 판단만 요청하므로 속도 중심 모델을 사용합니다.
@@ -111,7 +112,7 @@ def filter_relevant(articles: list[dict], keywords: list[str], client: LLMClient
 
 
 # ── 3단계: 외부 LLM 고품질 요약 ──────────────────────────────
-def summarize_articles(articles: list[dict], client: LLMClient) -> list[dict]:
+def summarize_articles(articles: List[dict], client: LLMClient) -> List[dict]:
     """
     외부 Gemma 4 31B로 각 기사를 3줄 한국어로 요약합니다.
     품질 중심 작업이므로 외부 A100 모델을 사용합니다.
@@ -139,7 +140,13 @@ def summarize_articles(articles: list[dict], client: LLMClient) -> list[dict]:
 
 
 # ── 4단계: Telegram 배달 ──────────────────────────────────────
-def send_briefing(articles: list[dict], fetched_count: int, telegram: TelegramClient) -> None:
+def send_briefing(articles: List[dict], fetched_count: int, telegram: TelegramClient) -> None:
+    """
+    Telegram으로 뉴스 브리핑을 전송합니다.
+    주의: parse_mode 없이 plain text로 전송합니다.
+          Markdown(*bold* 등) 사용 시 특수문자 이스케이프 문제가 발생하므로
+          모든 포맷을 ASCII/유니코드 기호로 처리합니다.
+    """
     today = datetime.date.today().strftime("%Y-%m-%d")
 
     if not articles:
@@ -150,30 +157,32 @@ def send_briefing(articles: list[dict], fetched_count: int, telegram: TelegramCl
         )
         return
 
-    header = (
-        f"📰 *Daily Tech Brief* — {today}\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-    )
+    lines = [
+        f"📰 Daily Tech Brief — {today}",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━",
+    ]
 
-    items = []
     emoji_map = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"]
     for i, article in enumerate(articles):
-        emoji = emoji_map[i] if i < len(emoji_map) else "•"
-        item = (
-            f"{emoji} *{article['title']}*\n"
-            f"_{article['source']}_\n"
-            f"{article['kr_summary']}\n"
-            f"🔗 {article['link']}"
-        )
-        items.append(item)
+        emoji = emoji_map[i] if i < len(emoji_map) else f"[{i+1}]"
+        # 제목에서 Telegram 특수문자 제거 (plain text이므로 불필요하지만 안전 처리)
+        title = article['title'].replace("\n", " ").strip()
+        lines.extend([
+            "",
+            f"{emoji} {title}",
+            f"    출처: {article['source']}",
+            f"    {article['kr_summary']}",
+            f"    🔗 {article['link']}",
+        ])
 
-    footer = (
-        f"\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"📊 수집 {fetched_count}건 → 선별 {len(articles)}건\n"
-        f"🤖 필터: Qwen 14B (로컬) | 요약: Gemma 31B (외부)"
-    )
+    lines.extend([
+        "",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        f"수집 {fetched_count}건 → 선별 {len(articles)}건",
+        "필터: Qwen 14B (로컬) | 요약: Gemma 31B (외부)",
+    ])
 
-    full_message = header + "\n\n".join(items) + footer
+    full_message = "\n".join(lines)
     telegram.send_chunked(full_message)
     logger.info(f"[Telegram] 브리핑 전송 완료 ({len(articles)}건)")
 
