@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # Daily News Curator — launchd 등록 스크립트
-# 매일 06:00 자동 실행 (SRE Bot 05:00 이후 1시간 뒤)
+# 매일 09:00 자동 실행 (아침 뉴스 브리핑)
 # =============================================================================
 
 echo "=================================================="
@@ -52,7 +52,7 @@ cat <<EOF > "$PLIST_FILE"
     <key>StartCalendarInterval</key>
     <dict>
         <key>Hour</key>
-        <integer>6</integer>
+        <integer>9</integer>
         <key>Minute</key>
         <integer>0</integer>
     </dict>
@@ -76,6 +76,6 @@ launchctl unload "$PLIST_FILE" 2>/dev/null
 launchctl load "$PLIST_FILE"
 
 echo "--------------------------------------------------"
-echo "🎉 등록 완료! 매일 06:00에 뉴스 브리핑이 실행됩니다."
+echo "🎉 등록 완료! 매일 09:00에 뉴스 브리핑이 실행됩니다."
 echo "수동 테스트: python3 main.py"
 echo "--------------------------------------------------"
