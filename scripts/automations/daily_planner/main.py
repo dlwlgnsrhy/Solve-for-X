@@ -226,14 +226,14 @@ def run_morning_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
 
     if "(계획 생성 실패" in plan_md:
         logger.error("[Planner] LLM 계획 생성 실패. 알림 발송 후 종료.")
-        telegram.send(f"🚨 [Daily Planner 아침 장애]\nLLM(Gemma 31B) 연결 또는 토큰 오류로 인해 계획 초안을 생성하지 못했습니다. 노트북 상태나 네트워크를 확인해주세요.")
+        send_alert(telegram, "🚨 [Daily Planner 아침 장애]", "LLM(Gemma 31B) 연결 또는 토큰 오류로 인해 계획 초안을 생성하지 못했습니다. 노트북 상태나 네트워크를 확인해주세요.")
         return
 
     logger.info("[Planner] Notion에 오늘 페이지 작성 중...")
     page_url = notion.create_daily_page(today_str, plan_md)
     if not page_url:
         logger.error("[Planner] Notion 페이지 생성 실패. 알림 발송 후 종료.")
-        telegram.send(f"🚨 [Daily Planner 아침 장애]\nNotion API 통신 실패 또는 권한 문제로 인해 페이지를 생성하지 못했습니다.")
+        send_alert(telegram, "🚨 [Daily Planner 아침 장애]", "Notion API 통신 실패 또는 권한 문제로 인해 페이지를 생성하지 못했습니다.")
         return
 
     preview = "\n".join(plan_md.split("\n")[:15])
@@ -259,7 +259,7 @@ def run_evening_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
     page_id = notion.get_today_page_id()
     if not page_id:
         logger.warning("[Planner] 오늘 날짜의 Notion 페이지를 찾을 수 없습니다. 회고를 추가할 수 없습니다.")
-        telegram.send(f"🌙 [Daily Planner] {today_str} 오늘 페이지가 없어 회고를 추가하지 못했습니다.")
+        send_alert(telegram, "🌙 [Daily Planner 저녁 장애]", f"{today_str} 오늘 페이지가 없어 회고를 추가하지 못했습니다.")
         return
 
     logger.info("[Planner] 오늘 수행한 Git 커밋 조회 중...")
@@ -270,14 +270,14 @@ def run_evening_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
 
     if "(회고 제안 생성 실패" in retro_md:
         logger.error("[Planner] LLM 회고 생성 실패. 알림 발송 후 종료.")
-        telegram.send(f"🚨 [Daily Planner 저녁 장애]\nLLM(Gemma 31B) 연결 오류로 인해 회고 제안을 생성하지 못했습니다. 네트워크를 확인해주세요.")
+        send_alert(telegram, "🚨 [Daily Planner 저녁 장애]", "LLM(Gemma 31B) 연결 오류로 인해 회고 제안을 생성하지 못했습니다. 네트워크를 확인해주세요.")
         return
 
     logger.info(f"[Planner] Notion 오늘 페이지({page_id})에 회고 제안 추가 중...")
     success = notion.append_markdown_to_page(page_id, retro_md)
     if not success:
         logger.error("[Planner] Notion 회고 본문 추가 실패. 알림 발송 후 종료.")
-        telegram.send(f"🚨 [Daily Planner 저녁 장애]\nNotion API 통신 실패로 오늘 생성된 페이지에 회고 내용을 추가하지 못했습니다.")
+        send_alert(telegram, "🚨 [Daily Planner 저녁 장애]", "Notion API 통신 실패로 오늘 생성된 페이지에 회고 내용을 추가하지 못했습니다.")
         return
 
     preview = "\n".join(retro_md.split("\n")[:15])
@@ -295,30 +295,60 @@ def run_evening_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
     logger.info(f"✅ Daily Planner (저녁 루틴) 완료")
 
 
+def send_alert(telegram: Optional[TelegramClient], title: str, message: str):
+    """
+    치명적 장애 발생 시 Telegram으로 알림을 보내고,
+    네트워크 문제 등으로 Telegram 전송이 실패할 경우 Mac 로컬 알림을 띄웁니다.
+    """
+    logger.error(f"{title}\n{message}")
+    success = False
+    if telegram:
+        try:
+            success = telegram.send(f"{title}\n{message}")
+        except Exception:
+            pass
+
+    if not success:
+        try:
+            import subprocess
+            safe_msg = message.replace('"', '\\"').replace("'", "\\'")[:100]  # 너무 길면 Mac 알림이 잘림
+            safe_title = title.replace('"', '\\"')
+            subprocess.run([
+                "osascript", "-e",
+                f'display notification "{safe_msg}..." with title "{safe_title}"'
+            ], check=False)
+        except Exception as fallback_e:
+            logger.error(f"[Fallback] Mac 로컬 알림 띄우기 실패: {fallback_e}")
+
+
 def main():
-    config.load_env()
-    logger.info("=" * 50)
-    logger.info("📋 Daily Planner 시작")
-
-    llm      = LLMClient()
-    telegram = TelegramClient()
-    notion   = NotionClient()
-
-    today_str = datetime.date.today().strftime("%Y-%m-%d")
-    current_hour = datetime.datetime.now().hour
-
     try:
+        config.load_env()
+        logger.info("=" * 50)
+        logger.info("📋 Daily Planner 시작")
+
+        llm      = LLMClient()
+        telegram = TelegramClient()
+        notion   = NotionClient()
+
+        today_str = datetime.date.today().strftime("%Y-%m-%d")
+        current_hour = datetime.datetime.now().hour
+
         if current_hour < 12:
             run_morning_routine(notion, llm, telegram, today_str)
         else:
             run_evening_routine(notion, llm, telegram, today_str)
+
     except Exception as e:
         err_msg = str(e)[:300]
         logger.error(f"[Planner] 예기치 않은 시스템 치명적 오류 발생:\n{e}", exc_info=True)
-        try:
-            telegram.send(f"🚨 [Daily Planner 시스템 장애]\n예기치 않은 치명적 오류가 발생했습니다.\n서버 상태나 코드를 확인해주세요.\n\n요약: {err_msg}")
-        except:
-            pass
+        # telegram 객체가 선언되기 전에 에러가 났을 수 있으므로 locals() 확인
+        tg_client = locals().get('telegram')
+        send_alert(
+            tg_client,
+            "🚨 [Daily Planner 시스템 장애]",
+            f"예기치 않은 치명적 오류가 발생했습니다.\n서버 상태나 코드를 확인해주세요.\n\n요약: {err_msg}"
+        )
 
 if __name__ == "__main__":
     main()
