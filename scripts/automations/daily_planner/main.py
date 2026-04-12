@@ -30,7 +30,8 @@ if _AUTOMATIONS_DIR not in sys.path:
 from _shared import config
 from _shared.llm_client import LLMClient
 from _shared.telegram_client import TelegramClient
-from daily_planner.notion_client import NotionClient
+from _shared.notion_client import NotionClient
+from _shared.alert_manager import AlertManager
 
 logging.basicConfig(
     level=logging.INFO,
@@ -102,23 +103,17 @@ def generate_today_plan(
         f"1. {intensity_guide}\n"
         "2. 전날의 '1가지'에서 미완료했거나 이어갈 내용이 있으면 오늘 첫 블록에 배치\n"
         "3. 주간 목표 달성을 위해 오늘 기여할 수 있는 항목 1개 이상 포함\n"
-        "4. 타임블록은 90분~2시간 단위 (울트라디안 리듬 기준)\n"
-        "5. 현실적인 양만 계획 — 과부하 금지\n"
-        "6. 회고 섹션은 작성하지 않음 (저녁에 지훈님이 직접 작성)\n"
-        "7. 한국어로 작성\n\n"
-        "출력 형식:\n"
-        "## 🎯 오늘의 핵심 목표\n"
-        "1. (가장 중요 — 전날 흐름 이어가기)\n"
-        "2. (두 번째)\n"
-        "3. (세 번째, 선택적)\n\n"
-        "## ⏱️ 추천 타임라인\n"
-        "| 시간 | 활동 | 유형 |\n"
-        "|------|------|------|\n"
-        "| 09:00~11:00 | ... | 🔨 Deep Work |\n\n"
-        "## 📝 오늘의 1가지 (제안)\n"
-        "(오늘 하루 단 하나만 한다면 이것 — Daily Log에 기록할 내용)\n\n"
-        "## ⚠️ 주의사항\n"
-        "(선행 조건, 준비물, 리스크 등 간략히)"
+        "4. 오직 아래 지정된 템플릿 구조와 마크다운 형식만 사용하여 출력하세요. 불필요한 인사말이나 부연 설명은 절대 금지합니다.\n\n"
+        "출력 형식 (이 구조를 그대로 복사해서 사용하세요):\n"
+        "- 오늘의 할 일 Top 3\n"
+        "    - [ ] \n"
+        "    - [ ] \n"
+        "    - [ ] \n"
+        "- 오늘 지키고 싶은 원칙 1가지:\n"
+        "- 회고\n"
+        "    - 배운 것:\n"
+        "    - 감사한 것:\n"
+        "    - 개선할 것 1가지:"
     )
 
     user_prompt = (
@@ -296,29 +291,8 @@ def run_evening_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
 
 
 def send_alert(telegram: Optional[TelegramClient], title: str, message: str):
-    """
-    치명적 장애 발생 시 Telegram으로 알림을 보내고,
-    네트워크 문제 등으로 Telegram 전송이 실패할 경우 Mac 로컬 알림을 띄웁니다.
-    """
-    logger.error(f"{title}\n{message}")
-    success = False
-    if telegram:
-        try:
-            success = telegram.send(f"{title}\n{message}")
-        except Exception:
-            pass
-
-    if not success:
-        try:
-            import subprocess
-            safe_msg = message.replace('"', '\\"').replace("'", "\\'")[:100]  # 너무 길면 Mac 알림이 잘림
-            safe_title = title.replace('"', '\\"')
-            subprocess.run([
-                "osascript", "-e",
-                f'display notification "{safe_msg}..." with title "{safe_title}"'
-            ], check=False)
-        except Exception as fallback_e:
-            logger.error(f"[Fallback] Mac 로컬 알림 띄우기 실패: {fallback_e}")
+    """치명적 장애 발생 시 AlertManager를 통해 통합 알림을 발송합니다."""
+    AlertManager().send_critical_alert(title, message)
 
 
 def main():

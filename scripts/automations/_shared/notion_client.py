@@ -23,9 +23,7 @@ import requests
 from pathlib import Path
 from typing import Optional
 
-# 상대 import 대신 sys.path로 공통 모듈 접근 (실행 방식 무관하게 동작)
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from _shared import config
+from . import config
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +106,78 @@ class NotionClient:
 
         except Exception as e:
             logger.error(f"[Notion] 어제 기록 조회 실패: {e}")
+            return []
+
+    # ------------------------------------------------------------------
+    def get_last_week_logs(self) -> list:
+        """
+        지난 7일간의 Daily Log 기록을 가져옵니다.
+        Weekly Planner에서 한 주간의 요약을 위해 사용합니다.
+        """
+        today = datetime.date.today()
+        # 지난 7일 (월~일)
+        start_date = (today - datetime.timedelta(days=7)).isoformat()
+        end_date = (today - datetime.timedelta(days=1)).isoformat()
+        
+        try:
+            resp = requests.post(
+                f"{NOTION_BASE_URL}/databases/{self._daily_db_id}/query",
+                headers=self._headers,
+                json={
+                    "filter": {
+                        "and": [
+                            {
+                                "property": self._prop_date,
+                                "date": {"on_or_after": start_date}
+                            },
+                            {
+                                "property": self._prop_date,
+                                "date": {"on_or_before": end_date}
+                            }
+                        ]
+                    },
+                    "sorts": [
+                        {
+                            "property": self._prop_date,
+                            "direction": "ascending"
+                        }
+                    ]
+                },
+                timeout=15,
+            )
+            resp.raise_for_status()
+            results = resp.json().get("results", [])
+
+            records = []
+            for page in results:
+                props = page.get("properties", {})
+                title_raw = props.get(self._prop_title, {}).get("title", [])
+                title = "".join(t.get("plain_text", "") for t in title_raw)
+                
+                date_props = props.get(self._prop_date, {}).get("date", {})
+                page_date = date_props.get("start", "") if date_props else ""
+
+                condition = props.get("Condition", {}).get("number") or 0
+
+                one_thing_raw = props.get("오늘의 1가지", {}).get("rich_text", [])
+                one_thing = "".join(t.get("plain_text", "") for t in one_thing_raw)
+
+                tags_raw = props.get("태그", {}).get("multi_select", [])
+                tags = [t.get("name", "") for t in tags_raw]
+
+                records.append({
+                    "date": page_date,
+                    "title": title or "(제목 없음)",
+                    "condition": condition,
+                    "one_thing": one_thing,
+                    "tags": tags,
+                })
+
+            logger.info(f"[Notion] 지난 주({start_date}~{end_date}) Daily Log {len(records)}건 조회 완료")
+            return records
+
+        except Exception as e:
+            logger.error(f"[Notion] 지난 주 기록 조회 실패: {e}")
             return []
 
     # ------------------------------------------------------------------
@@ -246,6 +316,50 @@ class NotionClient:
             return ""
 
     # ------------------------------------------------------------------
+    def create_weekly_page(self, monday_str: str, plan_markdown: str, title_str: str) -> str:
+        """
+        Notion Weekly Database에 새로운 주간 페이지를 생성하고
+        계획 초안을 본문에 작성합니다.
+        """
+        weekly_db_id = config.get("NOTION_WEEKLY_DATABASE_ID")
+        if not weekly_db_id:
+            logger.error("[Notion] NOTION_WEEKLY_DATABASE_ID가 설정되지 않았습니다.")
+            return ""
+
+        try:
+            blocks = self._markdown_to_blocks(plan_markdown)
+
+            payload = {
+                "parent": {"database_id": weekly_db_id},
+                "properties": {
+                    "이름": {
+                        "title": [
+                            {"text": {"content": title_str}}
+                        ]
+                    },
+                    "Week": {
+                        "date": {"start": monday_str}
+                    },
+                },
+                "children": blocks[:100],
+            }
+
+            resp = requests.post(
+                f"{NOTION_BASE_URL}/pages",
+                headers=self._headers,
+                json=payload,
+                timeout=20,
+            )
+            resp.raise_for_status()
+            page_url = resp.json().get("url", "")
+            logger.info(f"[Notion] 주간 페이지 생성 완료: {page_url}")
+            return page_url
+
+        except Exception as e:
+            logger.error(f"[Notion] 주간 페이지 생성 실패: {e}")
+            return ""
+
+    # ------------------------------------------------------------------
     def append_markdown_to_page(self, page_id: str, markdown: str) -> bool:
         """기존 Notion 페이지에 마크다운 내용을 블록으로 추가합니다."""
         try:
@@ -274,63 +388,82 @@ class NotionClient:
     def _markdown_to_blocks(markdown: str) -> list:
         """
         마크다운 텍스트를 Notion 블록 리스트로 변환합니다.
-        지원: heading_1/2/3, bulleted_list, numbered_list, divider, paragraph
-
-        제한사항:
-          - 테이블(|...|)은 Notion 블록 API와 구조가 달라 paragraph로 처리
-          - 중첩 리스트는 단일 레벨로 평탄화
-          - 2000자 초과 라인은 앞부분만 사용 (Notion 블록 텍스트 제한)
+        지원: heading_1/2/3, bulleted_list, numbered_list, to_do, divider, paragraph
+        들여쓰기(Indent)에 따라 하위 블록(children)으로 중첩 처리합니다.
         """
-        blocks = []
-        numbered_counter = 0
+        root_blocks = []
+        stack = [(-1, root_blocks, None)] # (indent, block_list, parent_block)
 
         for line in markdown.split("\n"):
-            stripped = line.strip()
-
-            if not stripped:
-                numbered_counter = 0  # 빈 줄에서 번호 리스트 카운터 리셋
+            if not line.strip():
                 continue
 
-            # Notion rich_text content 최대 2000자 제한
+            stripped = line.lstrip()
+            indent = len(line) - len(stripped)
             content = stripped[:2000]
 
+            # 블록 타입 판별
             if stripped.startswith("# "):
-                numbered_counter = 0
-                blocks.append(_block("heading_1", content[2:]))
+                block = _block("heading_1", content[2:].strip())
             elif stripped.startswith("## "):
-                numbered_counter = 0
-                blocks.append(_block("heading_2", content[3:]))
+                block = _block("heading_2", content[3:].strip())
             elif stripped.startswith("### "):
-                numbered_counter = 0
-                blocks.append(_block("heading_3", content[4:]))
+                block = _block("heading_3", content[4:].strip())
             elif stripped == "---":
-                numbered_counter = 0
-                blocks.append({"object": "block", "type": "divider", "divider": {}})
+                block = {"object": "block", "type": "divider", "divider": {}}
+            elif stripped.startswith("- [ ] "):
+                block = _block("to_do", content[6:].strip())
+                block["to_do"]["checked"] = False
+            elif stripped.startswith("- [x] ") or stripped.startswith("- [X] "):
+                block = _block("to_do", content[6:].strip())
+                block["to_do"]["checked"] = True
             elif stripped.startswith("- ") or stripped.startswith("* "):
-                numbered_counter = 0
-                blocks.append(_block("bulleted_list_item", content[2:]))
+                block = _block("bulleted_list_item", content[2:].strip())
             elif len(stripped) >= 3 and stripped[0].isdigit() and stripped[1] in ".)" and stripped[2] == " ":
-                # 번호 목록 (1. 또는 1))
-                numbered_counter += 1
-                blocks.append(_block("numbered_list_item", content[3:]))
-            elif stripped.startswith("|"):
-                # 마크다운 테이블 → paragraph (Notion 테이블 블록은 별도 API 필요)
-                numbered_counter = 0
-                if not stripped.startswith("|---"):  # 구분선 제외
-                    blocks.append(_block("paragraph", content))
+                block = _block("numbered_list_item", content[3:].strip())
             elif stripped.startswith(">"):
-                # 인용문
-                numbered_counter = 0
-                blocks.append(_block("quote", content.lstrip("> ").strip()))
-            elif stripped.startswith("```"):
-                # 코드블록 시작/끝 마커는 건너뜀 (인라인 코드만 처리)
-                numbered_counter = 0
+                block = _block("quote", content.lstrip("> ").strip())
+            elif stripped.startswith("|") and not stripped.startswith("|---"):
+                block = _block("paragraph", content)
+            elif stripped.startswith("```") or stripped.startswith("|---"):
+                continue  # ignore fences and table separators
             else:
-                numbered_counter = 0
-                blocks.append(_block("paragraph", content))
+                block = _block("paragraph", content)
 
-        return blocks
+            # 스택을 사용해 들여쓰기 레벨 맞추기
+            while len(stack) > 1 and indent <= stack[-1][0]:
+                stack.pop()
 
+            parent_list = stack[-1][1]
+            parent_block = stack[-1][2]
+            
+            # Notion 제약: heading 등은 children을 가질 수 없는 경우가 있으나
+            # list_item과 to_do, paragraph 등은 가능.
+            if parent_block and parent_block["type"] not in ["bulleted_list_item", "numbered_list_item", "to_do", "paragraph"]:
+                # 부모가 하위 요소를 가질 수 없는 블록이면 그냥 최상단에 추가
+                root_blocks.append(block)
+                stack = [(-1, root_blocks, None)]
+                stack.append((indent, block.setdefault(block["type"], {}).setdefault("children", []), block))
+            else:
+                parent_list.append(block)
+                # 현재 블록을 스택에 추가 (하위 요소를 가질 수 있도록)
+                children_list = block[block["type"]].setdefault("children", []) if block["type"] != "divider" else None
+                if children_list is not None:
+                    stack.append((indent, children_list, block))
+
+        # 후처리: 빈 children 배열 제거 로직
+        def clean_children(blocks):
+            for b in blocks:
+                t = b.get("type")
+                if t and t in b:
+                    if "children" in b[t]:
+                        if not b[t]["children"]:
+                            del b[t]["children"]
+                        else:
+                            clean_children(b[t]["children"])
+        
+        clean_children(root_blocks)
+        return root_blocks
 
 def _block(block_type: str, text: str) -> dict:
     """Notion 블록 딕셔너리를 생성하는 헬퍼."""

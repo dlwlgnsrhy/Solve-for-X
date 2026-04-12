@@ -49,7 +49,7 @@ class LLMClient:
         use_external: bool = False,
         max_tokens: int = 2000,
         temperature: float = 0.3,
-        timeout: int = 120,
+        timeout: tuple = (10, 180),
     ) -> Optional[str]:
         """
         LLM에 질문하고 텍스트 응답을 반환합니다.
@@ -85,26 +85,35 @@ class LLMClient:
         if api_key and not api_key.startswith("<"):
             headers["Authorization"] = f"Bearer {api_key}"
 
-        try:
-            logger.info(f"[LLM] {label} 호출 중... (max_tokens={max_tokens})")
-            response = requests.post(
-                url,
-                data=json.dumps(payload),
-                headers=headers,
-                timeout=timeout,
-            )
-            response.raise_for_status()
-            content = response.json()["choices"][0]["message"]["content"]
-            logger.info(f"[LLM] {label} 응답 완료 ({len(content)}자)")
-            return content
-        except requests.exceptions.ConnectionError:
-            logger.error(f"[LLM] {label} 연결 실패 — 서버가 실행 중인지 확인하세요.")
-        except requests.exceptions.Timeout:
-            logger.error(f"[LLM] {label} 타임아웃 ({timeout}초 초과)")
-        except KeyError:
-            logger.error(f"[LLM] {label} 응답 형식 오류 — 예상치 못한 JSON 구조")
-        except Exception as e:
-            logger.error(f"[LLM] {label} 오류: {e}")
+        import time
+        max_retries = 3
+        retry_delay = 5  # 초
+
+        for attempt in range(1, max_retries + 1):
+            try:
+                logger.info(f"[LLM] {label} 호출 중... (시도 {attempt}/{max_retries}, max_tokens={max_tokens})")
+                response = requests.post(
+                    url,
+                    data=json.dumps(payload),
+                    headers=headers,
+                    timeout=timeout,
+                )
+                response.raise_for_status()
+                content = response.json()["choices"][0]["message"]["content"]
+                logger.info(f"[LLM] {label} 응답 완료 ({len(content)}자)")
+                return content
+            except requests.exceptions.ConnectionError:
+                logger.warning(f"[LLM] {label} 연결 실패 (시도 {attempt}/{max_retries})")
+            except requests.exceptions.Timeout:
+                logger.warning(f"[LLM] {label} 타임아웃 (시도 {attempt}/{max_retries})")
+            except Exception as e:
+                logger.error(f"[LLM] {label} 기타 오류: {e}")
+                break  # 기타 오류는 재시도 없이 중단
+            
+            if attempt < max_retries:
+                time.sleep(retry_delay * attempt)  # 지수 백어프
+
+        logger.error(f"[LLM] {label} 최종 호출 실패 (총 {max_retries}회 시도)")
         return None
 
     # ------------------------------------------------------------------
