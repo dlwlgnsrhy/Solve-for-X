@@ -216,6 +216,12 @@ def generate_evening_retrospective(
 
 def run_morning_routine(notion: NotionClient, llm: LLMClient, telegram: TelegramClient, today_str: str):
     logger.info("🌅 [아침 루틴] 오늘의 계획 생성 시작")
+    
+    # 중복 실행 방지
+    if notion.get_today_page_id():
+        logger.info(f"⏭️ 이미 오늘({today_str})의 계획 페이지가 Notion에 존재합니다. 중복 생성을 막기 위해 종료합니다.")
+        return
+
     telegram.send(f"☀️ [Daily Planner] {today_str} 오늘의 계획 초안을 생성합니다...")
 
     yesterday_str = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")

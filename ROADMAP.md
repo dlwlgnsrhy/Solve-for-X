@@ -18,15 +18,17 @@
 - [x] PostgreSQL 기반 `Legacy_Core` DDL(자산, 기억, 가치관 테이블) 스키마 설계
 - [x] 공통 API 인터페이스 설계 및 구현 (`libs/` 및 Controller 계층)
 - [x] Git Commit 메시지 파싱 및 AI Agent(상시 동작) 연동을 통한 기술 블로그 초안 자동 전송 파이프라인 구축
+- [x] 스마트 링(삼성 헬스) 바이오 데이터 연동(Option B: MacroDroid UI 스크래핑) 기반 Daily Planner 맞춤형 생성기 도입
 
 ## 📌 Phase 3: Finance & Memory Modules (7월~8월)
 *방향: 가장 비싼 '수동 시간'을 대체할 핵심 알고리즘 시각화 및 데이터 수집*
-- [ ] **Finance Module:** 무한매수법 대시보드 (자동 매수 내역, 통계, 확률적 비중 조절 시뮬레이션 모니터링)
-- [ ] **Memory Module:** 멀티모달(텍스트, 음성, 사진) 생애 서사(Context) 데이터 수집용 Life-Log 앱 (Flutter 기반 MVP)
-- [ ] AI 모델(로컬/원격 혼합)을 활용한 일관된 '생애 서사' 요약/태깅 프로세스 적용
+- [ ] **Finance Module (SFX Finance):** 주식/금융 API 기반 무한매수법 대시보드. 대외 서비스보다는 지훈님 '개인 내부 무인 공장' 인프라로만 유지 및 고도화.
+- [ ] **Memory Module (SFX Life-Log):** 수면/생체/감정 컨텍스트 데이터 수집 센서. 개발자 관점에서 Android Health Connect API 정규 연동을 통한 바이오 데이터 수집(Zero-Touch) 파이프라인 개통.
+- [ ] **Knowledge Target (SFX Career Vault):** 매일의 학습 내용/커밋을 융합하여 여러 지식 플랫폼(Medium, GitHub 등)으로 이식 가능한 범용 지식 퍼블리싱 브릿지 엔진 구축.
 
 ## 📌 Phase 4: Branding & SRE Audit (9월~10월)
 *방향: 완성된 무인 공장의 안정성(Reliability) 확보 및 외부 확산*
+- [ ] **SFX Imjong Care (MZ 대상의 긍정적 유서앱 트렌드):** 무거운 임종의 느낌을 벗고 하루를 돌아보며 디지털 메세지를 남기는 소셜 앱 형태의 실험적 프로덕트 기획.
 - [ ] 시스템 구축 및 무인 공장 자동화 성공 사례를 묶어 "How to Build a Legacy with AI" 기술 백서(PDF) 발행 및 LinkedIn 배포
 - [ ] 구글 SRE 기준에 맞춘 아키텍처 안정성 자가 진단 (99.9% 가동률 목표)
 - [ ] 인프라 성능/비용 최적화 및 보안 아키텍처 점검
