@@ -48,6 +48,19 @@ def get_roadmap_context() -> str:
         return roadmap_path.read_text(encoding="utf-8")[:3000]
     return "(ROADMAP.md를 찾을 수 없습니다)"
 
+def get_today_health(today_str: str) -> Optional[dict]:
+    health_path = REPO_PATH / "docs" / "daily_health.json"
+    if health_path.exists():
+        try:
+            import json
+            with open(health_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if data.get("date") == today_str:
+                return data
+        except Exception as e:
+            logger.error(f"[Planner] 헬스 데이터 읽기 실패: {e}")
+    return None
+
 
 def generate_today_plan(
     yesterday_log: List[dict],
@@ -62,22 +75,31 @@ def generate_today_plan(
     """
     # 전날 기록 요약
     if yesterday_log:
-        yd = yesterday_log[0]  # 보통 하루 1건
-        yesterday_date = yd.get("date", "")
-        condition = yd.get("condition", 0)
+        yd = yesterday_log[0]
         one_thing = yd.get("one_thing", "")
-        tags = ", ".join(yd.get("tags", [])) or "없음"
-        condition_emoji = "🟢" if condition >= 7 else "🟡" if condition >= 4 else "🔴"
-
-        yesterday_summary = (
-            f"날짜: {yesterday_date}\n"
-            f"컨디션: {condition_emoji} {condition}/10\n"
-            f"어제의 1가지: {one_thing or '(미작성)'}\n"
-            f"태그: {tags}"
-        )
+        yesterday_summary = f"어제의 1가지: {one_thing or '(미작성)'}\n"
     else:
-        yesterday_summary = "(전날 Daily Log 기록 없음 — 로드맵 기준으로만 계획)"
-        condition = 5  # 기본값
+        yesterday_summary = "(전날 Daily Log 기록 없음)\n"
+
+    # 스마트폰 헬스 데이터(수면 점수) 확인
+    health_data = get_today_health(today_str)
+    condition_score = 70 # 기본값 (보통)
+    health_context = ""
+    
+    if health_data:
+        condition_score = health_data.get("sleep_score", 70)
+        duration = health_data.get("sleep_duration", "알수없음")
+        health_context = f"\n=== 스마트 링 수면 측정 결과 ===\n총 수면 시간: {duration}\n수면 점수: {condition_score}점 (100점 만점)"
+    else:
+        health_context = "\n(오늘의 수면 데이터가 아직 도착하지 않았습니다 - 기본 컨디션으로 계획합니다.)"
+
+    # 컨디션(100점 만점)에 따라 계획 강도 조정 지시
+    if condition_score < 60:
+        intensity_guide = f"수면 점수가 {condition_score}점으로 방전 상태입니다. 오늘은 핵심 태스크 1개와 가벼운 업무, 휴식 위주로 방어적인 계획을 짜세요."
+    elif condition_score >= 85:
+        intensity_guide = f"수면 점수가 {condition_score}점입니다. 사자같이 뛰어나네요! Deep Work 비중을 공격적으로 늘리고 도전적인 과제를 배치하세요."
+    else:
+        intensity_guide = f"수면 점수가 {condition_score}점으로 평이합니다. Deep Work 1블록과 가벼운 작업으로 균형 있게 구성하세요."
 
     # 주간 목표 컨텍스트
     week_context = ""
@@ -88,17 +110,9 @@ def generate_today_plan(
             f"다음 행동: {week_summary.get('next_first_action', '(없음)')}"
         )
 
-    # 컨디션에 따라 계획 강도 조정 지시
-    if condition <= 3:
-        intensity_guide = "컨디션이 낮으므로 오늘은 1~2개 핵심 태스크만 계획하고 나머지는 버퍼로 남겨두세요."
-    elif condition >= 8:
-        intensity_guide = "컨디션이 높으니 Deep Work 블록을 최우선 배치하고 집중이 필요한 작업을 앞에 넣으세요."
-    else:
-        intensity_guide = "적당한 컨디션이므로 Deep Work 1블록 + 가벼운 작업으로 균형 있게 구성하세요."
-
     system_prompt = (
-        "당신은 1인 개발자 레거시 설계자의 생산성 코치입니다.\n"
-        "전날 Daily Log와 주간 목표를 참고하여 오늘 하루의 실행 계획 초안을 작성합니다.\n\n"
+        "당신은 1인 개발자 레거시 설계자의 스마트한 생산성 코치입니다.\n"
+        "수집된 수면/헬스 데이터와 어제 기록, 주간 목표를 종합하여 오늘 하루의 실행 계획 초안을 작성합니다.\n\n"
         "규칙:\n"
         f"1. {intensity_guide}\n"
         "2. 전날의 '1가지'에서 미완료했거나 이어갈 내용이 있으면 오늘 첫 블록에 배치\n"
@@ -118,6 +132,7 @@ def generate_today_plan(
 
     user_prompt = (
         f"오늘 날짜: {today_str}\n\n"
+        f"{health_context}\n\n"
         f"=== 전날 Daily Log ===\n{yesterday_summary}\n"
         f"{week_context}\n\n"
         f"=== 프로젝트 로드맵 ===\n{roadmap[:2000]}\n\n"
@@ -133,11 +148,11 @@ def generate_today_plan(
             max_tokens=1200,
             temperature=0.4,
         )
+        # 계획 리턴 시 헬스 데이터 여부도 함께 넘김 (이후 Notion 속성 업데이트를 위해)
+        return plan or "(계획 생성 실패 — 로그를 확인하세요)", condition_score
     except Exception as e:
         logger.error(f"[Planner] 계획 생성 중 예외 발생: {e}")
-        plan = None
-        
-    return plan or "(계획 생성 실패 — 로그를 확인하세요)"
+        return "(계획 생성 실패 — 로그를 확인하세요)", 70
 
 
 def get_git_commits_today() -> str:
@@ -217,15 +232,18 @@ def run_morning_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
     week_summary = notion.get_week_summary()
 
     roadmap = get_roadmap_context()
-    plan_md = generate_today_plan(yesterday_log, roadmap, llm, today_str, week_summary)
+    plan_md, condition_score = generate_today_plan(yesterday_log, roadmap, llm, today_str, week_summary)
 
     if "(계획 생성 실패" in plan_md:
         logger.error("[Planner] LLM 계획 생성 실패. 알림 발송 후 종료.")
         send_alert(telegram, "🚨 [Daily Planner 아침 장애]", "LLM(Gemma 31B) 연결 또는 토큰 오류로 인해 계획 초안을 생성하지 못했습니다. 노트북 상태나 네트워크를 확인해주세요.")
         return
 
-    logger.info("[Planner] Notion에 오늘 페이지 작성 중...")
-    page_url = notion.create_daily_page(today_str, plan_md)
+    logger.info(f"[Planner] Notion에 오늘 페이지 작성 중... (점수 기록: {condition_score})")
+    
+    # 템플릿과 노션_client를 고도화하여 condition_score 를 저장할 수도 있습니다
+    # 우선은 기존 포멧 대로 create_daily_page 인자로 넘겨 속성 업데이트를 꾀합니다
+    page_url = notion.create_daily_page(today_str, plan_md, condition_score)
     if not page_url:
         logger.error("[Planner] Notion 페이지 생성 실패. 알림 발송 후 종료.")
         send_alert(telegram, "🚨 [Daily Planner 아침 장애]", "Notion API 통신 실패 또는 권한 문제로 인해 페이지를 생성하지 못했습니다.")

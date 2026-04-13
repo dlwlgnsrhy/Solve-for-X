@@ -271,11 +271,13 @@ class NotionClient:
 
 
     # ------------------------------------------------------------------
-    def create_daily_page(self, date_str: str, plan_markdown: str) -> str:
+    def create_daily_page(self, date_str: str, plan_markdown: str, condition_score: int = 70) -> str:
         """
         Notion Database에 내일 날짜의 새 페이지를 생성하고
         계획 초안을 본문에 작성합니다.
-
+        
+        condition_score: 스마트 링으로 측정한 100점 만점 단위 수면 점수.
+        
         반환값: 생성된 페이지 URL (실패 시 빈 문자열)
         """
         try:
@@ -292,6 +294,9 @@ class NotionClient:
                     self._prop_date: {
                         "date": {"start": date_str}
                     },
+                    "Condition": {
+                        "number": condition_score
+                    }
                 },
                 "children": blocks[:100],  # Notion API: 1회 최대 100 블록
             }

@@ -58,15 +58,9 @@ cat <<EOF > "$PLIST_FILE"
         <string>ko_KR.UTF-8</string>
     </dict>
 
-    <!-- 매일 05:00(아침 계획), 18:00(저녁 회고) 2회 실행 -->
+    <!-- 18:00(저녁 회고) 1회 자동 실행. (아침 계획은 폰에서 Webhook 호출 시 비동기 실행됨) -->
     <key>StartCalendarInterval</key>
     <array>
-        <dict>
-            <key>Hour</key>
-            <integer>5</integer>
-            <key>Minute</key>
-            <integer>0</integer>
-        </dict>
         <dict>
             <key>Hour</key>
             <integer>18</integer>
@@ -94,10 +88,10 @@ launchctl unload "$PLIST_FILE" 2>/dev/null || true
 launchctl load "$PLIST_FILE"
 
 echo "--------------------------------------------------"
-echo "🎉 등록 완료! 1일 2회 (05:00, 18:00) 자동 실행됩니다."
+echo "🎉 등록 완료! (저녁 18:00 회고만 자동 실행됩니다.)"
 echo ""
-echo "  [05:00 아침 루틴]: 전날 기록 → 오늘 계획 노션에 생성"
-echo "  [18:00 저녁 루틴]: Git 커밋 분석 → 오늘자 노션에 회고 제안 추가"
+echo "  [아침 루틴]: 스마트폰에서 수면 헬스점수 Webhook 수신 시 자동 실행됨"
+echo "  [저녁 루틴]: Git 커밋 분석 → 오늘자 노션에 회고 제안 추가 (18:00)"
 echo "--------------------------------------------------"
 echo ""
 echo "수동 테스트: python3 \"$MAIN_SCRIPT\""
