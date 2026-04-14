@@ -48,20 +48,6 @@ def get_roadmap_context() -> str:
         return roadmap_path.read_text(encoding="utf-8")[:3000]
     return "(ROADMAP.md를 찾을 수 없습니다)"
 
-def get_today_health(today_str: str) -> Optional[dict]:
-    health_path = REPO_PATH / "docs" / "daily_health.json"
-    if health_path.exists():
-        try:
-            import json
-            with open(health_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            if data.get("date") == today_str:
-                return data
-        except Exception as e:
-            logger.error(f"[Planner] 헬스 데이터 읽기 실패: {e}")
-    return None
-
-
 def generate_today_plan(
     yesterday_log: List[dict],
     roadmap: str,
@@ -76,30 +62,38 @@ def generate_today_plan(
     # 전날 기록 요약
     if yesterday_log:
         yd = yesterday_log[0]
+        yesterday_date = yd.get("date", "")
+        
+        # 값이 없거나 예외인 경우 50점(보통)으로 처리
+        raw_condition = yd.get("condition")
+        try:
+            condition = int(raw_condition) if raw_condition is not None else 50
+        except ValueError:
+            condition = 50
+            
         one_thing = yd.get("one_thing", "")
-        yesterday_summary = f"어제의 1가지: {one_thing or '(미작성)'}\n"
-    else:
-        yesterday_summary = "(전날 Daily Log 기록 없음)\n"
+        tags = ", ".join(yd.get("tags", [])) or "없음"
+        
+        # 100점 만점 기준 이모지
+        condition_emoji = "🟢" if condition >= 70 else "🟡" if condition >= 40 else "🔴"
 
-    # 스마트폰 헬스 데이터(수면 점수) 확인
-    health_data = get_today_health(today_str)
-    condition_score = 70 # 기본값 (보통)
-    health_context = ""
-    
-    if health_data:
-        condition_score = health_data.get("sleep_score", 70)
-        duration = health_data.get("sleep_duration", "알수없음")
-        health_context = f"\n=== 스마트 링 수면 측정 결과 ===\n총 수면 시간: {duration}\n수면 점수: {condition_score}점 (100점 만점)"
+        yesterday_summary = (
+            f"날짜: {yesterday_date}\n"
+            f"컨디션: {condition_emoji} {condition}/100\n"
+            f"어제의 1가지: {one_thing or '(미작성)'}\n"
+            f"태그: {tags}"
+        )
     else:
-        health_context = "\n(오늘의 수면 데이터가 아직 도착하지 않았습니다 - 기본 컨디션으로 계획합니다.)"
+        yesterday_summary = "(전날 Daily Log 기록 없음 — 기본 컨디션(50점)으로 계획)"
+        condition = 50  # 기본값
 
     # 컨디션(100점 만점)에 따라 계획 강도 조정 지시
-    if condition_score < 60:
-        intensity_guide = f"수면 점수가 {condition_score}점으로 방전 상태입니다. 오늘은 핵심 태스크 1개와 가벼운 업무, 휴식 위주로 방어적인 계획을 짜세요."
-    elif condition_score >= 85:
-        intensity_guide = f"수면 점수가 {condition_score}점입니다. 사자같이 뛰어나네요! Deep Work 비중을 공격적으로 늘리고 도전적인 과제를 배치하세요."
+    if condition <= 30:
+        intensity_guide = f"컨디션이 낮음({condition}점)이므로 오늘은 1~2개 핵심 태스크만 계획하고 나머지는 버퍼로 남겨두세요."
+    elif condition >= 80:
+        intensity_guide = f"컨디션이 높음({condition}점)이므로 Deep Work 블록을 최우선 배치하고 집중이 필요한 작업을 앞에 넣으세요."
     else:
-        intensity_guide = f"수면 점수가 {condition_score}점으로 평이합니다. Deep Work 1블록과 가벼운 작업으로 균형 있게 구성하세요."
+        intensity_guide = f"적당한 컨디션({condition}점)이므로 Deep Work 1블록 + 가벼운 작업으로 균형 있게 구성하세요."
 
     # 주간 목표 컨텍스트
     week_context = ""
@@ -112,7 +106,7 @@ def generate_today_plan(
 
     system_prompt = (
         "당신은 1인 개발자 레거시 설계자의 스마트한 생산성 코치입니다.\n"
-        "수집된 수면/헬스 데이터와 어제 기록, 주간 목표를 종합하여 오늘 하루의 실행 계획 초안을 작성합니다.\n\n"
+        "어제 기록과 주간 목표를 종합하여 오늘 하루의 실행 계획 초안을 작성합니다.\n\n"
         "규칙:\n"
         f"1. {intensity_guide}\n"
         "2. 전날의 '1가지'에서 미완료했거나 이어갈 내용이 있으면 오늘 첫 블록에 배치\n"
@@ -132,7 +126,6 @@ def generate_today_plan(
 
     user_prompt = (
         f"오늘 날짜: {today_str}\n\n"
-        f"{health_context}\n\n"
         f"=== 전날 Daily Log ===\n{yesterday_summary}\n"
         f"{week_context}\n\n"
         f"=== 프로젝트 로드맵 ===\n{roadmap[:2000]}\n\n"
@@ -140,6 +133,7 @@ def generate_today_plan(
     )
 
     logger.info(f"[Planner] 외부 Gemma 31B로 오늘 계획 생성 중...")
+    plan = None
     try:
         plan = llm.ask(
             user_prompt=user_prompt,
@@ -148,11 +142,26 @@ def generate_today_plan(
             max_tokens=1200,
             temperature=0.4,
         )
-        # 계획 리턴 시 헬스 데이터 여부도 함께 넘김 (이후 Notion 속성 업데이트를 위해)
-        return plan or "(계획 생성 실패 — 로그를 확인하세요)", condition_score
     except Exception as e:
-        logger.error(f"[Planner] 계획 생성 중 예외 발생: {e}")
-        return "(계획 생성 실패 — 로그를 확인하세요)", 70
+        logger.error(f"[Planner] 외부 계획 생성 중 예외 발생: {e}")
+
+    if not plan:
+        logger.warning("[Planner] 외부 LLM 3회 실패 -> 로컬 Qwen 14B로 Fallback 시도")
+        try:
+            plan = llm.ask(
+                user_prompt=user_prompt,
+                system_prompt=system_prompt,
+                use_external=False,
+                max_tokens=1200,
+                temperature=0.4,
+            )
+            if plan:
+                plan += "\n\n> ⚠️ **Fallback Notice**: 외부 파이프라인 (Gemma 31B) 통신 무응답으로 인해, 로컬 서버 (Qwen 14B)로 자동 전환(Fallback)되어 생성된 계획입니다."
+        except Exception as e:
+            logger.error(f"[Planner] 로컬 계획 생성 중 예외 발생: {e}")
+
+    # 계획 리턴 시 현재 컨디션도 함께 넘김 (이후 Notion 속성 업데이트를 위해)
+    return plan or "(계획 생성 실패 — 로그를 확인하세요)", condition
 
 
 def get_git_commits_today() -> str:
@@ -199,6 +208,7 @@ def generate_evening_retrospective(
     )
 
     logger.info("[Planner] 외부 Gemma 31B로 저녁 회고 제안 생성 중...")
+    retro = None
     try:
         retro = llm.ask(
             user_prompt=user_prompt,
@@ -208,8 +218,22 @@ def generate_evening_retrospective(
             temperature=0.4,
         )
     except Exception as e:
-        logger.error(f"[Planner] 회고 생성 중 예외 발생: {e}")
-        retro = None
+        logger.error(f"[Planner] 외부 회고 생성 중 예외 발생: {e}")
+
+    if not retro:
+        logger.warning("[Planner] 외부 LLM 3회 실패 -> 로컬 Qwen 14B로 회고 Fallback 시도")
+        try:
+            retro = llm.ask(
+                user_prompt=user_prompt,
+                system_prompt=system_prompt,
+                use_external=False,
+                max_tokens=800,
+                temperature=0.4,
+            )
+            if retro:
+                retro += "\n\n> ⚠️ **Fallback Notice**: 외부 파이프라인 무응답으로 인해, 로컬 서버(Qwen 14B)를 사용하여 강제 생성된 회고입니다."
+        except Exception as e:
+            logger.error(f"[Planner] 로컬 회고 생성 중 예외 발생: {e}")
         
     return retro or "(회고 제안 생성 실패 — 로그를 확인하세요)"
 
