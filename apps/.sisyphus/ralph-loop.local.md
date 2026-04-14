@@ -1,23 +1,38 @@
 ---
 active: true
-iteration: 18
+iteration: 1
 completion_promise: "DONE"
 initial_completion_promise: "DONE"
-started_at: "2026-04-14T12:59:23.194Z"
-session_id: "ses_27488c6f6ffeaDcKAbxW7gbVXM"
+started_at: "2026-04-14T23:20:58.794Z"
+session_id: "ses_271b3b1bcffeMeFYuxk6coS9Nz"
 ultrawork: true
 strategy: "continue"
-message_count_at_start: 89
+message_count_at_start: 1
 ---
-당신은 시니어 Flutter 아키텍트입니다. 지금부터 apps/life_log_app 폴더 내에 수면 데이터를 수집/전송하는 앱의 클라이언트 파트 전체(App 1-FE)를 단숨에 구현합니다.
+`apps/life_log_v2_premium` 폴더에 SFX Life-Log Flutter 앱 V2를 처음부터 구현하라.
 
-[기술 스택]
+**[SERVICE PURPOSE]**
+SFX Life-Log는 **성취 지향 직장인·개발자**를 위한 **AI 기반 데일리 플래너 앱**이다.
 
-Clean Architecture (Data, Domain, Presentation)
-Riverpod (상태관리), Dio (네트워크), health ^13.2.0 (수면 데이터 접근)
-[구현 명세]
+**핵심 포지셔닝:**
+Samsung Health·Apple Health 등 기존 헬스 앱은 "몸 상태를 보여주는 앱"이다.
+SFX Life-Log는 다르다. "유저가 30초 체크인으로 자신의 컨디션을 입력하면, AI가 오늘 하루 업무 강도와 스케줄을 자동으로 설계해주는 앱"이다.
 
-인프라: pubspec.yaml 및 안드로이드 AndroidManifest.xml에 Health Connect와 인터넷 권한을 완벽히 세팅하고 FlutterFragmentActivity 설정까지 완료하세요.
-Data Layer: HealthRepository를 구현해 어제의 수면 데이터를 가져오고, PlannerApiClient를 구현해 Dio를 통해 http://192.168.45.61:8080/api/health/sleep 으로 데이터를 쏘는 로직을 작성하세요.
-Presentation Layer: DashboardScreen을 만들고, 화면 한가운데에 로직을 트리거할 커다란 [AI 플래너 동기화] 버튼을 하나 만드세요. 상태관리는 Riverpod을 사용하세요.
-VRAM 한계 내에서 최대한 완성도 높게 위 3가지 도메인을 아우르는 파일들을 한 번의 턴출력(Generation)으로 작성하고, 필요한 명령(flutter pub get 등)을 구동하세요."
+**왜 수동 입력인가:**
+Samsung Health·Apple Health API는 파트너십 심사가 필요해 범용 MVP에 부적합하다.
+수동 입력(슬라이더·별점·이모지)으로 30초 안에 간편하게 컨디션을 기록하는 것이 이 앱의 UX 핵심이다.
+
+**타겟 유저:** 루틴을 중요하게 여기는 고성과 직장인, 개발자, 스타트업 창업자.
+
+**핵심 차별점:**
+- **30초 체크인**: 타이핑 없이 슬라이더·별점·이모지 탭으로 빠르게 컨디션 입력.
+- **AI 플래너 자동 설계**: 입력된 컨디션 데이터를 기반으로 오늘의 최적 스케줄과 업무 강도를 AI가 자동 결정.
+- **생산성 도구 연동**: Notion·Calendar 등 실제 업무 도구에 결과를 자동 반영. (Phase 2)
+
+**슬로건:** *"30초 체크인으로 AI가 오늘 하루를 설계합니다."*
+
+**V2 MVP 범위 (Phase 1):**
+아침 체크인 UI(수동 입력) → 입력값 JSON → 백엔드 POST 전송.
+UI는 상용 앱 최고급 퀄리티로 구현. (기기 자동 연동·Notion 발행은 Phase 2)
+
+**개발 백엔드 (임시):** `http://192.168.45.61:8080/api/health/daily-checkin` (Phase 1 로컬 서버)
