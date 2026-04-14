@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<<manifestmanifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <<usesuses-permission android:name="android.permission.INTERNET" />
+    <<usesuses-permission android:name="android.permission.health.READ_SLEEP" />
+    <<usesuses-permission android:name="android.permission.health.WRITE_SLEEP" />
+
+    <<applicationapplication
+        android:label="life_log_app"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher">
+        <<activityactivity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <<metameta-data
+               android:name="io.flutter.embedding.android.NormalTheme"
+               android:resource="@style/NormalTheme"
+               />
+            <<intentintent-filter>
+                <<actionaction android:name="android.intent.action.MAIN"/>
+                <<categorycategory android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <<intentintent-filter>
+                <<actionaction android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+        </activity>
+        <<metameta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+    <<queriesqueries>
+        <<packagepackage android:name="com.google.android.apps.healthdata" />
+        <<intentintent>
+            <<actionaction android:name="android.intent.action.PROCESS_TEXT"/>
+            <<datadata android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+</manifest>

@@ -14,6 +14,7 @@ import json
 from pathlib import Path
 from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 _AUTOMATIONS_DIR = str(Path(__file__).parent.parent)
 if _AUTOMATIONS_DIR not in sys.path:
@@ -28,6 +29,14 @@ REPO_PATH = Path(__file__).parent.parent.parent.parent
 HEALTH_JSON_PATH = REPO_PATH / "docs" / "daily_health.json"
 
 app = FastAPI(title="Soluni Health Receiver Webhook Server")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class SleepData(BaseModel):
     score: str = ""
