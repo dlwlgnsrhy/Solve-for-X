@@ -1,6 +1,6 @@
-# omo 투입용 단계별 프롬프트 — SFX Life-Log V3 (Step-by-Step)
+# omo 투입용 단계별 프롬프트 — SFX Life-Log V3 (Step-by-Step + Skills)
 
-로컬 양자화 모델(Gemma 4-bit)의 출력 한계를 고려하여, 앱 전체 생성을 5단계로 쪼갰습니다.
+로컬 양자화 모델(Gemma 4-bit)의 출력 한계를 고려하여, 앱 전체 생성을 쪼개고 **omo의 내장 스킬(Built-in Skills)**을 적극 활용하는 구조입니다.
 `opencode` 세션에 아래 **Step 1부터 순서대로** 복사+붙여넣기 하십시오. omo가 답변을 완료(성공)하면 다음 Step을 넣으세요.
 
 ---
@@ -53,13 +53,50 @@ UI와 통신 로직을 이어줄 Riverpod 상태 관리를 구현하라.
 
 ---
 
-## 🟢 Step 4: 메인 체크인 UI 구현 (프리미엄 블러 효과)
+## 🟢 Step 4: 메인 체크인 UI 구현 (프리미엄 블러 효과) - 🎨 `frontend-ui-ux` 스킬 활용
 
 **[TASK]**
-사용자가 입력할 수 있는 아침 체크인 메인 화면을 구현하라.
+사용자가 입력할 수 있는 아침 체크인 메인 화면을 구현하라. (주의: `frontend-ui-ux` 스킬을 로드하여 디자인 전문가의 관점에서 코드를 작성하라.)
 
 **[MUST DO]**
 1. `lib/presentation/screens/checkin_screen.dart` 파일을 생성하라. (ConsumerStatefulWidget 사용)
+2. 전체 화면 배경은 짙은 남색~검정 그라데이션.
+3. 메인 입력 카드는 Glassmorphism 스타일(BackdropFilter blur(12, 12), 테두리 반투명 흰색)로 제작하라.
+4. 모닝 체크인 입력 항목 (수면 점수 없음):
+   - 에너지 레벨: 터치 가능한 별 아이콘 5개 `Row`
+   - 기분: 이모지 5개 탭 선택 (`😴 😐 🙂 😊 🔥`) 
+   - 집중 모드: `ChoiceChip` 3개 `[Deep Work] [미팅 모드] [가벼운 업무]`
+5. 화면 하단에 Action 버튼 (보라~파랑 그라데이션 배경, 글자 "AI 플래너 시작")
+6. `checkinProvider`의 상태가 `loading`일 때는 Action 버튼 위치에 `CircularProgressIndicator`를 보여주어라.
+7. 버튼을 누르면 위 화면에서 모은 값을 `CheckinData`에 담아 Provider의 `submitCheckin()`을 호출하라. `success` 상태가 되면 SnackBar를 띄워라.
+8. 코드가 매우 길어질 수 있다. 한 번에 잘 만들어라. 
+9. 작성 후 `flutter analyze` 필수.
+
+---
+
+## 🟢 Step 5: 앱 와이어링 및 마무리
+
+**[TASK]**
+`main.dart`를 작성하여 모든 컴포넌트를 연결하고 앱을 실행 가능하게 만들어라.
+
+**[MUST DO]**
+1. `lib/main.dart` 기존 파일을 덮어쓰기 하라.
+2. `ProviderScope`로 전체 앱을 감싸라.
+3. `plannerApiClientProvider`, `checkinNotifierProvider` (StateNotifierProvider) 등 2개의 Riverpod Provider를 `main.dart` 상단에 전역으로 선언하라.
+4. `MaterialApp` 속성의 테마에 다크 테마 적용 및 기본 폰트를 적용하라 (`google_fonts` 패키지 활용).
+5. `home` 을 방금 만든 `CheckinScreen()` 으로 연결하라.
+6. 마지막으로 패키지 전체 폴더 단위로 `flutter analyze` 를 실행해 에러 수를 보고하라.
+
+---
+
+## 🔎 Step 6: 종합 리뷰 및 QA - 🤖 `review-work` 스킬 발동
+
+> 위 단계들이 모두 완료되고 앱이 정상 실행되면, `opencode` 세션에 아래 명령어 한 줄만 입력하세요.
+
+**[입력어]**
+review my work
+
+*(설명: 이 명령어를 입력하면 omo의 내장 `review-work` 스킬이 발동하여 5개의 에이전트(목표 검증, QA, 코드 리뷰, 보안, 컨텍스트 마이닝)가 병렬로 생성된 앱을 낱낱이 파헤칩니다.)* 사용)
 2. 전체 화면 배경은 짙은 남색~검정 그라데이션.
 3. 메인 입력 카드는 Glassmorphism 스타일(BackdropFilter blur(12, 12), 테두리 반투명 흰색)로 제작하라.
 4. 모닝 체크인 입력 항목 (수면 점수 없음):
