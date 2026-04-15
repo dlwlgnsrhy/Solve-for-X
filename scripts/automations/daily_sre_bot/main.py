@@ -133,7 +133,19 @@ def generate_blog_draft(commits: list[str], diff_text: str, target_date: str, ll
     )
 
     if not raw:
-        logger.error("[SRE Bot] LLM 응답 없음")
+        logger.warning("[SRE Bot] 외부 LLM 3회 실패 -> 로컬 Qwen 14B로 Fallback 시도")
+        raw = llm.ask(
+            user_prompt=user_prompt,
+            system_prompt=system_prompt,
+            use_external=False,   # 로컬 Qwen 14B fallback
+            max_tokens=3000,
+            temperature=0.3,
+        )
+        if raw and "===BLOG_CONTENT===" in raw:
+            raw += "\n\n> ⚠️ **SRE Bot Notice**: 외부 LLM 네트워크 장애로 인해, 본 초안은 로컬 서브 노드(Qwen 14B)를 통해 Fallback 자동 전환되어 생성되었습니다."
+
+    if not raw:
+        logger.error("[SRE Bot] LLM 최종 응답 없음 (로컬 Fallback도 실패)")
         return None
 
     # 파싱
