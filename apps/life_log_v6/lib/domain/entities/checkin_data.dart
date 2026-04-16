@@ -3,17 +3,25 @@ class CheckinData {
   final String mood;
   final String focusMode;
 
-  CheckinData({
+  const CheckinData({
     required this.energyLevel,
     required this.mood,
     required this.focusMode,
   });
 
-  Map<<StringString, dynamic> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       "energyLevel": energyLevel,
       "mood": mood,
       "focusMode": focusMode,
     };
+  }
+
+  factory CheckinData.fromJson(Map<String, dynamic> json) {
+    return CheckinData(
+      energyLevel: json['energyLevel'] as int,
+      mood: json['mood'] as String,
+      focusMode: json['focusMode'] as String,
+    );
   }
 }
