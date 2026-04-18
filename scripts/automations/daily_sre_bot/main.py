@@ -3,7 +3,7 @@
 daily_sre_bot/main.py  (v2 — 리팩토링)
 ========================================
 변경사항:
-  - LLM: 로컬 Qwen3 30B (하드코딩) → 외부 Gemma 31B (환경변수 참조)
+  - LLM: 로컬 Qwen3 30B (하드코딩) → 외부 Qwen3.6 35B (환경변수 참조)
   - 발행: 자동 Dev.to 업로드 → 초안 저장 + Telegram 검토 요청만
   - 보안: 모든 엔드포인트/토큰 .env 격리
   - 블로그 톤: 실무 중심, 포트폴리오 가치, 구조화된 서사
@@ -87,7 +87,7 @@ def get_roadmap_context() -> str:
     return context
 
 
-# ── 2. Gemma 31B로 고품질 블로그 초안 생성 ────────────────────
+# ── 2. Qwen3.6 35B로 고품질 블로그 초안 생성 ────────────────────
 def generate_blog_draft(commits: list[str], diff_text: str, target_date: str, llm: LLMClient) -> dict | None:
     roadmap = get_roadmap_context()
 
@@ -104,6 +104,8 @@ def generate_blog_draft(commits: list[str], diff_text: str, target_date: str, ll
         "5. Tone: Clear, professional American English. No emojis. No fluff.\n"
         "6. Value: Every paragraph must deliver useful insight, not filler\n\n"
         "Also analyze the roadmap to identify which Phase/milestone this work advances.\n\n"
+        "CRITICAL RULE: DO NOT output your thinking process or repeat these markers in a CoT block. "
+        "Start your final response IMMEDIATELY with ===PHASE_ANALYSIS===.\n\n"
         "Respond ONLY in this exact format:\n"
         "===PHASE_ANALYSIS===\n"
         "(Brief phase mapping in Korean is OK)\n"
@@ -123,11 +125,11 @@ def generate_blog_draft(commits: list[str], diff_text: str, target_date: str, ll
         f"Write a high-quality blog post based on the above data."
     )
 
-    logger.info("[SRE Bot] 외부 Gemma 31B로 블로그 초안 생성 중...")
+    logger.info("[SRE Bot] 외부 LLM 모델로 블로그 초안 생성 중...")
     raw = llm.ask(
         user_prompt=user_prompt,
         system_prompt=system_prompt,
-        use_external=True,   # 외부 Gemma 31B — 품질 우선
+        use_external=True,
         max_tokens=3000,
         temperature=0.3,
     )
@@ -137,32 +139,31 @@ def generate_blog_draft(commits: list[str], diff_text: str, target_date: str, ll
         raw = llm.ask(
             user_prompt=user_prompt,
             system_prompt=system_prompt,
-            use_external=False,   # 로컬 Qwen 14B fallback
+            use_external=False,
             max_tokens=3000,
             temperature=0.3,
         )
         if raw and "===BLOG_CONTENT===" in raw:
-            raw += "\n\n> ⚠️ **SRE Bot Notice**: 외부 LLM 네트워크 장애로 인해, 본 초안은 로컬 서브 노드(Qwen 14B)를 통해 Fallback 자동 전환되어 생성되었습니다."
+            raw += "\n\n> ⚠️ **SRE Bot Notice**: 외부 LLM 네트워크 장애로 인해, 본 초안은 로컬 14B를 통해 Fallback 자동 전환되어 생성되었습니다."
 
     if not raw:
         logger.error("[SRE Bot] LLM 최종 응답 없음 (로컬 Fallback도 실패)")
         return None
 
-    # 파싱
+    # 파싱: Qwen CoT가 마커를 반복하는 현상을 막기 위해 정규식으로 '최후의' 본문 블록만 추출
+    import re
     if "===BLOG_TITLE===" not in raw or "===BLOG_CONTENT===" not in raw:
         logger.error("[SRE Bot] 응답 형식이 맞지 않습니다.")
         return None
 
     try:
-        parts1 = raw.split("===BLOG_TITLE===")
-        phase_analysis = parts1[0].replace("===PHASE_ANALYSIS===", "").strip()
-
-        parts2 = parts1[1].split("===BLOG_CONTENT===")
-        blog_title = parts2[0].strip().strip('"').strip("'")
-
-        parts3 = parts2[1].split("===LINKEDIN_SUMMARY===")
-        blog_body = parts3[0].strip()
-        linkedin = parts3[1].strip() if len(parts3) > 1 else ""
+        # 모델 본문에 혹시 모를 CoT 블록을 무시하기 위해 마지막 발생 위치를 기준으로 파싱
+        phase_analysis = raw.split("===PHASE_ANALYSIS===")[-1].split("===BLOG_TITLE===")[0].strip()
+        blog_title = raw.split("===BLOG_TITLE===")[-1].split("===BLOG_CONTENT===")[0].strip().strip('"').strip("'")
+        blog_body = raw.split("===BLOG_CONTENT===")[-1].split("===LINKEDIN_SUMMARY===")[0].strip()
+        
+        parts3 = raw.split("===LINKEDIN_SUMMARY===")
+        linkedin = parts3[-1].strip() if len(parts3) > 1 else ""
 
         phase_match = re.search(r"Phase\s*\d+(\.\d+)?", phase_analysis, re.IGNORECASE)
         assigned_phase = phase_match.group(0).capitalize() if phase_match else "Phase General"
