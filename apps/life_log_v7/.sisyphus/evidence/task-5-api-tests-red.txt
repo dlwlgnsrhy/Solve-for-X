@@ -1,0 +1,23 @@
+TASK 5: planner_api_client_test.dart - TDD RED PHASE
+=====================================================
+
+STATUS: PASS (all 4 tests fail as expected)
+
+ANALYZER: No issues found! (0 errors)
+
+TEST RESULTS:
+-------------
+Test 1: submitCheckin returns true on 200 -> FAILED (UnimplementedError instead of true)
+Test 2: submitCheckin throws Exception on non-200 -> FAILED (UnimplementedError instead of Exception)
+Test 3: submitCheckin throws Exception on DioException -> FAILED (UnimplementedError instead of Exception)
+Test 4: submitCheckin sends correct JSON body -> FAILED (UnimplementedError instead of verify URL/data)
+
+TOTAL: 0 passed, 4 failed
+
+TDD STATUS: RED (all tests fail — implementation needed)
+
+NOTES:
+- Stub file created at lib/data/datasources/planner_api_client.dart with UnimplementedError
+- MockDio uses explicit post() override instead of mockito when/verify to avoid analyzer issues
+- The stub is a placeholder — T6 will create the real implementation
+- Test file uses custom MockDio with override method pattern (no build_runner needed)

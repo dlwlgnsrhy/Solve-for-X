@@ -1,0 +1,46 @@
+=== Task 8: Provider Tests - RED State Evidence ===
+Date: 2026-04-17
+File: test/presentation/checkin_provider_test.dart
+
+== flutter analyze output ==
+Analyzing checkin_provider_test.dart...
+
+  error • Undefined name 'plannerRepositoryProvider' • test/presentation/checkin_provider_test.dart:21:21 • undefined_identifier
+  error • Undefined name 'checkinProvider' • test/presentation/checkin_provider_test.dart:28:39 • undefined_identifier
+  error • Undefined name 'CheckinState' • test/presentation/checkin_provider_test.dart:29:36 • undefined_identifier
+  error • The argument type 'Null' can't be assigned to the parameter type 'CheckinData'.  • test/presentation/checkin_provider_test.dart:39:35 • argument_type_not_assignable
+  error • Undefined name 'checkinProvider' • test/presentation/checkin_provider_test.dart:42:17 • undefined_identifier
+  error • Undefined name 'checkinProvider' • test/presentation/checkin_provider_test.dart:46:29 • undefined_identifier
+  error • Undefined name 'CheckinState' • test/presentation/checkin_provider_test.dart:46:53 • undefined_identifier
+  error • Undefined name 'checkinProvider' • test/presentation/checkin_provider_test.dart:51:29 • undefined_identifier
+  error • Undefined name 'CheckinState' • test/presentation/checkin_provider_test.dart:51:53 • undefined_identifier
+  error • Undefined name 'checkinProvider' • test/presentation/checkin_provider_test.dart:52:29 • undefined_identifier
+  error • The argument type 'Null' can't be assigned to the parameter type 'CheckinData'.  • test/presentation/checkin_provider_test.dart:57:35 • argument_type_not_assignable
+  error • Undefined name 'checkinProvider' • test/presentation/checkin_provider_test.dart:60:17 • undefined_identifier
+  error • Undefined name 'checkinProvider' • test/presentation/checkin_provider_test.dart:66:29 • undefined_identifier
+  error • Undefined name 'CheckinState' • test/presentation/checkin_provider_test.dart:66:53 • undefined_identifier
+  error • Undefined name 'checkinProvider' • test/presentation/checkin_provider_test.dart:70:29 • undefined_identifier
+  error • Undefined name 'CheckinState' • test/presentation/checkin_provider_test.dart:70:53 • undefined_identifier
+  error • Undefined name 'checkinProvider' • test/presentation/checkin_provider_test.dart:71:29 • undefined_identifier
+
+17 issues found. (ran in 0.8s)
+
+== flutter test output ==
+  test/presentation/checkin_provider_test.dart:21:21: Error: Undefined name 'plannerRepositoryProvider'.
+  test/presentation/checkin_provider_test.dart:28:39: Error: Undefined name 'checkinProvider'.
+  test/presentation/checkin_provider_test.dart:29:36: Error: Undefined name 'CheckinState'.
+  test/presentation/checkin_provider_test.dart:39:35: Error: The argument type 'Null' can't be assigned to the parameter type 'CheckinData'
+  test/presentation/checkin_provider_test.dart:21:21: Error: Undefined name 'plannerRepositoryProvider'.
+  test/presentation/checkin_provider_test.dart:28:39: Error: Undefined name 'checkinProvider'.
+  test/presentation/checkin_provider_test.dart:29:36: Error: Undefined name 'CheckinState'.
+  ... (truncated)
+00:00 +0 -1: Some tests failed.
+
+== Status ==
+RED CONFIRMED - All 17 errors are compile-time errors referencing non-existent symbols:
+- CheckinState (enum not yet defined)
+- CheckinNotifierState (class not yet defined)
+- CheckinNotifier (class not yet defined)
+- checkinProvider (provider not yet defined)
+- plannerRepositoryProvider (provider not yet defined)
+- presentation.dart barrel does not export providers yet
