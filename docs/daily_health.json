@@ -1,10 +1,10 @@
 {
-  "date": "2026-04-14",
-  "sleep_score": 70,
-  "sleep_duration": "측정불가",
-  "timestamp": "2026-04-14T08:12:05.828673",
+  "date": "2026-04-18",
+  "sleep_score": 93,
+  "sleep_duration": "7시간 26분",
+  "timestamp": "2026-04-18T22:45:28.067488",
   "raw_data": {
-    "title": "[notification_title]",
-    "text": "[notification]"
+    "score": "93점",
+    "duration": "7시간 26분"
   }
 }

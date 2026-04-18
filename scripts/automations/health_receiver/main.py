@@ -44,6 +44,12 @@ class SleepData(BaseModel):
     title: str = ""
     text: str = ""
 
+
+class DailyCheckinData(BaseModel):
+    energyLevel: int = 3
+    mood: str = ""
+    focusMode: str = ""
+
 def trigger_daily_planner():
     logger.info("[Webhook] Triggering Daily Planner (Event-Driven)...")
     try:
@@ -110,6 +116,24 @@ def receive_sleep_data(data: dict, background_tasks: BackgroundTasks):
         logger.error(f"[Webhook] JSON 저장 실패: {e}")
         AlertManager().send_critical_alert("🚨 [Health Receiver 에러]", f"JSON 저장 실패: {e}")
         return {"status": "error", "message": str(e)}
+
+
+@app.post("/api/health/daily-checkin")
+def receive_daily_checkin(data: DailyCheckinData, background_tasks: BackgroundTasks):
+    """Receive daily check-in data from the Flutter app and trigger the daily planner."""
+    logger.info(f"[DailyCheckin] 수신: energyLevel={data.energyLevel}, mood={data.mood}, focusMode={data.focusMode}")
+    background_tasks.add_task(trigger_daily_planner)
+
+    return {
+        "status": "success",
+        "message": "Daily check-in received and planner triggered.",
+        "data": {
+            "energyLevel": data.energyLevel,
+            "mood": data.mood,
+            "focusMode": data.focusMode,
+        },
+    }
+
 
 if __name__ == "__main__":
     import uvicorn

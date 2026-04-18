@@ -5,3 +5,10 @@
 .env.*
 *.env
 .env.shared
+# Binaries & Tools
+/scripts/automations/visual_tester/cloudflared
+/scripts/automations/visual_tester/cloudflared.tgz
+
+# Logs
+/scripts/automations/health_receiver/*.out
+/scripts/automations/health_receiver/*.err
