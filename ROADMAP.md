@@ -44,6 +44,15 @@
 
 ## 📜 History: SFX 자동화 여정 기록
 
+### 2026.04.20: 🛠️ AI 노이즈 정제 및 인프라 하드닝 (Reporting Excellence)
+- **성과**: AI의 추론 과정(Thinking Process) 유출 문제를 시스템적으로 해결하고, 관리자용 보고 가독성을 획기적으로 개선하여 '다시 검토할 필요 없는' 수준의 결과물 도출.
+- **주요 기술**: 
+    - **Last-Match Anchor Sanitizer**: `LLMClient` 내에 템플릿 시작점(###, -)을 탐지하여 이전의 모든 AI 잡담을 도려내는 하드 필터링 레이어 구축.
+    - **Executive Summary Reporting**: 텔레그램 보고를 매니저 브리핑 양식으로 전환 및 LinkedIn 초안 가독성 강화.
+    - **Infra Hardening**: Feedback Daemon 싱글톤 패턴, Health Receiver 비동기화, Git Hook 비대화형 대응 등 인프라 전반의 안정성 확보.
+- **의의**: 생성적(Generative) 단계에 머물던 AI 자동화를 시스템적으로 제어 가능한(Deterministic) 신뢰할 수 있는 서비스 수준으로 격상.
+
+
 ### 2026.04.19: 📰 News Curator 고도화 및 인프라 안정화
 - **성과**: 주말 뉴스 공백 문제를 해결하고, 로컬 LLM 필터링 정밀도를 개선하여 다시 양질의 기술 브리핑(5건) 선별 성공.
 - **주요 기술**: Weekend Logic (72h 가변 수집), LLM 인지 필터링 (Persona Prompting), Anti-Spam 중복 방지 로직.

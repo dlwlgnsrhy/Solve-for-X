@@ -92,29 +92,22 @@ def generate_blog_draft(commits: list[str], diff_text: str, target_date: str, ll
     roadmap = get_roadmap_context()
 
     system_prompt = (
-        "You are a ghost-writer for a senior SRE/SWE engineer's technical blog.\n"
-        "Your goal is to produce articles worth publishing on Medium or Dev.to — "
-        "articles that make a hiring manager at Google or Netflix think: "
-        "'This person understands systems at a deep level.'\n\n"
-        "Strict writing rules:\n"
-        "1. Structure: Problem → Approach → Implementation → Lessons Learned\n"
-        "2. Focus on WHY decisions were made, not just WHAT was done\n"
-        "3. Include concrete code snippets only for the most critical parts (no full dumps)\n"
-        "4. Length: 800–1200 words (ideal for Medium)\n"
-        "5. Tone: Clear, professional American English. No emojis. No fluff.\n"
-        "6. Value: Every paragraph must deliver useful insight, not filler\n\n"
-        "Also analyze the roadmap to identify which Phase/milestone this work advances.\n\n"
-        "CRITICAL RULE: DO NOT output your thinking process or repeat these markers in a CoT block. "
-        "Start your final response IMMEDIATELY with ===PHASE_ANALYSIS===.\n\n"
+        "You are an Elite SRE/Platform Engineer ghost-writer.\n"
+        "Your goal is to transform raw commit history into a high-signal technical blog post (Medium/Dev.to style).\n\n"
+        "Strict rules:\n"
+        "1. **Be Concise**: Keep the body content around 2,000 - 3,000 characters. Focus on ARCHITECTURAL decisions and SRE principles (Reliability, Observability).\n"
+        "2. **Structure**: Problem (Context) -> Approach (Engineering Decision) -> Implementation (Brief) -> Outcome (SRE Value).\n"
+        "3. **Tone**: Senior, professional, opinionated but data-driven. No filler.\n"
+        "4. **No Thinking Process**: Start IMMEDIATELY with the markers below. No preamble.\n\n"
         "Respond ONLY in this exact format:\n"
         "===PHASE_ANALYSIS===\n"
-        "(Brief phase mapping in Korean is OK)\n"
+        "(Brief phase mapping in Korean)\n"
         "===BLOG_TITLE===\n"
-        "(Concise, compelling English title — no chapter numbers)\n"
+        "(Compelling English title)\n"
         "===BLOG_CONTENT===\n"
-        "(Full English blog post in Markdown)\n"
+        "(Concise English blog post in Markdown)\n"
         "===LINKEDIN_SUMMARY===\n"
-        "(3-line English LinkedIn post with relevant emojis)"
+        "(1-paragraph professional summary for LinkedIn)"
     )
 
     user_prompt = (
@@ -130,7 +123,7 @@ def generate_blog_draft(commits: list[str], diff_text: str, target_date: str, ll
         user_prompt=user_prompt,
         system_prompt=system_prompt,
         use_external=True,
-        max_tokens=3000,
+        max_tokens=1200,
         temperature=0.3,
     )
 
@@ -140,7 +133,7 @@ def generate_blog_draft(commits: list[str], diff_text: str, target_date: str, ll
             user_prompt=user_prompt,
             system_prompt=system_prompt,
             use_external=False,
-            max_tokens=3000,
+            max_tokens=1200,
             temperature=0.3,
         )
         if raw and "===BLOG_CONTENT===" in raw:
@@ -225,30 +218,33 @@ def send_review_request(
     target_date: str,
     telegram: TelegramClient,
 ) -> None:
-    # 초안 미리보기 (처음 400자)
-    preview = blog_markdown.split("---\n\n", 1)[-1][:400].strip()
+    # 텔레그램 가독성 강화를 위한 Executive Summary 구성
     relative_path = filepath.replace(REPO_PATH + "/", "")
+    
+    # 본문 요약 (첫 번째 섹션 추출 및 정제)
+    summary_match = re.search(r'\*\*Problem:.*?\n(.*?)\n\n\*\*', blog_markdown, re.DOTALL)
+    summary = summary_match.group(1).strip()[:180] if summary_match else "본문 내용을 파일에서 직접 확인하십시오."
 
-    msg1 = (
-        f"📝 [SRE Blog Draft Ready] {target_date}\n\n"
-        f"🎯 Phase: {phase}\n"
-        f"📌 제목: {title}\n\n"
-        f"━━━ 초안 미리보기 ━━━\n"
-        f"{preview}...\n"
-        f"━━━━━━━━━━━━━━━━━━━\n\n"
-        f"📁 위치: {relative_path}\n\n"
-        f"⚡ 다음 액션:\n"
-        f"• 수정: 파일을 직접 편집\n"
-        f"• 발행: ./scripts/automations/daily_sre_bot/publish.sh {target_date}"
+    # 1. 블로그 초안 보고부 (매니저용 브리핑)
+    msg = (
+        f"🚀 **SRE Daily Report** ({target_date})\n\n"
+        f"📌 **TITLE**: {title}\n"
+        f"🎯 **PHASE**: {phase.split(':')[0].strip()}\n"
+        f"📝 **SUMMARY**: {summary}...\n\n"
+        f"📁 **PATH**: `{relative_path}`\n\n"
+        f"⚡ **NEXT ACTION**:\n"
+        f"• 발행: `./scripts/automations/daily_sre_bot/publish.sh {target_date}`"
     )
-    telegram.send(msg1)
+    telegram.send(msg)
 
+    # 2. LinkedIn 초안 (별도 전송 - 공유 편의성)
     if linkedin:
-        msg2 = (
-            f"🟦 [LinkedIn 초안 — 검토 후 사용]\n\n"
-            f"{linkedin}"
+        linkedin_clean = linkedin.strip()
+        msg_li = (
+            f"🟦 **LinkedIn Draft**\n\n"
+            f"{linkedin_clean}"
         )
-        telegram.send(msg2)
+        telegram.send(msg_li)
 
 
 # ── 메인 ─────────────────────────────────────────────────────

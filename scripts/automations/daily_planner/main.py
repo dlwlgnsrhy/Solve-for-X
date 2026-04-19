@@ -106,15 +106,21 @@ def generate_today_plan(
 
     system_prompt = (
         "당신은 1인 개발자 레거시 설계자의 스마트한 생산성 코치입니다.\n"
-        "어제 기록과 주간 목표를 종합하여 오늘 하루의 실행 계획 초안을 작성합니다.\n\n"
+        "추론 과정(Thinking process)은 최대한 짧게 핵심만 하세요.\n"
+        "어제 기록과 주간 목표를 종합하여 오늘 하루의 실행 계획을 '제안'합니다.\n\n"
+        "출력 구조:\n"
+        "1. ## 🧠 Coach's Guide (오늘의 전략 제안)\n"
+        "   - 인용구(`>`)를 사용하여 어제 대비 오늘의 전략적 방향성 1줄 요약\n"
+        "   - 데이터(컨디션, 로드맵)를 기반으로 한 3가지 전략 옵션(Option A/B/C) 브리핑\n"
+        "2. ## 📝 실제 계획 (지훈님의 최종 선택)\n"
+        "   - 아래 템플릿 구조를 그대로 출력하되, [ ] 내부에는 AI가 추천하는 내용을 샘플로 채워주세요.\n\n"
         "규칙:\n"
         f"1. {intensity_guide}\n"
-        "2. 전날의 '1가지'에서 미완료했거나 이어갈 내용이 있으면 오늘 첫 블록에 배치\n"
-        "3. 주간 목표 달성을 위해 오늘 기여할 수 있는 항목 1개 이상 포함\n"
-        "4. 오직 아래 지정된 템플릿 구조와 마크다운 형식만 사용하여 출력하세요. 불필요한 인사말이나 부연 설명은 절대 금지합니다.\n\n"
-        "출력 형식 (이 구조를 그대로 복사해서 사용하세요):\n"
+        "2. 오직 지정된 템플릿 구조와 마크다운 형식만 사용하여 출력하세요. 불필요한 사족은 절대 금지합니다.\n\n"
+        "템플릿 (이 구조를 유지하세요):\n"
+        "## 📝 실제 계획 (지훈님의 최종 선택)\n"
         "- 오늘의 할 일 Top 3\n"
-        "    - [ ] \n"
+        "    - [ ] [AI 추천 내용]\n"
         "    - [ ] \n"
         "    - [ ] \n"
         "- 오늘 지키고 싶은 원칙 1가지:\n"
@@ -139,7 +145,7 @@ def generate_today_plan(
             user_prompt=user_prompt,
             system_prompt=system_prompt,
             use_external=True,
-            max_tokens=1200,
+            max_tokens=3500,
             temperature=0.4,
         )
     except Exception as e:
@@ -152,7 +158,7 @@ def generate_today_plan(
                 user_prompt=user_prompt,
                 system_prompt=system_prompt,
                 use_external=False,
-                max_tokens=1200,
+                max_tokens=3500,
                 temperature=0.4,
             )
             if plan:
@@ -160,8 +166,8 @@ def generate_today_plan(
         except Exception as e:
             logger.error(f"[Planner] 로컬 계획 생성 중 예외 발생: {e}")
 
-    # 계획 리턴 시 현재 컨디션도 함께 넘김 (이후 Notion 속성 업데이트를 위해)
-    return plan or "(계획 생성 실패 — 로그를 확인하세요)", condition
+    # 계획 리턴
+    return plan or "(계획 생성 실패 — 로그를 확인하세요)"
 
 
 def get_git_commits_today() -> str:
@@ -191,6 +197,7 @@ def generate_evening_retrospective(
     """
     system_prompt = (
         "당신은 1인 개발자 레거시 설계자의 생산성 코치입니다.\n"
+        "추론 과정(Thinking process)은 최대한 짧게 핵심만 하세요.\n"
         "오늘 진행된 작업 내역(Git 커밋 등)을 보고, 지훈님이 저녁 회고를 쉽게 작성할 수 있도록\n"
         "오늘의 성과 요약과 성찰을 위한 질문을 제공합니다.\n\n"
         "출력 형식:\n"
@@ -262,18 +269,16 @@ def run_morning_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
     week_summary = notion.get_week_summary()
 
     roadmap = get_roadmap_context()
-    plan_md, condition_score = generate_today_plan(yesterday_log, roadmap, llm, today_str, week_summary)
+    plan_md = generate_today_plan(yesterday_log, roadmap, llm, today_str, week_summary)
 
     if "(계획 생성 실패" in plan_md:
         logger.error("[Planner] LLM 계획 생성 실패. 알림 발송 후 종료.")
         send_alert(telegram, "🚨 [Daily Planner 아침 장애]", "LLM(Qwen3.6 35B) 연결 또는 토큰 오류로 인해 계획 초안을 생성하지 못했습니다. 노트북 상태나 네트워크를 확인해주세요.")
         return
 
-    logger.info(f"[Planner] Notion에 오늘 페이지 작성 중... (점수 기록: {condition_score})")
+    logger.info(f"[Planner] Notion에 오늘 페이지 작성 중...")
     
-    # 템플릿과 노션_client를 고도화하여 condition_score 를 저장할 수도 있습니다
-    # 우선은 기존 포멧 대로 create_daily_page 인자로 넘겨 속성 업데이트를 꾀합니다
-    page_url = notion.create_daily_page(today_str, plan_md, condition_score)
+    page_url = notion.create_daily_page(today_str, plan_md)
     if not page_url:
         logger.error("[Planner] Notion 페이지 생성 실패. 알림 발송 후 종료.")
         send_alert(telegram, "🚨 [Daily Planner 아침 장애]", "Notion API 통신 실패 또는 권한 문제로 인해 페이지를 생성하지 못했습니다.")
