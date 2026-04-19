@@ -467,22 +467,30 @@ class NotionClient:
             while len(stack) > 1 and indent <= stack[-1][0]:
                 stack.pop()
 
-            parent_list = stack[-1][1]
-            parent_block = stack[-1][2]
-            
-            # Notion 제약: heading 등은 children을 가질 수 없는 경우가 있으나
-            # list_item과 to_do, paragraph 등은 가능.
-            if parent_block and parent_block["type"] not in ["bulleted_list_item", "numbered_list_item", "to_do", "paragraph"]:
-                # 부모가 하위 요소를 가질 수 없는 블록이면 그냥 최상단에 추가
-                root_blocks.append(block)
-                stack = [(-1, root_blocks, None)]
-                stack.append((indent, block.setdefault(block["type"], {}).setdefault("children", []), block))
-            else:
+            # Notion 제약: 단일 요청 시 중첩 깊이 자식(Depth 2)까지만 허용
+            # Root(0) -> Level 1 -> Level 2까지만 stack에 추가 허용
+            MAX_DEPTH = 3 # stack size 3 (indices 0, 1, 2)
+            if len(stack) >= MAX_DEPTH:
+                # 더 이상 깊게 들어갈 수 없으므로 현재 레벨의 리스트에 추가
+                parent_list = stack[-1][1]
                 parent_list.append(block)
-                # 현재 블록을 스택에 추가 (하위 요소를 가질 수 있도록)
-                children_list = block[block["type"]].setdefault("children", []) if block["type"] != "divider" else None
-                if children_list is not None:
-                    stack.append((indent, children_list, block))
+            else:
+                parent_list = stack[-1][1]
+                parent_block = stack[-1][2]
+                
+                # Notion 제약: heading 등은 children을 가질 수 없는 경우가 있으나
+                # list_item과 to_do, paragraph 등은 가능.
+                if parent_block and parent_block["type"] not in ["bulleted_list_item", "numbered_list_item", "to_do", "paragraph"]:
+                    # 부모가 하위 요소를 가질 수 없는 블록이면 그냥 최상단에 추가
+                    root_blocks.append(block)
+                    stack = [(-1, root_blocks, None)]
+                    stack.append((indent, block.setdefault(block["type"], {}).setdefault("children", []), block))
+                else:
+                    parent_list.append(block)
+                    # 현재 블록을 스택에 추가 (하위 요소를 가질 수 있도록)
+                    children_list = block[block["type"]].setdefault("children", []) if block["type"] not in ["divider", "heading_1", "heading_2", "heading_3", "quote", "callout"] else None
+                    if children_list is not None:
+                        stack.append((indent, children_list, block))
 
         # 후처리: 빈 children 배열 제거 로직
         def clean_children(blocks):
