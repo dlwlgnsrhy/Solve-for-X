@@ -1,10 +1,7 @@
 {
   "date": "2026-04-18",
-  "sleep_score": 93,
-  "sleep_duration": "7시간 26분",
-  "timestamp": "2026-04-18T22:45:28.067488",
-  "raw_data": {
-    "score": "93점",
-    "duration": "7시간 26분"
-  }
+  "energyLevel": 5,
+  "mood": "😄",
+  "focusMode": "딥워크",
+  "timestamp": "2026-04-18T23:14:59.892984"
 }

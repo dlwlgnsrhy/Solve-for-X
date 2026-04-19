@@ -365,9 +365,23 @@ class NotionClient:
             return ""
 
     # ------------------------------------------------------------------
-    def append_markdown_to_page(self, page_id: str, markdown: str) -> bool:
-        """기존 Notion 페이지에 마크다운 내용을 블록으로 추가합니다."""
+    def append_markdown_to_page(self, page_id: str, markdown: str, check_duplicate: Optional[str] = None) -> bool:
+        """
+        기존 Notion 페이지에 마크다운 내용을 블록으로 추가합니다.
+        check_duplicate: 해당 문자열이 이미 페이지 본문에 포함되어 있으면 추가하지 않습니다.
+        """
         try:
+            if check_duplicate:
+                existing_blocks = self.get_page_blocks(page_id)
+                for b in existing_blocks:
+                    block_type = b.get("type", "")
+                    if block_type in b:
+                        rich_text = b[block_type].get("rich_text", [])
+                        plain_text = "".join(t.get("plain_text", "") for t in rich_text)
+                        if check_duplicate in plain_text:
+                            logger.info(f"[Notion] 중복 내용 발견('{check_duplicate}'). 추가를 건너뜁니다.")
+                            return True
+
             blocks = self._markdown_to_blocks(markdown)
             if not blocks:
                 return True
@@ -387,6 +401,20 @@ class NotionClient:
         except Exception as e:
             logger.error(f"[Notion] 페이지 내용 추가 실패: {e}")
             return False
+
+    def get_page_blocks(self, page_id: str) -> list:
+        """페이지의 최상위 블록 리스트를 가져옵니다."""
+        try:
+            resp = requests.get(
+                f"{NOTION_BASE_URL}/blocks/{page_id}/children",
+                headers=self._headers,
+                timeout=15,
+            )
+            resp.raise_for_status()
+            return resp.json().get("results", [])
+        except Exception as e:
+            logger.error(f"[Notion] 블록 조회 실패: {e}")
+            return []
 
     # ------------------------------------------------------------------
     @staticmethod

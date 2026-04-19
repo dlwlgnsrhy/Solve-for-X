@@ -317,6 +317,23 @@ def run_evening_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
         return
 
     logger.info(f"[Planner] Notion 오늘 페이지({page_id})에 회고 제안 추가 중...")
+    
+    # 중복 확인을 위해 먼저 블록 목록 체크
+    existing_blocks = notion.get_page_blocks(page_id)
+    is_duplicate = False
+    for b in existing_blocks:
+        block_type = b.get("type", "")
+        if block_type in b:
+            rich_text = b[block_type].get("rich_text", [])
+            plain_text = "".join(t.get("plain_text", "") for t in rich_text)
+            if "오늘의 작업 요약" in plain_text:
+                is_duplicate = True
+                break
+    
+    if is_duplicate:
+        logger.info("[Planner] 이미 회고 제안이 추가되어 있습니다. 텔레그램 전송을 생략합니다.")
+        return
+
     success = notion.append_markdown_to_page(page_id, retro_md)
     if not success:
         logger.error("[Planner] Notion 회고 본문 추가 실패. 알림 발송 후 종료.")

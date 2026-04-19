@@ -11,10 +11,13 @@ import logging
 import datetime
 import subprocess
 import json
+import os
 from pathlib import Path
-from fastapi import FastAPI, BackgroundTasks
-from pydantic import BaseModel
+from fastapi import FastAPI, BackgroundTasks, Request
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 _AUTOMATIONS_DIR = str(Path(__file__).parent.parent)
 if _AUTOMATIONS_DIR not in sys.path:
@@ -28,7 +31,20 @@ logger = logging.getLogger(__name__)
 REPO_PATH = Path(__file__).parent.parent.parent.parent
 HEALTH_JSON_PATH = REPO_PATH / "docs" / "daily_health.json"
 
-app = FastAPI(title="Soluni Health Receiver Webhook Server")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("[Health Receiver] Server starting up...")
+    HEALTH_JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
+    yield
+    logger.info("[Health Receiver] Server shutting down.")
+
+
+app = FastAPI(
+    title="Soluni Health Receiver Webhook Server",
+    version="0.1.0",
+    lifespan=lifespan,
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -46,46 +62,64 @@ class SleepData(BaseModel):
 
 
 class DailyCheckinData(BaseModel):
-    energyLevel: int = 3
-    mood: str = ""
-    focusMode: str = ""
+    energyLevel: int = Field(default=3, ge=1, le=5, description="Energy level from 1 to 5")
+    mood: str = Field(default="", description="Current mood")
+    focusMode: str = Field(default="", description="Current focus mode")
+
 
 def trigger_daily_planner():
     logger.info("[Webhook] Triggering Daily Planner (Event-Driven)...")
     try:
         daily_planner_script = Path(__file__).parent.parent / "daily_planner" / "main.py"
+        
+        if not daily_planner_script.exists():
+            logger.warning("[Webhook] Daily planner script not found: %s", daily_planner_script)
+            return
+        
         venv_python = Path(__file__).parent.parent / "daily_planner" / "venv" / "bin" / "python3"
         
-        cmd = [str(venv_python) if venv_python.exists() else "python3", str(daily_planner_script)]
+        python_cmd = str(venv_python) if venv_python.exists() else "python3"
+        cmd = [python_cmd, str(daily_planner_script)]
         
-        # 서브프로세스로 넘겨버리고 본 프로세스는 응답만 바로 반환
-        subprocess.Popen(cmd, cwd=str(REPO_PATH), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        logger.info("[Webhook] Daily Planner background execution started.")
+        proc = subprocess.Popen(cmd, cwd=str(REPO_PATH), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            proc.wait(timeout=30)
+            if proc.returncode == 0:
+                logger.info("[Webhook] Daily Planner executed successfully.")
+            else:
+                _, stderr = proc.communicate()
+                logger.error("[Webhook] Daily Planner failed with code %d: %s", proc.returncode, stderr.decode()[:200])
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            logger.error("[Webhook] Daily Planner timed out after 30s")
     except Exception as e:
-        logger.error(f"[Webhook] Failed to trigger Daily Planner: {e}")
-        AlertManager().send_critical_alert("🚨 [Health Receiver 에러]", f"Daily Planner 트리거 기동 실패: {e}")
+        logger.error("[Webhook] Failed to trigger Daily Planner: %s", e)
+        try:
+            AlertManager().send_critical_alert(
+                "🚨 [Health Receiver 에러]",
+                f"Daily Planner 트리거 기동 실패: {e}",
+            )
+        except Exception:
+            pass
+
 
 @app.post("/api/health/sleep")
-def receive_sleep_data(data: dict, background_tasks: BackgroundTasks):
+async def receive_sleep_data(request: Request, data: dict, background_tasks: BackgroundTasks):
     logger.info(f"[Webhook] Raw 데이터 수신: {data}")
     
-    # MacroDroid에서 어떤 형태로든 데이터를 넘겼을 때 유연하게 파싱
     raw_str = f"{data.get('score', '')} {data.get('duration', '')} {data.get('title', '')} {data.get('text', '')}"
     
     import re
     score_val = 70
     duration_str = "측정불가"
     
-    # 1) 명시적으로 score 키에 숫자가 들어온 경우
     if str(data.get("score")).isdigit():
         score_val = int(data.get("score"))
     else:
-        # 2) 텍스트 어딘가에 "93점" 같은 패턴이 있는지 찾기
         m = re.search(r'(\d{2,3})\s*점', raw_str)
         if m:
             score_val = int(m.group(1))
             
-    # 시간(예: 7시간 26분) 파싱
     hm = re.search(r'(\d+)\s*시간\s*(\d+)?\s*분?', raw_str)
     if hm:
         duration_str = f"{hm.group(1)}시간 {hm.group(2)+'분' if hm.group(2) else ''}".strip()
@@ -108,34 +142,78 @@ def receive_sleep_data(data: dict, background_tasks: BackgroundTasks):
             
         logger.info(f"[Webhook] {HEALTH_JSON_PATH} 에 저장 완료.")
         
-        # 저장 완료 후 백그라운드에서 플래너 실행
         background_tasks.add_task(trigger_daily_planner)
         
         return {"status": "success", "message": f"Data saved for {today_str} and planner triggered."}
     except Exception as e:
         logger.error(f"[Webhook] JSON 저장 실패: {e}")
-        AlertManager().send_critical_alert("🚨 [Health Receiver 에러]", f"JSON 저장 실패: {e}")
-        return {"status": "error", "message": str(e)}
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": str(e)},
+        )
 
 
 @app.post("/api/health/daily-checkin")
-def receive_daily_checkin(data: DailyCheckinData, background_tasks: BackgroundTasks):
-    """Receive daily check-in data from the Flutter app and trigger the daily planner."""
+async def receive_daily_checkin(data: DailyCheckinData, background_tasks: BackgroundTasks):
     logger.info(f"[DailyCheckin] 수신: energyLevel={data.energyLevel}, mood={data.mood}, focusMode={data.focusMode}")
-    background_tasks.add_task(trigger_daily_planner)
 
-    return {
-        "status": "success",
-        "message": "Daily check-in received and planner triggered.",
-        "data": {
+    try:
+        today_str = datetime.date.today().strftime("%Y-%m-%d")
+        checkin_record = {
+            "date": today_str,
             "energyLevel": data.energyLevel,
             "mood": data.mood,
             "focusMode": data.focusMode,
-        },
-    }
+            "timestamp": datetime.datetime.now().isoformat(),
+        }
+
+        HEALTH_JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(HEALTH_JSON_PATH, "w", encoding="utf-8") as f:
+            json.dump(checkin_record, f, ensure_ascii=False, indent=2)
+
+        background_tasks.add_task(trigger_daily_planner)
+
+        return {
+            "status": "success",
+            "message": "Daily check-in received and planner triggered.",
+            "data": {
+                "energyLevel": data.energyLevel,
+                "mood": data.mood,
+                "focusMode": data.focusMode,
+            },
+        }
+    except Exception as e:
+        logger.error(f"[DailyCheckin] 처리 오류: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"Internal server error: {str(e)}"},
+        )
+
+
+# 404/405 handler — prevent uvicorn default from leaking as 502
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc):
+    return JSONResponse(
+        status_code=404,
+        content={"detail": "Not Found — check the endpoint path"},
+    )
+
+
+@app.exception_handler(405)
+async def method_not_allowed_handler(request: Request, exc):
+    return JSONResponse(
+        status_code=405,
+        content={"detail": "Method Not Allowed — check the HTTP method"},
+    )
 
 
 if __name__ == "__main__":
     import uvicorn
-    # 직접 실행 시 포트 8080. 모든 인터페이스(0.0.0.0) 개방.
-    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=False)
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8080,
+        reload=False,
+        log_level="info",
+        timeout_graceful_shutdown=10,
+    )

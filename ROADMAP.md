@@ -44,6 +44,11 @@
 
 ## 📜 History: SFX 자동화 여정 기록
 
+### 2026.04.19: 📰 News Curator 고도화 및 인프라 안정화
+- **성과**: 주말 뉴스 공백 문제를 해결하고, 로컬 LLM 필터링 정밀도를 개선하여 다시 양질의 기술 브리핑(5건) 선별 성공.
+- **주요 기술**: Weekend Logic (72h 가변 수집), LLM 인지 필터링 (Persona Prompting), Anti-Spam 중복 방지 로직.
+- **의의**: 자동화 시스템이 예외 상황(주말 공백, 도배, 의존성 충돌)에 스스로 대응하고 품질을 유지할 수 있는 회복 탄력성 확보.
+
 ### 2026.04.18: 🚀 SFX App Factory (A-to-Z 자율 공정) 완공
 - **성과**: 텔레그램 피드백 하나로 **[수정-빌드-보고-체험링크]**가 연쇄 작동하는 6-Wave 파이프라인 구축.
 - **주요 기술**: Cloudflare Tunnel (Live Preview), Playwright (Visual QA), Telegram Feedback Daemon (v5).

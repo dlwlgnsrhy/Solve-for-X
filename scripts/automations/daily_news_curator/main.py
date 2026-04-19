@@ -32,9 +32,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 FEEDS_PATH = Path(__file__).parent / "feeds.yaml"
-MAX_ITEMS_PER_FEED = 10       # 피드당 최근 N개 기사만 수집
+MAX_ITEMS_PER_FEED = 15       # 피드당 최근 N개 기사만 수집 (기존 10에서 상향)
 MAX_ITEMS_TO_SUMMARIZE = 5    # 필터링 후 최대 요약 기사 수
-COLLECT_HOURS = 24            # 최근 몇 시간 이내 기사만 수집
+DEFAULT_COLLECT_HOURS = 24    # 평일 기본 수집 범위
+WEEKEND_COLLECT_HOURS = 72    # 주말(토/일) 수집 범위 확대 (주중 기사 포함)
 
 
 # ── 1단계: RSS 수집 ───────────────────────────────────────────
@@ -43,8 +44,13 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
-def fetch_recent_articles(feeds: list, hours: int = COLLECT_HOURS) -> List[dict]:
-    """모든 RSS 피드에서 최근 N시간 이내 기사를 수집합니다."""
+def fetch_recent_articles(feeds: list) -> List[dict]:
+    """모든 RSS 피드에서 요일에 맞춰 최근 N시간 이내 기사를 수집합니다."""
+    # 주말(토/일)에는 수집 범위를 넓힘
+    is_weekend = datetime.datetime.now().weekday() >= 5
+    hours = WEEKEND_COLLECT_HOURS if is_weekend else DEFAULT_COLLECT_HOURS
+    
+    logger.info(f"[RSS] 수집 범위 설정: {hours}시간 (주말 여부: {is_weekend})")
     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=hours)
     articles = []
 
@@ -90,22 +96,35 @@ def filter_relevant(articles: List[dict], keywords: List[str], client: LLMClient
     keyword_str = ", ".join(keywords)
     relevant = []
 
+    system_prompt = (
+        "You are an expert technical news curator for a senior software engineer. "
+        "Your goal is to identify high-quality articles about software engineering, "
+        "infrastructure, and AI that would interest a professional developer. "
+        "Strictly follow the output format."
+    )
+
     for article in articles:
         prompt = (
-            f"Keywords of interest: {keyword_str}\n\n"
-            f"Article title: {article['title']}\n"
-            f"Article summary: {article['summary'][:300]}\n\n"
-            f"Is this article relevant to any of the keywords above? "
-            f"Reply with ONLY 'yes' or 'no'."
+            f"Keywords: {keyword_str}\n\n"
+            f"Title: {article['title']}\n"
+            f"Summary: {article['summary'][:300]}\n\n"
+            "Question: Is this article relevant to any of the keywords or core software engineering topics?\n"
+            "Reply with ONLY 'yes' or 'no'."
         )
         response = client.ask(
             user_prompt=prompt,
+            system_prompt=system_prompt,
             use_external=False,  # 로컬 Qwen 14B — 속도 우선
-            max_tokens=5,
+            max_tokens=10,       # 안정성을 위해 10으로 상향
             temperature=0.0,
         )
-        if response and "yes" in response.strip().lower():
+        
+        is_yes = response and "yes" in response.strip().lower()
+        if is_yes:
             relevant.append(article)
+        
+        # 디버그 로그 강화 (나중에 분석 가능하도록)
+        logger.info(f"  - [{ 'PASS' if is_yes else 'SKIP' }] {article['title'][:50]}... (Response: {response.strip() if response else 'None'})")
 
     logger.info(f"[Filter] {len(articles)}건 → {len(relevant)}건 관련 기사 선별")
     return relevant[:MAX_ITEMS_TO_SUMMARIZE]

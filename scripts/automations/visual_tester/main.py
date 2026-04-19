@@ -13,7 +13,9 @@ import socketserver
 import threading
 import logging
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+
+# playwright는 스크린샷 캡처 시에만 필요하므로 지연 임포트 제안
+# from playwright.sync_api import sync_playwright
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -36,17 +38,33 @@ class ThreadedHTTPServer(threading.Thread):
         self.server = None
 
     def run(self):
-        handler = http.server.SimpleHTTPRequestHandler
-        # Python 3.7+용 directory 인자 지원
-        os.chdir(self.directory)
-        with socketserver.TCPServer(("", self.port), handler) as httpd:
-            self.server = httpd
-            logger.info(f"[Server] Serving at port {self.port} from {self.directory}")
-            httpd.serve_forever()
+        try:
+            # SimpleHTTPRequestHandler를 directory 인자와 함께 사용 (Python 3.7+)
+            # os.chdir()을 쓰지 않아 전역 경로에 영향을 주지 않음
+            class Handler(http.server.SimpleHTTPRequestHandler):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, directory=self.directory, **kwargs)
+            
+            # self.directory 가 ThreadedHTTPServer 의 속성이므로 클래스 내부에서 클로저처럼 접근하거나
+            # partial을 쓸 수 있지만, 여기서는 커스텀 핸들러 클래스를 정의하여 해결
+            directory = self.directory
+            class FixedHandler(http.server.SimpleHTTPRequestHandler):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, directory=directory, **kwargs)
+
+            # 포트가 이미 사용 중인 경우를 대비해 allow_reuse_address 설정
+            socketserver.TCPServer.allow_reuse_address = True
+            with socketserver.TCPServer(("", self.port), FixedHandler) as httpd:
+                self.server = httpd
+                logger.info(f"[Server] Serving at port {self.port} from {self.directory}")
+                httpd.serve_forever()
+        except Exception as e:
+            logger.error(f"[Server] Failed to start server at port {self.port}: {e}")
 
     def shutdown(self):
         if self.server:
             self.server.shutdown()
+            self.server.server_close() # 소켓 확실히 닫기
             logger.info("[Server] Shutting down.")
 
 def capture_and_send(build_dir: str, app_name: str):
@@ -65,6 +83,7 @@ def capture_and_send(build_dir: str, app_name: str):
     screenshot_path = os.path.join(os.getcwd(), f"screenshot_{app_name}.png")
 
     try:
+        from playwright.sync_api import sync_playwright
         with sync_playwright() as p:
             logger.info("[Browser] Launching chromium...")
             browser = p.chromium.launch()
