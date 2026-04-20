@@ -221,7 +221,7 @@ def generate_evening_retrospective(
             user_prompt=user_prompt,
             system_prompt=system_prompt,
             use_external=True,
-            max_tokens=800,
+            max_tokens=2000,
             temperature=0.4,
         )
     except Exception as e:

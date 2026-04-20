@@ -157,30 +157,31 @@ class LLMClient:
             text = re.sub(p, '', text, flags=re.DOTALL | re.IGNORECASE)
 
         # 4. 마지막 보루: 유효한 시작점 탐지 및 잡담 제거
-        # 가이드/인텔리전스 섹션이 있으면 해당 섹션의 '처음'부터, 
-        # 가이드가 없고 템플릿만 있으면 템플릿의 '마지막' 위치부터 시작합니다.
+        # AI가 추론 과정(Thinking process) 내에서 출력 양식을 미리 언급하는 경우가 많으므로,
+        # 모든 유효한 앵커(가이드 및 템플릿 헤더) 중 문서의 가장 마지막에 나타나는 지점을 권장 시작점으로 잡습니다.
         
-        guide_anchors = [r'^##\s*🧠\s*Coach', r'^##\s*📊\s*Last\s*Week']
-        template_anchors = [r'^###\s*이번\s*주\s*계획', r'^-\s*오늘의\s*할\s*일', r'^-\s*이번\s*주\s*핵심\s*목표']
+        all_anchors = [
+            r'^\s*##\s*🧠\s*Coach', 
+            r'^\s*##\s*📊\s*Last\s*Week',
+            r'^\s*##\s*🌅\s*오늘의\s*작업\s*요약',
+            r'^\s*###\s*이번\s*주\s*계획', 
+            r'^\s*-\s*오늘의\s*할\s*일', 
+            r'^\s*-\s*이번\s*주\s*핵심\s*목표'
+        ]
 
-        start_idx = -1
+        last_idx = -1
         
-        # 1순위: 가이드/인텔리전스 섹션의 첫 출현 지점 찾기
-        for anchor in guide_anchors:
-            match = re.search(anchor, text, flags=re.MULTILINE | re.IGNORECASE)
-            if match:
-                if start_idx == -1 or match.start() < start_idx:
-                    start_idx = match.start()
+        for anchor in all_anchors:
+            # finditer를 사용하여 해당 앵커의 가장 마지막 출현 위치를 검색
+            for match in re.finditer(anchor, text, flags=re.MULTILINE | re.IGNORECASE):
+                if match.start() > last_idx:
+                    last_idx = match.start()
         
-        # 2순위: 가이드가 없을 경우, 템플릿의 가장 마지막 출현 지점 찾기
-        if start_idx == -1:
-            for anchor in template_anchors:
-                for match in re.finditer(anchor, text, flags=re.MULTILINE | re.IGNORECASE):
-                    if match.start() > start_idx:
-                        start_idx = match.start()
-        
-        if start_idx != -1:
-            text = text[start_idx:]
+        if last_idx != -1:
+            text = text[last_idx:]
+
+        # 최종 정제: 불필요한 공백 및 마지막 사족 제거
+        return text.strip()
 
         return text.strip()
 
