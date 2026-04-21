@@ -166,7 +166,8 @@ class LLMClient:
             r'^\s*##\s*🌅\s*오늘의\s*작업\s*요약',
             r'^\s*###\s*이번\s*주\s*계획', 
             r'^\s*-\s*오늘의\s*할\s*일', 
-            r'^\s*-\s*이번\s*주\s*핵심\s*목표'
+            r'^\s*-\s*이번\s*주\s*핵심\s*목표',
+            r'^\s*===PHASE_ANALYSIS==='
         ]
 
         last_idx = -1

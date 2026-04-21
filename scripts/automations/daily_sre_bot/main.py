@@ -99,15 +99,15 @@ def generate_blog_draft(commits: list[str], diff_text: str, target_date: str, ll
         "2. **Structure**: Problem (Context) -> Approach (Engineering Decision) -> Implementation (Brief) -> Outcome (SRE Value).\n"
         "3. **Tone**: Senior, professional, opinionated but data-driven. No filler.\n"
         "4. **No Thinking Process**: Start IMMEDIATELY with the markers below. No preamble.\n\n"
-        "Respond ONLY in this exact format:\n"
+        "Respond ONLY in this exact format. REPLACE the bracketed placeholders with your generated content:\n"
         "===PHASE_ANALYSIS===\n"
-        "(Brief phase mapping in Korean)\n"
+        "<Brief phase mapping in Korean>\n"
         "===BLOG_TITLE===\n"
-        "(Compelling English title)\n"
+        "<Compelling English title>\n"
         "===BLOG_CONTENT===\n"
-        "(Concise English blog post in Markdown)\n"
+        "<Concise English blog post in Markdown>\n"
         "===LINKEDIN_SUMMARY===\n"
-        "(1-paragraph professional summary for LinkedIn)"
+        "<1-paragraph professional summary for LinkedIn>"
     )
 
     user_prompt = (
@@ -123,7 +123,7 @@ def generate_blog_draft(commits: list[str], diff_text: str, target_date: str, ll
         user_prompt=user_prompt,
         system_prompt=system_prompt,
         use_external=True,
-        max_tokens=1200,
+        max_tokens=3500,
         temperature=0.3,
     )
 
@@ -133,7 +133,7 @@ def generate_blog_draft(commits: list[str], diff_text: str, target_date: str, ll
             user_prompt=user_prompt,
             system_prompt=system_prompt,
             use_external=False,
-            max_tokens=1200,
+            max_tokens=3500,
             temperature=0.3,
         )
         if raw and "===BLOG_CONTENT===" in raw:
