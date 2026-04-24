@@ -3,7 +3,7 @@
 daily_sre_bot/main.py  (v2 — 리팩토링)
 ========================================
 변경사항:
-  - LLM: 로컬 Qwen3 30B (하드코딩) → 외부 Qwen3.6 35B (환경변수 참조)
+  - LLM: 로컬 Qwen3 30B (하드코딩) → 외부 Qwen3.6 27B (환경변수 참조)
   - 발행: 자동 Dev.to 업로드 → 초안 저장 + Telegram 검토 요청만
   - 보안: 모든 엔드포인트/토큰 .env 격리
   - 블로그 톤: 실무 중심, 포트폴리오 가치, 구조화된 서사
@@ -87,7 +87,7 @@ def get_roadmap_context() -> str:
     return context
 
 
-# ── 2. Qwen3.6 35B로 고품질 블로그 초안 생성 ────────────────────
+# ── 2. Qwen3.6 27B로 고품질 블로그 초안 생성 ────────────────────
 def generate_blog_draft(commits: list[str], diff_text: str, target_date: str, llm: LLMClient) -> dict | None:
     roadmap = get_roadmap_context()
 

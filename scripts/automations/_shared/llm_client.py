@@ -5,7 +5,7 @@ _shared/llm_client.py
 
 모델 라우팅 전략:
   - use_external=False (기본): 로컬 LM Studio (Qwen 14B) — 속도 우선
-  - use_external=True        : 외부 A100 서버 (Qwen3.6 35B) — 품질 우선
+  - use_external=True        : 외부 A100 서버 (Qwen3.6 27B) — 품질 우선
 
 # 버그 수정 (v2):
   - __init__에서 외부 LLM 변수를 Lazy하게 로드하도록 변경
@@ -15,7 +15,7 @@ _shared/llm_client.py
 사용 방법:
     from _shared.llm_client import LLMClient
     client = LLMClient()
-    result = client.ask("내 질문", use_external=True)  # 외부 Qwen3.6 35B
+    result = client.ask("내 질문", use_external=True)  # 외부 Qwen3.6 27B
     result = client.ask("내 질문", use_external=False) # 로컬 Qwen 14B (기본)
 """
 
@@ -64,7 +64,7 @@ class LLMClient:
                 logger.error("[LLM] EXTERNAL_LLM_MODEL이 .env.shared에 설정되지 않았습니다.")
                 return None
             url, model, api_key = self._ext_url, self._ext_model, self._ext_api_key
-            label = "External (Qwen3.6 35B)"
+            label = "External (Qwen3.6 27B)"
         else:
             url, model, api_key = self._local_url, self._local_model, None
             label = "Local (Qwen 14B)"

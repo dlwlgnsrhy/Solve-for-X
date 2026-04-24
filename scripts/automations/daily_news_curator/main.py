@@ -6,7 +6,7 @@ daily_news_curator/main.py
 로컬 LLM으로 필터링 후 외부 LLM으로 요약하여 Telegram으로 배달합니다.
 
 파이프라인:
-  RSS 수집 → 로컬 Qwen 14B (1차 필터) → 외부 Qwen3.6 35B (요약) → Telegram
+  RSS 수집 → 로컬 Qwen 14B (1차 필터) → 외부 Qwen3.6 27B (요약) → Telegram
 """
 
 import sys
@@ -133,7 +133,7 @@ def filter_relevant(articles: List[dict], keywords: List[str], client: LLMClient
 # ── 3단계: 외부 LLM 고품질 요약 ──────────────────────────────
 def summarize_articles(articles: List[dict], client: LLMClient) -> List[dict]:
     """
-    외부 Qwen3.6 35B로 각 기사를 3줄 한국어로 요약합니다.
+    외부 Qwen3.6 27B로 각 기사를 3줄 한국어로 요약합니다.
     품질 중심 작업이므로 외부 A100 모델을 사용합니다.
     """
     summarized = []
@@ -148,7 +148,7 @@ def summarize_articles(articles: List[dict], client: LLMClient) -> List[dict]:
         )
         summary = client.ask(
             user_prompt=prompt,
-            use_external=True,  # 외부 Qwen3.6 35B — 품질 우선
+            use_external=True,  # 외부 Qwen3.6 27B — 품질 우선
             max_tokens=150,
             temperature=0.3,
         )
@@ -198,7 +198,7 @@ def send_briefing(articles: List[dict], fetched_count: int, telegram: TelegramCl
         "",
         "━━━━━━━━━━━━━━━━━━━━━━━━━━",
         f"수집 {fetched_count}건 → 선별 {len(articles)}건",
-        "필터: Qwen 14B (로컬) | 요약: Qwen3.6 35B (외부)",
+        "필터: Qwen 14B (로컬) | 요약: Qwen3.6 27B (외부)",
     ])
 
     full_message = "\n".join(lines)
