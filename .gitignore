@@ -1,5 +1,5 @@
 /oh-my-openagent-dev/
-
+/hermes-agent-main/
 # Security: env files must never be committed
 .env
 .env.*
