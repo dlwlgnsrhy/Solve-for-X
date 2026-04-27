@@ -1,0 +1,49 @@
+name: sfx_memento_mori
+description: "A memento mori app visualizing remaining life weeks as a grid."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.7.2 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+  shared_preferences: ^2.3.3
+  flutter_animate: ^4.5.2
+  screenshot: ^3.0.0
+  share_plus: ^10.1.3
+  path_provider: ^2.1.4
+  in_app_review: ^2.0.9
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+
+flutter_launcher_icons:
+  ios: true
+  android: true
+  image_path: "assets/images/app_icon.png"
+  adaptive_icon_background: "#0A0A0F"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+
+flutter_native_splash:
+  color: "#0A0A0F"
+  color_dark: "#0A0A0F"
+  image: "assets/images/splash_logo.png"
+  image_dark: "assets/images/splash_logo.png"
+  android_12:
+    color: "#0A0A0F"
+    image: "assets/images/splash_logo.png"
