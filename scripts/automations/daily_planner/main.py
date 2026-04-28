@@ -12,7 +12,7 @@ daily_planner/main.py  (v3 — 아침 실행 버전)
   전날 Daily Log (컨디션, 1가지, 태그)
   + Weekly System (주간 목표)
   + ROADMAP.md (현재 Phase)
-  → 외부 Qwen3.6 27B (오늘 계획 초안)
+  → 외부 Qwen3.6 35B (오늘 계획 초안)
   → Notion 오늘 페이지 생성
   → Telegram 알림
 """
@@ -138,7 +138,7 @@ def generate_today_plan(
         f"위 데이터를 바탕으로 오늘({today_str})의 실행 계획 초안을 작성하세요."
     )
 
-    logger.info(f"[Planner] 외부 Qwen3.6 27B로 오늘 계획 생성 중...")
+    logger.info(f"[Planner] 외부 Qwen3.6 35B로 오늘 계획 생성 중...")
     plan = None
     try:
         plan = llm.ask(
@@ -162,7 +162,7 @@ def generate_today_plan(
                 temperature=0.4,
             )
             if plan:
-                plan += "\n\n> ⚠️ **Fallback Notice**: 외부 파이프라인 (Qwen3.6 27B) 통신 무응답으로 인해, 로컬 서버 (Qwen 14B)로 자동 전환(Fallback)되어 생성된 계획입니다."
+                plan += "\n\n> ⚠️ **Fallback Notice**: 외부 파이프라인 (Qwen3.6 35B) 통신 무응답으로 인해, 로컬 서버 (Qwen 14B)로 자동 전환(Fallback)되어 생성된 계획입니다."
         except Exception as e:
             logger.error(f"[Planner] 로컬 계획 생성 중 예외 발생: {e}")
 
@@ -214,7 +214,7 @@ def generate_evening_retrospective(
         f"위 데이터를 바탕으로 오늘 하루를 마무리하는 회고 및 성찰 제안을 작성해 주세요."
     )
 
-    logger.info("[Planner] 외부 Qwen3.6 27B로 저녁 회고 제안 생성 중...")
+    logger.info("[Planner] 외부 Qwen3.6 35B로 저녁 회고 제안 생성 중...")
     retro = None
     try:
         retro = llm.ask(
@@ -273,7 +273,7 @@ def run_morning_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
 
     if "(계획 생성 실패" in plan_md:
         logger.error("[Planner] LLM 계획 생성 실패. 알림 발송 후 종료.")
-        send_alert(telegram, "🚨 [Daily Planner 아침 장애]", "LLM(Qwen3.6 27B) 연결 또는 토큰 오류로 인해 계획 초안을 생성하지 못했습니다. 노트북 상태나 네트워크를 확인해주세요.")
+        send_alert(telegram, "🚨 [Daily Planner 아침 장애]", "LLM(Qwen3.6 35B) 연결 또는 토큰 오류로 인해 계획 초안을 생성하지 못했습니다. 노트북 상태나 네트워크를 확인해주세요.")
         return
 
     logger.info(f"[Planner] Notion에 오늘 페이지 작성 중...")
@@ -318,7 +318,7 @@ def run_evening_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
 
     if "(회고 제안 생성 실패" in retro_md:
         logger.error("[Planner] LLM 회고 생성 실패. 알림 발송 후 종료.")
-        send_alert(telegram, "🚨 [Daily Planner 저녁 장애]", "LLM(Qwen3.6 27B) 연결 오류로 인해 회고 제안을 생성하지 못했습니다. 네트워크를 확인해주세요.")
+        send_alert(telegram, "🚨 [Daily Planner 저녁 장애]", "LLM(Qwen3.6 35B) 연결 오류로 인해 회고 제안을 생성하지 못했습니다. 네트워크를 확인해주세요.")
         return
 
     logger.info(f"[Planner] Notion 오늘 페이지({page_id})에 회고 제안 추가 중...")

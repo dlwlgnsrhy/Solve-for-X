@@ -82,7 +82,7 @@ def generate_weekly_plan(
         f"위 데이터를 바탕으로 이번 주({monday_str} 시작)의 주간 계획 초안을 작성하세요."
     )
 
-    logger.info(f"[WeeklyPlanner] 외부 LLM(Qwen3.6 27B)으로 주간 계획 생성 중...")
+    logger.info(f"[WeeklyPlanner] 외부 LLM(Qwen3.6 35B)으로 주간 계획 생성 중...")
     try:
         plan = llm.ask(
             user_prompt=user_prompt,
@@ -130,7 +130,7 @@ def main():
 
         if "(주간 계획 생성 실패" in plan_md:
             logger.error("[WeeklyPlanner] LLM 계획 생성 실패. 알림 발송 후 종료.")
-            send_alert("🚨 [Weekly Planner 에러]", "LLM(Qwen3.6 27B) 연결 실패로 주간 문서 초안을 생성하지 못했습니다.")
+            send_alert("🚨 [Weekly Planner 에러]", "LLM(Qwen3.6 35B) 연결 실패로 주간 문서 초안을 생성하지 못했습니다.")
             return
 
         logger.info(f"[WeeklyPlanner] Notion에 '{page_title}' 주간 페이지 작성 중...")
