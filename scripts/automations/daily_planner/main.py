@@ -77,6 +77,37 @@ def parse_tasks_from_notion_blocks(blocks: list) -> list[str]:
     return tasks
 
 
+def simple_briefing_fallback(tasks: list[str]) -> str:
+    """
+    LLM이 CoT만 뱉고 유효 출력이 없을 때 사용하는 단순 fallback.
+    태스크 목록을 규칙 기반으로 분류합니다.
+    """
+    AGENT_KEYWORDS = ["린트", "분석", "테스트", "문서", "자동", "git", "커밋", "빌드",
+                      "ci", "cd", "업데이트", "readme", "log", "report", "scan"]
+    HUMAN_KEYWORDS = ["회사", "미팅", "회의", "전화", "결정", "선택", "전략", "검토",
+                      "계획", "긍정", "협업", "관계", "발표", "면접"]
+
+    agent_tasks, human_tasks = [], []
+    for t in tasks:
+        t_lower = t.lower()
+        if any(k in t_lower for k in AGENT_KEYWORDS):
+            agent_tasks.append(t)
+        else:
+            human_tasks.append(t)
+
+    # 분류 안 된 건 human으로
+    if not agent_tasks and not human_tasks:
+        human_tasks = tasks
+
+    lines = ["## 🤖 에이전트 자율 실행:"]
+    lines += [f"- {t}" for t in agent_tasks] if agent_tasks else ["- (없음)"]
+    lines += ["", "## 👤 직접 처리 필요:"]
+    lines += [f"- {t}" for t in human_tasks] if human_tasks else ["- (없음)"]
+    lines += ["", "## 💡 오늘의 핵심 조언 (1줄):",
+              "> 오늘 가장 중요한 1가지에 먼저 집중하세요."]
+    return "\n".join(lines)
+
+
 def generate_morning_briefing(
     tasks: list[str],
     week_summary: Optional[dict],
@@ -87,38 +118,44 @@ def generate_morning_briefing(
     """
     [새 철학] 당신이 작성한 노션 계획을 읽고
     에이전트 실행 브리핑 + 전략 조언을 생성합니다.
-    계획을 '만들지' 않고 '읽고 분석'합니다.
+    LLM이 CoT만 뱉으면 simple_briefing_fallback으로 대체합니다.
     """
     tasks_text = "\n".join(f"- {t}" for t in tasks) if tasks else "(할 일 없음 — 노션에 계획을 작성해주세요)"
     week_goal = week_summary.get("weekly_goal", "") if week_summary else ""
 
     system_prompt = (
         "당신은 1인 개발자의 생산성 코치 겸 에이전트 실행 담당자입니다.\n"
-        "추론 과정은 생략하고 결과만 출력하세요.\n"
-        "개발자가 직접 작성한 오늘의 계획을 분석하여:\n"
-        "1. 에이전트가 자율 실행할 수 있는 항목 분류\n"
-        "2. 개발자가 직접 해야 할 항목 분류\n"
-        "3. 전략적 조언 1줄\n\n"
-        "출력 형식:\n"
+        "CRITICAL: 오직 '개발자가 작성한 오늘의 계획'에 있는 항목들만 분류해서 🤖/👤 영역에 배치하세요.\n"
+        "절대 로드맵이나 주간 목표에서 임의의 할 일을 지어내어 추가하면 안 됩니다. (로드맵은 조언 생성에만 참고하세요.)\n\n"
+        "추론 과정을 작성하더라도, 최종 출력 전에는 반드시 '===OUTPUT_START==='를 작성하고 그 아래에 결과만 출력하세요.\n\n"
+        "===OUTPUT_START===\n"
         "## 🤖 에이전트 자율 실행:\n"
-        "- [항목]\n\n"
+        "- [오직 개발자 계획에 있는 항목 중 에이전트가 자동화할 수 있는 것]\n\n"
         "## 👤 직접 처리 필요:\n"
-        "- [항목]\n\n"
+        "- [오직 개발자 계획에 있는 항목 중 사람이 직접 해야 하는 것]\n\n"
         "## 💡 오늘의 핵심 조언 (1줄):\n"
-        "> [조언]"
+        "> [로드맵을 참고한 생산성/마인드셋 조언]"
     )
     user_prompt = (
         f"오늘 날짜: {today_str}\n"
         f"주간 목표: {week_goal or '(없음)'}\n\n"
-        f"=== 개발자가 작성한 오늘의 계획 ===\n{tasks_text}\n\n"
-        f"=== 로드맵 컨텍스트 ===\n{roadmap[:1000]}"
+        f"=== 개발자가 작성한 오늘의 계획 (이 항목들만 분류할 것!) ===\n{tasks_text}\n\n"
+        f"=== 로드맵 컨텍스트 (조언 생성용으로만 참고할 것) ===\n{roadmap[:1000]}"
     )
 
     logger.info("[Planner] 아침 브리핑 생성 중 (노션 계획 분석)...")
-    result = llm.ask(user_prompt, system_prompt, use_external=True, max_tokens=800, temperature=0.3)
-    if not result:
-        result = llm.ask(user_prompt, system_prompt, use_external=False, max_tokens=800, temperature=0.3)
-    return result or "(브리핑 생성 실패)"
+
+    # 외부/로컬 LLM 시도 (이제 llm_client 내부에서 3회 사이클 알아서 처리함)
+    # 실패 시 Exception이 발생하도록 구조가 변경됨
+    try:
+        # 상태 메시지를 텔레그램으로 보내고 싶다면 llm_client를 호출하는 쪽에서 status_callback을 넘겨줘야 함
+        # 여기서는 기본 타임아웃만 설정
+        result = llm.ask(user_prompt, system_prompt, use_external=True, max_tokens=2500)
+        return result
+    except Exception as e:
+        logger.error(f"[Planner] 브리핑 생성 실패: {e}")
+        return f"⚠️ LLM 추론 서버 응답 불가: {e}"
+
 
 
 def get_git_commits_today() -> str:
