@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 """
-daily_planner/main.py  (v3 — 아침 실행 버전)
-==============================================
-변경사항:
-  - 실행 시점: 밤 22:00 → 아침 07:00
-  - 참조 데이터: 오늘 기록 → 어제(전날) Daily Log
-  - 페이지 생성: 내일 페이지 → 오늘 페이지 (하루 시작 시 준비)
-  - 회고: 지훈님이 저녁에 직접 작성 (봇이 생성하지 않음)
+daily_planner/main.py  (v4 — 새 위임 정책 반영)
+================================================
+핵심 철학 전환:
+  [이전] 에이전트가 계획 생성 → 당신이 읽음
+  [현재] 당신이 노션에 계획 작성 → 에이전트가 읽고 실행
 
-파이프라인:
-  전날 Daily Log (컨디션, 1가지, 태그)
-  + Weekly System (주간 목표)
-  + ROADMAP.md (현재 Phase)
-  → 외부 Qwen3.6 35B (오늘 계획 초안)
-  → Notion 오늘 페이지 생성
-  → Telegram 알림
+아침 파이프라인 (07:00):
+  당신이 노션에 오늘 계획 작성
+  → /start 텔레그램 커맨드 전송
+  → 에이전트가 노션 계획 읽기 + 실행 브리핑
+  → 텔레그램으로 "작업 시작합니다" 보고
+
+저녁 파이프라인 (18:00):
+  에이전트가 오늘 완료 작업 자동 집계
+  → 전문가 피드백 + 개선 제안 생성
+  → 노션 + 텔레그램으로 리포트 발송
+  → 당신이 /feedback 으로 지시하면 즉시 실행
 """
 
 import sys
@@ -48,126 +50,75 @@ def get_roadmap_context() -> str:
         return roadmap_path.read_text(encoding="utf-8")[:3000]
     return "(ROADMAP.md를 찾을 수 없습니다)"
 
-def generate_today_plan(
-    yesterday_log: List[dict],
+
+def get_delegation_context() -> str:
+    """CORE/DELEGATION.md 에서 위임 정책을 읽어옵니다."""
+    delegation_path = REPO_PATH / "CORE" / "DELEGATION.md"
+    if delegation_path.exists():
+        return delegation_path.read_text(encoding="utf-8")[:2000]
+    return "(DELEGATION.md 없음)"
+
+
+def parse_tasks_from_notion_blocks(blocks: list) -> list[str]:
+    """노션 블록에서 할 일 항목만 파싱합니다."""
+    tasks = []
+    for block in blocks:
+        block_type = block.get("type", "")
+        if block_type == "to_do":
+            rich_text = block.get("to_do", {}).get("rich_text", [])
+            text = "".join(t.get("plain_text", "") for t in rich_text).strip()
+            if text:
+                tasks.append(text)
+        elif block_type == "bulleted_list_item":
+            rich_text = block.get("bulleted_list_item", {}).get("rich_text", [])
+            text = "".join(t.get("plain_text", "") for t in rich_text).strip()
+            if text.startswith("[ ]"):
+                tasks.append(text[3:].strip())
+    return tasks
+
+
+def generate_morning_briefing(
+    tasks: list[str],
+    week_summary: Optional[dict],
     roadmap: str,
     llm: LLMClient,
     today_str: str,
-    week_summary: Optional[dict] = None,
 ) -> str:
     """
-    전날 Daily Log + 주간 목표 + ROADMAP을 기반으로
-    오늘의 실행 계획 초안을 생성합니다.
+    [새 철학] 당신이 작성한 노션 계획을 읽고
+    에이전트 실행 브리핑 + 전략 조언을 생성합니다.
+    계획을 '만들지' 않고 '읽고 분석'합니다.
     """
-    # 전날 기록 요약
-    if yesterday_log:
-        yd = yesterday_log[0]
-        yesterday_date = yd.get("date", "")
-        
-        # 값이 없거나 예외인 경우 50점(보통)으로 처리
-        raw_condition = yd.get("condition")
-        try:
-            condition = int(raw_condition) if raw_condition is not None else 50
-        except ValueError:
-            condition = 50
-            
-        one_thing = yd.get("one_thing", "")
-        tags = ", ".join(yd.get("tags", [])) or "없음"
-        
-        # 100점 만점 기준 이모지
-        condition_emoji = "🟢" if condition >= 70 else "🟡" if condition >= 40 else "🔴"
-
-        yesterday_summary = (
-            f"날짜: {yesterday_date}\n"
-            f"컨디션: {condition_emoji} {condition}/100\n"
-            f"어제의 1가지: {one_thing or '(미작성)'}\n"
-            f"태그: {tags}"
-        )
-    else:
-        yesterday_summary = "(전날 Daily Log 기록 없음 — 기본 컨디션(50점)으로 계획)"
-        condition = 50  # 기본값
-
-    # 컨디션(100점 만점)에 따라 계획 강도 조정 지시
-    if condition <= 30:
-        intensity_guide = f"컨디션이 낮음({condition}점)이므로 오늘은 1~2개 핵심 태스크만 계획하고 나머지는 버퍼로 남겨두세요."
-    elif condition >= 80:
-        intensity_guide = f"컨디션이 높음({condition}점)이므로 Deep Work 블록을 최우선 배치하고 집중이 필요한 작업을 앞에 넣으세요."
-    else:
-        intensity_guide = f"적당한 컨디션({condition}점)이므로 Deep Work 1블록 + 가벼운 작업으로 균형 있게 구성하세요."
-
-    # 주간 목표 컨텍스트
-    week_context = ""
-    if week_summary:
-        week_context = (
-            f"\n=== 이번 주 목표 (Weekly System) ===\n"
-            f"주간 목표: {week_summary.get('weekly_goal', '(없음)')}\n"
-            f"다음 행동: {week_summary.get('next_first_action', '(없음)')}"
-        )
+    tasks_text = "\n".join(f"- {t}" for t in tasks) if tasks else "(할 일 없음 — 노션에 계획을 작성해주세요)"
+    week_goal = week_summary.get("weekly_goal", "") if week_summary else ""
 
     system_prompt = (
-        "당신은 1인 개발자 레거시 설계자의 스마트한 생산성 코치입니다.\n"
-        "추론 과정(Thinking process)은 최대한 짧게 핵심만 하세요.\n"
-        "어제 기록과 주간 목표를 종합하여 오늘 하루의 실행 계획을 '제안'합니다.\n\n"
-        "출력 구조:\n"
-        "1. ## 🧠 Coach's Guide (오늘의 전략 제안)\n"
-        "   - 인용구(`>`)를 사용하여 어제 대비 오늘의 전략적 방향성 1줄 요약\n"
-        "   - 데이터(컨디션, 로드맵)를 기반으로 한 3가지 전략 옵션(Option A/B/C) 브리핑\n"
-        "2. ## 📝 실제 계획 (지훈님의 최종 선택)\n"
-        "   - 아래 템플릿 구조를 그대로 출력하되, [ ] 내부에는 AI가 추천하는 내용을 샘플로 채워주세요.\n\n"
-        "규칙:\n"
-        f"1. {intensity_guide}\n"
-        "2. 오직 지정된 템플릿 구조와 마크다운 형식만 사용하여 출력하세요. 불필요한 사족은 절대 금지합니다.\n\n"
-        "템플릿 (이 구조를 유지하세요):\n"
-        "## 📝 실제 계획 (지훈님의 최종 선택)\n"
-        "- 오늘의 할 일 Top 3\n"
-        "    - [ ] [AI 추천 내용]\n"
-        "    - [ ] \n"
-        "    - [ ] \n"
-        "- 오늘 지키고 싶은 원칙 1가지:\n"
-        "- 회고\n"
-        "    - 배운 것:\n"
-        "    - 감사한 것:\n"
-        "    - 개선할 것 1가지:"
+        "당신은 1인 개발자의 생산성 코치 겸 에이전트 실행 담당자입니다.\n"
+        "추론 과정은 생략하고 결과만 출력하세요.\n"
+        "개발자가 직접 작성한 오늘의 계획을 분석하여:\n"
+        "1. 에이전트가 자율 실행할 수 있는 항목 분류\n"
+        "2. 개발자가 직접 해야 할 항목 분류\n"
+        "3. 전략적 조언 1줄\n\n"
+        "출력 형식:\n"
+        "## 🤖 에이전트 자율 실행:\n"
+        "- [항목]\n\n"
+        "## 👤 직접 처리 필요:\n"
+        "- [항목]\n\n"
+        "## 💡 오늘의 핵심 조언 (1줄):\n"
+        "> [조언]"
     )
-
     user_prompt = (
-        f"오늘 날짜: {today_str}\n\n"
-        f"=== 전날 Daily Log ===\n{yesterday_summary}\n"
-        f"{week_context}\n\n"
-        f"=== 프로젝트 로드맵 ===\n{roadmap[:2000]}\n\n"
-        f"위 데이터를 바탕으로 오늘({today_str})의 실행 계획 초안을 작성하세요."
+        f"오늘 날짜: {today_str}\n"
+        f"주간 목표: {week_goal or '(없음)'}\n\n"
+        f"=== 개발자가 작성한 오늘의 계획 ===\n{tasks_text}\n\n"
+        f"=== 로드맵 컨텍스트 ===\n{roadmap[:1000]}"
     )
 
-    logger.info(f"[Planner] 외부 Qwen3.6 35B로 오늘 계획 생성 중...")
-    plan = None
-    try:
-        plan = llm.ask(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            use_external=True,
-            max_tokens=3500,
-            temperature=0.4,
-        )
-    except Exception as e:
-        logger.error(f"[Planner] 외부 계획 생성 중 예외 발생: {e}")
-
-    if not plan:
-        logger.warning("[Planner] 외부 LLM 3회 실패 -> 로컬 Qwen 14B로 Fallback 시도")
-        try:
-            plan = llm.ask(
-                user_prompt=user_prompt,
-                system_prompt=system_prompt,
-                use_external=False,
-                max_tokens=3500,
-                temperature=0.4,
-            )
-            if plan:
-                plan += "\n\n> ⚠️ **Fallback Notice**: 외부 파이프라인 (Qwen3.6 35B) 통신 무응답으로 인해, 로컬 서버 (Qwen 14B)로 자동 전환(Fallback)되어 생성된 계획입니다."
-        except Exception as e:
-            logger.error(f"[Planner] 로컬 계획 생성 중 예외 발생: {e}")
-
-    # 계획 리턴
-    return plan or "(계획 생성 실패 — 로그를 확인하세요)"
+    logger.info("[Planner] 아침 브리핑 생성 중 (노션 계획 분석)...")
+    result = llm.ask(user_prompt, system_prompt, use_external=True, max_tokens=800, temperature=0.3)
+    if not result:
+        result = llm.ask(user_prompt, system_prompt, use_external=False, max_tokens=800, temperature=0.3)
+    return result or "(브리핑 생성 실패)"
 
 
 def get_git_commits_today() -> str:
@@ -187,122 +138,57 @@ def get_git_commits_today() -> str:
         return "(커밋 내역을 가져올 수 없습니다)"
 
 
-def generate_evening_retrospective(
-    git_commits: str,
-    llm: LLMClient,
-    today_str: str,
-) -> str:
-    """
-    오늘의 커밋 등을 바탕으로 저녁 회고 제안을 작성합니다.
-    """
-    system_prompt = (
-        "당신은 1인 개발자 레거시 설계자의 생산성 코치입니다.\n"
-        "추론 과정(Thinking process)은 최대한 짧게 핵심만 하세요.\n"
-        "오늘 진행된 작업 내역(Git 커밋 등)을 보고, 지훈님이 저녁 회고를 쉽게 작성할 수 있도록\n"
-        "오늘의 성과 요약과 성찰을 위한 질문을 제공합니다.\n\n"
-        "출력 형식:\n"
-        "## 🌅 오늘의 작업 요약\n"
-        "- (커밋 기반 주요 작업 1~3줄 요약)\n\n"
-        "## 💡 코치의 회고 제안 (성찰 질문)\n"
-        "1. (잘한 점, 혹은 더 깊이 생각해볼 질문)\n"
-        "2. (내일 개선하면 좋을 부분)"
-    )
 
-    user_prompt = (
-        f"오늘 날짜: {today_str}\n\n"
-        f"=== 오늘 작업 내역 (Git Commits) ===\n{git_commits[:2000]}\n\n"
-        f"위 데이터를 바탕으로 오늘 하루를 마무리하는 회고 및 성찰 제안을 작성해 주세요."
-    )
-
-    logger.info("[Planner] 외부 Qwen3.6 35B로 저녁 회고 제안 생성 중...")
-    retro = None
-    try:
-        retro = llm.ask(
-            user_prompt=user_prompt,
-            system_prompt=system_prompt,
-            use_external=True,
-            max_tokens=2000,
-            temperature=0.4,
-        )
-    except Exception as e:
-        logger.error(f"[Planner] 외부 회고 생성 중 예외 발생: {e}")
-
-    if not retro:
-        logger.warning("[Planner] 외부 LLM 3회 실패 -> 로컬 Qwen 14B로 회고 Fallback 시도")
-        try:
-            retro = llm.ask(
-                user_prompt=user_prompt,
-                system_prompt=system_prompt,
-                use_external=False,
-                max_tokens=800,
-                temperature=0.4,
-            )
-            if retro:
-                retro += "\n\n> ⚠️ **Fallback Notice**: 외부 파이프라인 무응답으로 인해, 로컬 서버(Qwen 14B)를 사용하여 강제 생성된 회고입니다."
-        except Exception as e:
-            logger.error(f"[Planner] 로컬 회고 생성 중 예외 발생: {e}")
-        
-    return retro or "(회고 제안 생성 실패 — 로그를 확인하세요)"
 
 
 def run_morning_routine(notion: NotionClient, llm: LLMClient, telegram: TelegramClient, today_str: str):
-    logger.info("🌅 [아침 루틴] 오늘의 계획 생성 시작")
-    
-    # 중복 실행 방지
-    if notion.get_today_page_id():
-        logger.info(f"⏭️ 이미 오늘({today_str})의 계획 페이지가 Notion에 존재합니다. 중복 생성을 막기 위해 종료합니다.")
+    """
+    [새 철학] 아침 루틴:
+    - 에이전트가 계획을 만들지 않음
+    - 당신이 노션에 작성한 계획을 읽고 실행 브리핑 제공
+    - /start 커맨드와 동일한 역할 (자동 실행 버전)
+    """
+    logger.info("🌅 [아침 루틴] 노션 오늘 계획 읽기 시작")
+    telegram.send(f"☀️ [{today_str}] 노션 오늘 계획을 확인합니다...")
+
+    page_id = notion.get_today_page_id()
+    if not page_id:
+        msg = (
+            f"⚠️ [{today_str}] 노션에 오늘 계획 페이지가 없습니다.\n\n"
+            f"📝 노션에 오늘 계획을 먼저 작성해주세요.\n"
+            f"작성 후 텔레그램에 /start 를 전송하면 에이전트가 시작합니다."
+        )
+        telegram.send(msg)
         return
 
-    telegram.send(f"☀️ [Daily Planner] {today_str} 오늘의 계획 초안을 생성합니다...")
-
-    yesterday_str = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-    logger.info(f"[Planner] 전날({yesterday_str}) Daily Log 읽는 중...")
-    yesterday_log = notion.get_yesterday_log()
-    
-    if yesterday_log:
-        yd = yesterday_log[0]
-        logger.info(f"[Planner] 전날 컨디션: {yd.get('condition')}/10 | 1가지: {yd.get('one_thing', '')[:40]}")
-    else:
-        logger.info("[Planner] 전날 기록 없음 — 로드맵만으로 계획 생성")
-
-    logger.info("[Planner] 이번 주 Weekly 목표 읽는 중...")
+    blocks = notion.get_page_blocks(page_id)
+    tasks = parse_tasks_from_notion_blocks(blocks)
     week_summary = notion.get_week_summary()
-
     roadmap = get_roadmap_context()
-    plan_md = generate_today_plan(yesterday_log, roadmap, llm, today_str, week_summary)
 
-    if "(계획 생성 실패" in plan_md:
-        logger.error("[Planner] LLM 계획 생성 실패. 알림 발송 후 종료.")
-        send_alert(telegram, "🚨 [Daily Planner 아침 장애]", "LLM(Qwen3.6 35B) 연결 또는 토큰 오류로 인해 계획 초안을 생성하지 못했습니다. 노트북 상태나 네트워크를 확인해주세요.")
-        return
+    briefing = generate_morning_briefing(tasks, week_summary, roadmap, llm, today_str)
 
-    logger.info(f"[Planner] Notion에 오늘 페이지 작성 중...")
-    
-    page_url = notion.create_daily_page(today_str, plan_md)
-    if not page_url:
-        logger.error("[Planner] Notion 페이지 생성 실패. 알림 발송 후 종료.")
-        send_alert(telegram, "🚨 [Daily Planner 아침 장애]", "Notion API 통신 실패 또는 권한 문제로 인해 페이지를 생성하지 못했습니다.")
-        return
-
-    preview = "\n".join(plan_md.split("\n")[:15])
-    if len(plan_md.split("\n")) > 15:
-        preview += "\n..."
-
+    tasks_text = "\n".join(f"  • {t}" for t in tasks) if tasks else "  (할 일 없음)"
     msg = (
-        f"☀️ [{today_str}] 오늘의 계획 초안\n\n"
-        f"{preview}\n\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"📝 Notion 확인 후 하루를 시작하세요!\n"
+        f"☀️ [{today_str}] 오늘 계획 확인 완료!\n\n"
+        f"📋 할 일 ({len(tasks)}개):\n{tasks_text}\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"{briefing}\n\n"
+        f"🚀 에이전트 작업 시작합니다!"
     )
-    if page_url:
-        msg += f"🔗 {page_url}"
-
-    telegram.send(msg)
-    logger.info(f"✅ Daily Planner (아침 루틴) 완료")
+    telegram.send_chunked(msg)
+    logger.info(f"✅ [아침 루틴] 완료 — {len(tasks)}개 태스크 확인")
 
 
 def run_evening_routine(notion: NotionClient, llm: LLMClient, telegram: TelegramClient, today_str: str):
-    logger.info("🌆 [저녁 루틴] 오늘 성과 정리 및 회고 제안 시작")
+    """
+    [새 철학] 저녁 루틴:
+    - 에이전트가 오늘 완료 작업을 자동 집계 (당신이 기록하지 않음)
+    - 전문가 피드백 + 개선 제안 자동 생성
+    - 노션 + 텔레그램으로 리포트 발송
+    - 당신은 /feedback 으로 지시만 하면 됨
+    """
+    logger.info("🌆 [저녁 루틴] 에이전트 자동 리포트 생성 시작")
     
     page_id = notion.get_today_page_id()
     if not page_id:
@@ -350,10 +236,13 @@ def run_evening_routine(notion: NotionClient, llm: LLMClient, telegram: Telegram
         preview += "\n..."
 
     msg = (
-        f"🌙 [{today_str}] 저녁 회고 제안\n\n"
+        f"🌙 [{today_str}] 에이전트 저녁 리포트\n\n"
         f"{preview}\n\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"📝 Notion 페이지에 추가되었습니다. 직접 회고를 완료해보세요!\n"
+        f"💬 피드백이나 추가 지시가 있으면:\n"
+        f"/feedback [내용] 으로 전송해주세요.\n"
+        f"예) /feedback 카카오 로그인 내일 먼저 해줘\n"
+        f"\n/done 으로 오늘을 마무리할 수 있습니다."
     )
     
     telegram.send(msg)
