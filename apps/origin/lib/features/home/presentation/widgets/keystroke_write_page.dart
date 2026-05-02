@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -8,6 +7,11 @@ import 'package:origin/core/services/database_service.dart';
 import 'package:origin/core/services/preference_service.dart';
 import 'package:origin/core/theme/app_theme.dart';
 import 'package:origin/core/utils/keystroke_tracker.dart';
+import 'package:origin/features/authentic_analyzer/data/metrics/rhythm_entropy_metric.dart';
+import 'package:origin/features/authentic_analyzer/data/metrics/revision_pattern_metric.dart';
+import 'package:origin/features/authentic_analyzer/data/metrics/vocabulary_richness_metric.dart';
+import 'package:origin/features/authentic_analyzer/data/metrics/temporal_consistency_metric.dart';
+
 import 'authenticity_score_page.dart';
 
 /// Page for composing text while tracking keystroke dynamics.
@@ -26,6 +30,8 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
   String _summary = '';
   bool _saving = false;
   String _prevText = '';
+  int _backspaceCount = 0;
+  final List<int> _eventDeleteFlags = [];
   String? _sessionId;
 
   @override
@@ -53,11 +59,47 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
     _controller.dispose();
     _focusNode.dispose();
     _tracker.clear();
+    _eventDeleteFlags.clear();
     super.dispose();
   }
 
   void _onTextChanged() {
     final currentText = _controller.text;
+
+    // Track backspace and insert operations per-character
+    final prevLen = _prevText.length;
+    final curLen = currentText.length;
+    if (curLen < prevLen) {
+      final deleted = prevLen - curLen;
+      _backspaceCount += deleted;
+      for (var i = 0; i < deleted; i++) {
+        _eventDeleteFlags.add(1);
+      }
+    } else if (curLen > prevLen) {
+      final added = curLen - prevLen;
+      for (var i = 0; i < added; i++) {
+        _eventDeleteFlags.add(0);
+      }
+    } else {
+      // Same length — compute actual insert/delete counts via prefix/suffix split
+      var prefixEnd = 0;
+      while (prefixEnd < prevLen &&
+          _prevText[prefixEnd] == currentText[prefixEnd]) {
+        prefixEnd++;
+      }
+      final oldRemainLen = prevLen - prefixEnd;
+      final newRemainLen = curLen - prefixEnd;
+      final commonSuffix = oldRemainLen < newRemainLen ? oldRemainLen : newRemainLen;
+      final delLen = oldRemainLen - commonSuffix;
+      final insLen = newRemainLen - commonSuffix;
+      for (var i = 0; i < delLen; i++) {
+        _eventDeleteFlags.add(1);
+      }
+      for (var i = 0; i < insLen; i++) {
+        _eventDeleteFlags.add(0);
+      }
+    }
+
     _tracker.onTextChange(oldText: _prevText, newText: currentText);
     _prevText = currentText;
     _updateSummary();
@@ -73,7 +115,7 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
         : 0;
 
     setState(() {
-      _summary = '$chars chars · $keystrokes keystrokes · Avg RTI: $avgRTI ms';
+      _summary = '$chars chars · $keystrokes keys · $_backspaceCount del · Avg RTI: $avgRTI ms';
     });
   }
 
@@ -86,7 +128,8 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
   }
 
   /// Compute score metrics. Called BEFORE tracker.clear().
-  Map<String, dynamic> _computeScores() {
+  Map<String, dynamic> _computeScores({int? backspaceCount}) {
+    final effectiveBackspace = backspaceCount ?? _backspaceCount;
     final tdeltas = _tracker.getTdeltas();
     if (tdeltas.isEmpty) {
       return {
@@ -102,50 +145,27 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
       };
     }
 
-    // Rhythm Entropy - Shannon entropy of t_delta buckets / max entropy
-    final buckets = [0, 0, 0, 0, 0];
-    for (final t in tdeltas) {
-      if (t <= 50) buckets[0]++;
-      else if (t <= 100) buckets[1]++;
-      else if (t <= 200) buckets[2]++;
-      else if (t <= 500) buckets[3]++;
-      else buckets[4]++;
-    }
-
-    double entropy = 0.0;
-    for (final count in buckets) {
-      if (count > 0) {
-        final p = count / tdeltas.length;
-        entropy -= p * (math.log(p) / math.log(2));
-      }
-    }
-    final rhythmEntropy = math.log(5) / math.log(2) > 0
-        ? entropy / (math.log(5) / math.log(2))
-        : 0.0;
+    // Rhythm Entropy
+    final rhythmEntropy = RhythmEntropyMetric.compute(tdeltas);
 
     // Revision Pattern
-    final revisionScore = 1.0; // No backspace tracking
+    final totalEvents = tdeltas.length + effectiveBackspace;
+    final backspaceRatio = totalEvents > 0
+        ? effectiveBackspace / totalEvents
+        : 0.0;
+    final revisionScore = RevisionPatternMetric.compute(
+      eventCount: _tracker.recentEvents.length,
+      backspaceCount: effectiveBackspace,
+    );
 
     // Vocabulary Richness (Type-Token Ratio)
-    final words = _controller.text
-        .toLowerCase()
-        .split(RegExp(r'\s+'))
-        .where((w) => w.isNotEmpty)
-        .toList();
-    final vocabRichness = words.isNotEmpty
-        ? words.toSet().length / words.length
-        : 0.0;
+    final vocabRichness = VocabularyRichnessMetric.compute(_controller.text);
 
     // Temporal Consistency
+    final temporalConsistency = TemporalConsistencyMetric.compute(tdeltas);
+
+    // Mean for return map display
     final mean = tdeltas.reduce((a, b) => a + b) / tdeltas.length;
-    final variance = mean > 0
-        ? tdeltas
-            .map((t) => math.pow(t - mean, 2))
-            .reduce((a, b) => a + b) /
-            tdeltas.length
-        : 0.0;
-    final cv = mean > 0 ? math.sqrt(variance) / mean : 0;
-    final temporalConsistency = 1.0 / (1.0 + cv);
 
     // Composite score
     final composite = (0.35 * rhythmEntropy +
@@ -162,7 +182,7 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
       'temporalConsistency': temporalConsistency,
       'tdeltas': tdeltas,
       'avgResponseTime': '${mean.round()}ms',
-      'backspaceRatio': '0.0%',
+      'backspaceRatio': '${(backspaceRatio * 100).toStringAsFixed(1)}%',
       'typeTokenRatio': vocabRichness.toStringAsFixed(2),
     };
   }
@@ -187,6 +207,10 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
 
     setState(() => _saving = true);
 
+    // Capture backspace count before tracking state changes
+    final savedBackspaceCount = _backspaceCount;
+    _backspaceCount = 0;
+
     try {
       // 1. Save content to database
       await globalDatabaseService.updateSessionContent(
@@ -195,14 +219,15 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
       );
 
       // 2. Compute scores BEFORE clearing the tracker
-      final scores = _computeScores();
+      final scores = _computeScores(backspaceCount: savedBackspaceCount);
       final tdeltas = scores['tdeltas'] as List<double>;
       final eventIdCount = _tracker.recentEvents.length;
 
       // 3. Build event records from tracker data
       final events = <Map<String, dynamic>>[];
       final lastDelta = tdeltas.isNotEmpty ? tdeltas.last : 0;
-      for (final event in _tracker.recentEvents) {
+      for (var i = 0; i < _tracker.recentEvents.length; i++) {
+        final event = _tracker.recentEvents[i];
         events.add({
           'id': _generateUUID(),
           'session_id': _sessionId,
@@ -210,7 +235,7 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
           'key_name': event.key,
           't_delta': lastDelta,
           'timestamp': event.timestamp.toString(),
-          'is_backspace': false,
+          'is_backspace': i < _eventDeleteFlags.length && _eventDeleteFlags[i] == 1,
           'prev_length': 0,
           'new_length': 0,
         });
@@ -223,6 +248,7 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
       if (events.isNotEmpty) {
         await globalDatabaseService.insertKeystrokeEventsBatch(events);
         _tracker.clear();
+        _eventDeleteFlags.clear();
       }
 
       // 6. Create stamp
@@ -263,6 +289,8 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
       }
     } finally {
       if (mounted) setState(() => _saving = false);
+      // Always reset tracking state to prevent staleness on error
+      if (_eventDeleteFlags.isNotEmpty) _eventDeleteFlags.clear();
     }
   }
 

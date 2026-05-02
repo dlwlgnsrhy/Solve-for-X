@@ -94,6 +94,10 @@ class _StampsListPageState extends State<StampsListPage> {
                             0.0;
                     final sessionId = stamp['session_id'] as String? ?? '';
                     final userId = stamp['user_id'] as String? ?? '';
+                    final rhythmEntropy =
+                        (stamp['rhythm_entropy'] as num?)?.toDouble() ?? 0.0;
+                    final keystrokeEventCount =
+                        (stamp['keystroke_event_count'] as num?)?.toInt() ?? 0;
 
                     return StampCard(
                       date: date ?? DateTime.now(),
@@ -102,6 +106,8 @@ class _StampsListPageState extends State<StampsListPage> {
                       score: score,
                       sessionId: sessionId,
                       userId: userId,
+                      rhythmEntropy: rhythmEntropy,
+                      keystrokeEventCount: keystrokeEventCount,
                     ).animate().fadeIn(
                           duration: 300.ms,
                           delay: (300 + index * 80).ms,

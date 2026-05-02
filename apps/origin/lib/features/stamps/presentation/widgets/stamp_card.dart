@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:origin/core/theme/app_theme.dart';
@@ -13,6 +15,8 @@ class StampCard extends StatelessWidget {
   final double score;
   final String sessionId;
   final String userId;
+  final double rhythmEntropy;
+  final int keystrokeEventCount;
 
   const StampCard({
     super.key,
@@ -22,6 +26,8 @@ class StampCard extends StatelessWidget {
     required this.score,
     this.sessionId = '',
     this.userId = '',
+    this.rhythmEntropy = 0.0,
+    this.keystrokeEventCount = 0,
   });
 
   @override
@@ -86,9 +92,9 @@ class StampCard extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          // Share button
+          // Share button (opens share options)
           IconButton(
-            onPressed: () => _sharePDF(context),
+            onPressed: () => _showShareOptions(context),
             icon: const Icon(
               Icons.share_rounded,
               size: 20,
@@ -107,6 +113,55 @@ class StampCard extends StatelessWidget {
           duration: 300.ms,
           curve: Curves.easeOut,
         );
+  }
+
+  void _showShareOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: BoxDecoration(
+          color: AppColor.cardBg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 32,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColor.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                leading: const Icon(Icons.picture_as_pdf,
+                    color: AppColor.neonGreen),
+                title: const Text('Share as PDF'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _sharePDF(context);
+                },
+              ),
+              ListTile(
+                leading:
+                    const Icon(Icons.code, color: AppColor.neonGreen),
+                title: const Text('Share as JSON'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _shareJSON(context);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _sharePDF(BuildContext context) async {
@@ -210,6 +265,43 @@ class StampCard extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('PDF 공유 중 오류: $e'),
+            backgroundColor: AppColor.cardBg,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _shareJSON(BuildContext context) async {
+    try {
+      final cert = <String, dynamic>{
+        'type': 'origin_stamp',
+        'app': 'Origin',
+        'package': 'com.sfx.origin',
+        'version': '1.0.0',
+        'session_id': sessionId,
+        'user_id': userId,
+        'content_hash': 'sha256:$title',
+        'content_length': characters,
+        'timestamp': date.toIso8601String(),
+        'authenticity_score': score,
+        'rhythm_entropy': rhythmEntropy,
+        'revision_pattern_score': score,
+        'keystroke_event_count': keystrokeEventCount,
+      };
+
+      final jsonString =
+          const JsonEncoder.withIndent('  ').convert(cert);
+
+      await Share.share(jsonString,
+          subject: 'Origin Stamp — Authentication Certificate');
+    } catch (e) {
+      debugPrint('[StampCard] Error sharing JSON: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('JSON 공유 중 오류: $e'),
             backgroundColor: AppColor.cardBg,
             behavior: SnackBarBehavior.floating,
           ),

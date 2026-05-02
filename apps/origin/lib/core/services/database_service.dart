@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
@@ -452,6 +454,142 @@ class DatabaseService {
 
   Future<Map<String, dynamic>?> getFingerprint() async {
     return (await _database?.rawQuery('SELECT * FROM $_tblFingerprint WHERE id = 1'))?.first;
+  }
+
+  /// Builds the user's intellectual fingerprint from all completed sessions
+  /// and upserts it into the fingerprint table.
+  Future<void> buildFingerprint() async {
+    final sessions = await getAllSessions();
+    if (sessions.isEmpty) return;
+
+    // Filter to only completed sessions
+    final completedSessions = sessions.where((s) => s[_colSessionsIsCompleted] == 1).toList();
+    if (completedSessions.isEmpty) return;
+
+    // Build per-session stats
+    final vocabRichnessValues = <double>[];
+    final avgTDeltas = <double>[];
+    final revisionRatios = <double>[];
+    final functionWordRatios = <double>[];
+    final sentenceLengthStddevs = <double>[];
+
+    for (final session in completedSessions) {
+      final sessionId = session[_colSessionsId] as String;
+      final content = session[_colSessionsContent] as String? ?? '';
+      final events = await getEventsForSession(sessionId);
+
+      // Vocabulary richness (Type-Token Ratio)
+      vocabRichnessValues.add(_computeVocabularyRichness(content));
+
+      // Average t_delta from events
+      final tdeltas = events
+          .map((e) => (e[_colEventsTDelta] as num?)?.toDouble() ?? 0)
+          .toList();
+      if (tdeltas.isNotEmpty) {
+        final sum = tdeltas.reduce((a, b) => a + b);
+        avgTDeltas.add(sum / tdeltas.length);
+      } else {
+        avgTDeltas.add(0.0);
+      }
+
+      // Revision ratio: backspaces / total events
+      int backspaceCount = 0;
+      for (final event in events) {
+        if ((event[_colEventsIsBackspace] as int?) == 1) {
+          backspaceCount++;
+        }
+      }
+      revisionRatios.add(events.isNotEmpty ? backspaceCount / events.length : 0.0);
+
+      // Function word ratio
+      functionWordRatios.add(_computeFunctionWordRatio(content));
+
+      // Sentence length standard deviation
+      sentenceLengthStddevs.add(_computeSentenceLengthStddev(content));
+    }
+
+    // Average across all sessions
+    final avgVocabRichness = _average(vocabRichnessValues);
+    final avgAvgTDelta = _average(avgTDeltas);
+    final avgRevisionRatio = _average(revisionRatios);
+    final avgFunctionWordRatio = _average(functionWordRatios);
+    final avgSentenceLengthStddev = _average(sentenceLengthStddevs);
+    final updatedAt = DateTime.now().toIso8601String();
+
+    await upsertFingerprint(
+      vocabularyRichness: avgVocabRichness,
+      avgTdelta: avgAvgTDelta,
+      revisionRatio: avgRevisionRatio,
+      functionWordRatio: avgFunctionWordRatio,
+      sentenceLengthStddev: avgSentenceLengthStddev,
+      updatedAt: updatedAt,
+    );
+  }
+
+  /// Compute Type-Token Ratio for content.
+  double _computeVocabularyRichness(String content) {
+    if (content.trim().isEmpty) return 0.0;
+    final words = content
+        .toLowerCase()
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .toList();
+    return words.isNotEmpty ? words.toSet().length / words.length : 0.0;
+  }
+
+  /// Compute the average of a list of values.
+  double _average(List<double> values) {
+    if (values.isEmpty) return 0.0;
+    return values.reduce((a, b) => a + b) / values.length;
+  }
+
+  /// Compute function word ratio: (stop words count / total word count).
+  double _computeFunctionWordRatio(String content) {
+    if (content.trim().isEmpty) return 0.0;
+    final words = content
+        .toLowerCase()
+        .split(RegExp(r'[^\p{L}]+', unicode: true))
+        .where((w) => w.isNotEmpty)
+        .toList();
+    if (words.isEmpty) return 0.0;
+
+    final stopWords = {
+      'a', 'an', 'the', 'and', 'or', 'but', 'nor', 'for', 'yet', 'so',
+      'in', 'on', 'at', 'to', 'of', 'with', 'by', 'from', 'as',
+      'is', 'was', 'are', 'were', 'be', 'been', 'being', 'have', 'has',
+      'had', 'do', 'does', 'did', 'will', 'would', 'shall', 'should',
+      'can', 'could', 'may', 'might', 'must', 'that', 'this', 'these',
+      'those', 'it', 'its', 'i', 'me', 'my', 'we', 'our', 'you', 'your',
+      'he', 'him', 'his', 'she', 'her', 'they', 'them', 'their', 'what',
+      'which', 'who', 'whom', 'whose', 'where', 'when', 'why', 'how',
+    };
+
+    int stopWordCount = 0;
+    for (final word in words) {
+      if (stopWords.contains(word)) {
+        stopWordCount++;
+      }
+    }
+    return stopWordCount / words.length;
+  }
+
+  /// Compute standard deviation of sentence lengths (split by '.', '!', '?').
+  double _computeSentenceLengthStddev(String content) {
+    final sentences = content
+        .split(RegExp(r'[.!?]+'))
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .map((s) => s.length.toDouble())
+        .toList();
+
+    if (sentences.length <= 1) return 0.0;
+
+    final mean = sentences.reduce((a, b) => a + b) / sentences.length;
+    final variance = sentences
+        .map((s) => (s - mean) * (s - mean))
+        .reduce((a, b) => a + b) /
+        sentences.length;
+    return math.sqrt(variance);
   }
 
   // ---------------------------------------------------------------------------

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:origin/core/services/database_service.dart';
 import 'package:origin/core/theme/app_theme.dart';
+import 'package:origin/features/authentic_analyzer/presentation/widgets/fingerprint_view.dart';
 import 'score_gauge.dart';
 
 /// Page displaying the authenticity score with live metrics from the latest stamp.
@@ -20,6 +21,7 @@ class _AuthenticityScorePageState extends State<AuthenticityScorePage> {
   String _avgResponseTime = '--';
   String _backspaceRatio = '--';
   String _typeTokenRatio = '--';
+  Map<String, dynamic>? _fingerprint;
   bool _isLoading = true;
   final List<String> _errors = [];
 
@@ -90,6 +92,16 @@ class _AuthenticityScorePageState extends State<AuthenticityScorePage> {
           }
         }
 
+        // Load fingerprint data (build if needed)
+        Map<String, dynamic>? fingerprint;
+        try {
+          // Try to build fingerprint from completed sessions
+          await globalDatabaseService.buildFingerprint();
+          fingerprint = await globalDatabaseService.getFingerprint();
+        } catch (e) {
+          debugPrint('[AuthenticityScorePage] Fingerprint error: $e');
+        }
+
         if (mounted) {
           setState(() {
             _isLoading = false;
@@ -99,6 +111,7 @@ class _AuthenticityScorePageState extends State<AuthenticityScorePage> {
             _avgResponseTime = avgRTI;
             _backspaceRatio = backspaceRatio;
             _typeTokenRatio = typeTokenRatio;
+            _fingerprint = fingerprint;
           });
         }
       }
@@ -206,18 +219,7 @@ class _AuthenticityScorePageState extends State<AuthenticityScorePage> {
 
         const SizedBox(height: 24),
 
-        // Intellectual Fingerprint
-        Text(
-          'Your Intellectual Fingerprint',
-          style: style.textTheme.titleMedium!.copyWith(
-            color: AppColor.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-        ).animate().fadeIn(duration: 400.ms, delay: 1000.ms),
-
-        const SizedBox(height: 16),
-
-        // Metric cards row 2
+        // Per-session metrics
         Wrap(
           spacing: 12,
           runSpacing: 12,
@@ -227,7 +229,15 @@ class _AuthenticityScorePageState extends State<AuthenticityScorePage> {
             _metricCard('Type-Token Ratio', _typeTokenRatio, style),
           ],
         ).animate().slide(begin: const Offset(0, 0.15))
-            .fadeIn(delay: 1200.ms),
+            .fadeIn(delay: 1000.ms),
+
+        const SizedBox(height: 24),
+
+        // Long-term intellectual fingerprint
+        if (_fingerprint != null) ...[
+          FingerprintView(fingerprint: _fingerprint!).animate()
+              .fadeIn(duration: 400.ms, delay: 1200.ms),
+        ],
       ],
     );
   }
