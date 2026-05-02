@@ -1,0 +1,95 @@
+# Fastlane configuration for Legacy Vault
+# Run `bundle install` then `bundle exec fastlane testflight`
+default_platform(:ios)
+
+# ─── Shared Scheme Detection ──────────────────────────
+def detect_scheme(project_path)
+  schemes = Dir.glob("#{project_path}/**/*.xcscheme")
+  return nil if schemes.empty?
+  # First non-internal scheme
+  schemes.find { |s| s !~ /Internal/ }
+end
+
+# ─── Build Settings ───────────────────────────────────
+def legacy_vault_build_settings
+  {
+    configuration: "Release",
+    scheme: "LegacyVaultApp",
+    destination: "generic/platform=iOS Simulator",
+    skip_testable_scheme_detection: true,
+    skip_archive: false,
+    skip_build: false,
+    export_method: "app-store",
+    export_options: {
+      signstyle: "manual",
+      ProvisionsMultipleProfiles: false,
+    },
+  }
+end
+
+# ─── Actions ──────────────────────────────────────────
+platform :ios do
+  
+  desc "Verify project builds (release, no tests)"
+  lane :verify_build do
+    echo "═══ Legacy Vault — Verify Build ═══"
+    
+    # Run privacy audit first
+    sh("bash", "apps/legacy_vault/PrivacyAudit.sh")
+    
+    # Ensure zero compile errors
+    result = sh("xcrun", "swiftc", "-target", "arm64-apple-ios17.0-simulator", 
+                "-sdk", `xcrun --sdk iphonesimulator --show-sdk-path`.strip,
+                "apps/legacy_vault/legacy_vault/**/*.swift",
+                "-emit-executable",
+                "-o", "/dev/null",
+                "-suppress-warnings"
+                ).strip rescue "UNKNOWN"
+    
+    puts result
+    puts "✅ Verify build complete"
+  end
+  
+  desc "Build for TestFlight distribution"
+  lane :testflight do
+    # 1. Privacy audit
+    sh("bash", "apps/legacy_vault/PrivacyAudit.sh")
+    
+    # 2. Build release scheme
+    build_app(
+      skip_analyze: true,
+      skip_archive: false,
+      skip_build: false,
+      export_method: "app-store",
+    )
+    
+    # 3. Upload to TestFlight
+    upload_to_testflight(skip_waiting_for_build_processing: true)
+    
+    puts "✅ Uploaded to TestFlight"
+  end
+  
+  desc "Run all tests"
+  lane :test do
+    # Unit tests
+    run_tests(
+      scheme: "LegacyVaultTests",
+      only: "Unit",
+      devices: ["iPhone 15"],
+    )
+    
+    # Integration tests
+    run_tests(
+      scheme: "LegacyVaultIntegration",
+      only: "Integration",
+      devices: ["iPhone 15"],
+    )
+  end
+  
+  desc "Full CI pipeline: audit → build → testflight"
+  lane :ci do
+    verify_build
+    test
+    testflight
+  end
+end

@@ -1,0 +1,30 @@
+{
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/BackupStatusView.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/BackupStatusView.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/BackupStatusView.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/BackupStatusView.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/BackupStatusView.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/BackupStatusView.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/GuardianDeadManView.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/GuardianDeadManView.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/GuardianDeadManView.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/GuardianDeadManView.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/GuardianDeadManView.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/GuardianDeadManView.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/GuardianMainView.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/GuardianMainView.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/GuardianMainView.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/GuardianMainView.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/GuardianMainView.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/GuardianMainView.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/HeirManagerView.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/HeirManagerView.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/HeirManagerView.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/HeirManagerView.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/HeirManagerView.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/HeirManagerView.swiftdeps"
+  }
+}

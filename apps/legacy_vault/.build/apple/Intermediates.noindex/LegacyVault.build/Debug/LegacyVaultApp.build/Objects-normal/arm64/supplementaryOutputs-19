@@ -1,0 +1,30 @@
+{
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/SoulMiningMainView.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/SoulMiningMainView.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/SoulMiningMainView.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/SoulMiningMainView.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/SoulMiningMainView.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/SoulMiningMainView.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/SoulMiningSummaryView.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/SoulMiningSummaryView.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/SoulMiningSummaryView.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/SoulMiningSummaryView.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/SoulMiningSummaryView.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/SoulMiningSummaryView.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/VoicePlayerView.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/VoicePlayerView.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/VoicePlayerView.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/VoicePlayerView.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/VoicePlayerView.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/VoicePlayerView.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/KeywordCloudView.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/KeywordCloudView.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/KeywordCloudView.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/KeywordCloudView.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/KeywordCloudView.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/arm64/KeywordCloudView.swiftdeps"
+  }
+}

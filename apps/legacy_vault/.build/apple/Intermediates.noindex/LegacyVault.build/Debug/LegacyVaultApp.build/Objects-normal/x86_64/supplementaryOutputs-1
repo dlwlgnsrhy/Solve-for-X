@@ -1,0 +1,37 @@
+{
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/DerivedSources/resource_bundle_accessor.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/resource_bundle_accessor.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/resource_bundle_accessor.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/resource_bundle_accessor.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/resource_bundle_accessor.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/resource_bundle_accessor.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/App/AppRouter.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/AppRouter.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/AppRouter.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/AppRouter.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/AppRouter.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/AppRouter.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/App/LegacyVaultApp.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/LegacyVaultApp.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/LegacyVaultApp.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/LegacyVaultApp.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/LegacyVaultApp.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/LegacyVaultApp.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Database/DatabaseManager.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/DatabaseManager.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/DatabaseManager.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/DatabaseManager.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/DatabaseManager.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/DatabaseManager.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Database/Schema.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/Schema.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/Schema.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/Schema.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/Schema.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/Schema.swiftdeps"
+  }
+}

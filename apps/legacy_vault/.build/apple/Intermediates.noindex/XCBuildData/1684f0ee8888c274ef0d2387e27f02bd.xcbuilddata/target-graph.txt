@@ -1,0 +1,11 @@
+Target dependency graph (5 targets)
+Target 'AllExcludingTests' in project 'Aggregate'
+➜ Explicit dependency on target 'LegacyVaultApp_-3F4369488A423D70_PackageProduct' in project 'LegacyVault'
+➜ Explicit dependency on target 'LegacyVault_LegacyVaultApp' in project 'LegacyVault'
+Target 'LegacyVaultApp_-3F4369488A423D70_PackageProduct' in project 'LegacyVault'
+➜ Explicit dependency on target 'LegacyVault_LegacyVaultApp' in project 'LegacyVault'
+➜ Explicit dependency on target 'KeychainAccess_2B8FF55066FFBF8C_PackageProduct' in project 'KeychainAccess'
+Target 'KeychainAccess_2B8FF55066FFBF8C_PackageProduct' in project 'KeychainAccess'
+➜ Explicit dependency on target 'KeychainAccess' in project 'KeychainAccess'
+Target 'KeychainAccess' in project 'KeychainAccess' (no dependencies)
+Target 'LegacyVault_LegacyVaultApp' in project 'LegacyVault' (no dependencies)

@@ -1,0 +1,902 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+    "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVault_LegacyVaultApp.bundle/Assets.xcassets" : {
+      "inputs" : [
+        {
+          "kind" : "directory",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Resources/Assets.xcassets"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "directory",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVault_LegacyVaultApp.bundle/Assets.xcassets"
+        }
+      ]
+    },
+    "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVault_LegacyVaultApp.bundle/Localization" : {
+      "inputs" : [
+        {
+          "kind" : "directory",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Resources/Localization"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "directory",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVault_LegacyVaultApp.bundle/Localization"
+        }
+      ]
+    }
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.KeychainAccess-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/KeychainAccess.build/sources",
+      "importPath" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/checkouts/KeychainAccess/Lib/KeychainAccess/Keychain.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/KeychainAccess.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "KeychainAccess",
+      "moduleOutputPath" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/Modules/KeychainAccess.swiftmodule",
+      "objects" : [
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/KeychainAccess.build/Keychain.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-Onone",
+        "-enable-testing",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/KeychainAccess.build/include/KeychainAccess-Swift.h",
+        "-swift-version",
+        "5",
+        "-Xfrontend",
+        "-experimental-lazy-typecheck",
+        "-Xfrontend",
+        "-experimental-skip-all-function-bodies",
+        "-Xfrontend",
+        "-experimental-allow-module-with-compiler-errors",
+        "-Xfrontend",
+        "-empty-abi-descriptor",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-suppress-warnings"
+      ],
+      "outputFileMapPath" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/KeychainAccess.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/Modules/KeychainAccess.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : true,
+      "sources" : [
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/checkouts/KeychainAccess/Lib/KeychainAccess/Keychain.swift"
+      ],
+      "tempsPath" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/KeychainAccess.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.LegacyVaultApp-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/sources",
+      "importPath" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/App/AppRouter.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/App/LegacyVaultApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Database/DatabaseManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Database/Schema.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/ChatMessage.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/InheritanceContact.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/ValueKeyword.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/VaultRecord.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/VoiceLogEntry.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/AppLifecycleService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/DeadManSwitchService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/EmbeddingService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/EncryptionService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/LocalLLMService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/NotificationHandler.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/STTService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/VectorDBService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/iCloudBackupService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Theme/AppColors.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Utilities/DateFormatters.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Utilities/KeychainHelper.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/BackupStatusView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/GuardianDeadManView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/GuardianMainView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/HeirManagerView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/VaultDecryptionView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/home/HomeDashboardView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/legacy_agent/presentation/LegacyAgentChatView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/legacy_agent/presentation/LegacyAgentMainView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/legacy_agent/presentation/LegacyAgentPersonaView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/onboarding/OnboardingFlowView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/AIContextView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/RecordingView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/SoulMiningMainView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/SoulMiningSummaryView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/VoicePlayerView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/KeywordCloudView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMapView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMappingMainView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMappingTimelineView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/DerivedSources/resource_bundle_accessor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<LegacyVaultApp-arm64-apple-macosx26.0-debug.module-resources>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/Modules/KeychainAccess.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "LegacyVaultApp",
+      "moduleOutputPath" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/Modules/LegacyVaultApp.swiftmodule",
+      "objects" : [
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/AppRouter.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/LegacyVaultApp.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/DatabaseManager.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/Schema.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/ChatMessage.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/InheritanceContact.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/ValueKeyword.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/VaultRecord.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/VoiceLogEntry.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/AppLifecycleService.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/DeadManSwitchService.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/EmbeddingService.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/EncryptionService.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/LocalLLMService.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/NotificationHandler.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/STTService.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/VectorDBService.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/iCloudBackupService.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/AppColors.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/DateFormatters.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/KeychainHelper.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/BackupStatusView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/GuardianDeadManView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/GuardianMainView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/HeirManagerView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/VaultDecryptionView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/HomeDashboardView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/LegacyAgentChatView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/LegacyAgentMainView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/LegacyAgentPersonaView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/OnboardingFlowView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/AIContextView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/RecordingView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/SoulMiningMainView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/SoulMiningSummaryView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/VoicePlayerView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/KeywordCloudView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/ValueMapView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/ValueMappingMainView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/ValueMappingTimelineView.swift.o",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/resource_bundle_accessor.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-Onone",
+        "-enable-testing",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_AVAILABLE",
+        "-module-cache-path",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "LegacyVaultApp_main",
+        "-swift-version",
+        "6",
+        "-Xfrontend",
+        "-experimental-lazy-typecheck",
+        "-Xfrontend",
+        "-experimental-skip-all-function-bodies",
+        "-Xfrontend",
+        "-experimental-allow-module-with-compiler-errors",
+        "-Xfrontend",
+        "-empty-abi-descriptor",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "legacy_vault"
+      ],
+      "outputFileMapPath" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/Modules/LegacyVaultApp.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : true,
+      "sources" : [
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/App/AppRouter.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/App/LegacyVaultApp.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Database/DatabaseManager.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Database/Schema.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/ChatMessage.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/InheritanceContact.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/ValueKeyword.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/VaultRecord.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/VoiceLogEntry.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/AppLifecycleService.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/DeadManSwitchService.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/EmbeddingService.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/EncryptionService.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/LocalLLMService.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/NotificationHandler.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/STTService.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/VectorDBService.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/iCloudBackupService.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Theme/AppColors.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Utilities/DateFormatters.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Utilities/KeychainHelper.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/BackupStatusView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/GuardianDeadManView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/GuardianMainView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/HeirManagerView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/VaultDecryptionView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/home/HomeDashboardView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/legacy_agent/presentation/LegacyAgentChatView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/legacy_agent/presentation/LegacyAgentMainView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/legacy_agent/presentation/LegacyAgentPersonaView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/onboarding/OnboardingFlowView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/AIContextView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/RecordingView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/SoulMiningMainView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/SoulMiningSummaryView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/VoicePlayerView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/KeywordCloudView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMapView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMappingMainView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMappingTimelineView.swift",
+        "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/DerivedSources/resource_bundle_accessor.swift"
+      ],
+      "tempsPath" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "KeychainAccess" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "KeychainAccess",
+      "-c",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/checkouts/KeychainAccess/Lib/KeychainAccess/Keychain.swift",
+      "-I",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-Onone",
+      "-enable-testing",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/KeychainAccess.build/include/KeychainAccess-Swift.h",
+      "-swift-version",
+      "5",
+      "-Xfrontend",
+      "-experimental-lazy-typecheck",
+      "-Xfrontend",
+      "-experimental-skip-all-function-bodies",
+      "-Xfrontend",
+      "-experimental-allow-module-with-compiler-errors",
+      "-Xfrontend",
+      "-empty-abi-descriptor",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-suppress-warnings",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "LegacyVaultApp" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "LegacyVaultApp",
+      "-package-name",
+      "legacy_vault",
+      "-c",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/App/AppRouter.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/App/LegacyVaultApp.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Database/DatabaseManager.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Database/Schema.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/ChatMessage.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/InheritanceContact.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/ValueKeyword.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/VaultRecord.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/VoiceLogEntry.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/AppLifecycleService.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/DeadManSwitchService.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/EmbeddingService.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/EncryptionService.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/LocalLLMService.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/NotificationHandler.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/STTService.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/VectorDBService.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/iCloudBackupService.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Theme/AppColors.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Utilities/DateFormatters.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Utilities/KeychainHelper.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/BackupStatusView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/GuardianDeadManView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/GuardianMainView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/HeirManagerView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/VaultDecryptionView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/home/HomeDashboardView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/legacy_agent/presentation/LegacyAgentChatView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/legacy_agent/presentation/LegacyAgentMainView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/legacy_agent/presentation/LegacyAgentPersonaView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/onboarding/OnboardingFlowView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/AIContextView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/RecordingView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/SoulMiningMainView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/SoulMiningSummaryView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/VoicePlayerView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/KeywordCloudView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMapView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMappingMainView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMappingTimelineView.swift",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/DerivedSources/resource_bundle_accessor.swift",
+      "-I",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-Onone",
+      "-enable-testing",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_AVAILABLE",
+      "-module-cache-path",
+      "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "LegacyVaultApp_main",
+      "-swift-version",
+      "6",
+      "-Xfrontend",
+      "-experimental-lazy-typecheck",
+      "-Xfrontend",
+      "-experimental-skip-all-function-bodies",
+      "-Xfrontend",
+      "-experimental-allow-module-with-compiler-errors",
+      "-Xfrontend",
+      "-empty-abi-descriptor",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "legacy_vault",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "KeychainAccess" : [
+
+    ],
+    "LegacyVaultApp" : [
+      "KeychainAccess"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/KeychainAccess.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/checkouts/KeychainAccess/Lib/KeychainAccess/Keychain.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/KeychainAccess.build/sources"
+    },
+    "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/App/AppRouter.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/App/LegacyVaultApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Database/DatabaseManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Database/Schema.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/ChatMessage.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/InheritanceContact.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/ValueKeyword.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/VaultRecord.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Models/VoiceLogEntry.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/AppLifecycleService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/DeadManSwitchService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/EmbeddingService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/EncryptionService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/LocalLLMService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/NotificationHandler.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/STTService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/VectorDBService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/iCloudBackupService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Theme/AppColors.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Utilities/DateFormatters.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Utilities/KeychainHelper.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/BackupStatusView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/GuardianDeadManView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/GuardianMainView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/HeirManagerView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/guardian/presentation/VaultDecryptionView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/home/HomeDashboardView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/legacy_agent/presentation/LegacyAgentChatView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/legacy_agent/presentation/LegacyAgentMainView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/legacy_agent/presentation/LegacyAgentPersonaView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/onboarding/OnboardingFlowView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/AIContextView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/RecordingView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/SoulMiningMainView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/SoulMiningSummaryView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/soul_mining/presentation/VoicePlayerView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/KeywordCloudView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMapView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMappingMainView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMappingTimelineView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/DerivedSources/resource_bundle_accessor.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/LegacyVaultApp.build/sources"
+    },
+    "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/index-build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

@@ -74,12 +74,12 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
                   ),
                 ],
               ),
-            ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.3, end: 0),
+            ).animate().fadeIn(duration: const Duration(milliseconds: 600)).slideY(begin: -0.3, end: 0),
             const SizedBox(height: 4),
             Text(
               '당신의 남은 인생을 주간으로 시각화합니다',
               style: Theme.of(context).textTheme.bodyLarge,
-            ).animate().fadeIn(duration: 600.ms, delay: 200.ms).slideY(begin: -0.2, end: 0),
+            ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 200)).slideY(begin: -0.2, end: 0),
             const SizedBox(height: 40),
 
             // Birth Date with glow feedback
@@ -181,7 +181,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
                   ),
                 ),
               ),
-            ).animate().fadeIn(duration: 600.ms, delay: 400.ms).slideY(begin: 0.3, end: 0),
+            ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 400)).slideY(begin: 0.3, end: 0),
             const SizedBox(height: 32),
 
             // Target Age with improved slider
@@ -248,7 +248,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
                   ),
                 ],
               ),
-            ).animate().fadeIn(duration: 600.ms, delay: 600.ms).slideY(begin: 0.3, end: 0),
+            ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 600)).slideY(begin: 0.3, end: 0),
             const SizedBox(height: 32),
 
             // EULA with improved formatting
@@ -313,7 +313,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
                   ),
                 ],
               ),
-            ).animate().fadeIn(duration: 600.ms, delay: 800.ms).slideY(begin: 0.3, end: 0),
+            ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 800)).slideY(begin: 0.3, end: 0),
             const SizedBox(height: 40),
 
             // Submit button with gradient
@@ -375,7 +375,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
                   ),
                 ),
               ),
-            ).animate().fadeIn(duration: 600.ms, delay: 1000.ms).slideY(begin: 0.5, end: 0),
+            ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 1000)).slideY(begin: 0.5, end: 0),
             const SizedBox(height: 20),
           ],
         ),
@@ -623,8 +623,8 @@ class _EulaDialogState extends State<_EulaDialog> {
                       ],
                     ),
                   ).animate()
-                      .fadeIn(duration: 300.ms, delay: (index * 80).ms)
-                      .slideY(begin: 0.2, end: 0, duration: 300.ms);
+                      .fadeIn(duration: const Duration(milliseconds: 300), delay: (index * 80).ms)
+                      .slideY(begin: 0.2, end: 0, duration: const Duration(milliseconds: 300));
                 },
               ),
             ),

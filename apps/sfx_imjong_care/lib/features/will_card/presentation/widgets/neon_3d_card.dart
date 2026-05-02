@@ -39,11 +39,11 @@ class Neon3DWillCard extends StatelessWidget {
             .scale(
               begin: const Offset(0.8, 0.8),
               end: const Offset(1, 1),
-              duration: 700.ms,
+              duration: const Duration(milliseconds: 700),
               curve: Curves.easeOutBack,
             )
             .then()
-            .fadeIn(duration: 500.ms);
+            .fadeIn(duration: const Duration(milliseconds: 500));
       },
     );
   }
@@ -147,7 +147,7 @@ class _WillCardContent extends StatelessWidget {
           ),
         ),
       ],
-    ).animate().fadeIn(duration: 400.ms).slide(
+    ).animate().fadeIn(duration: const Duration(milliseconds: 400)).slide(
       begin: const Offset(-0.3, 0),
       end: const Offset(0, 0),
     );
@@ -166,7 +166,7 @@ class _WillCardContent extends StatelessWidget {
             color: Colors.white,
             letterSpacing: 2,
           ),
-        ).animate().fadeIn(duration: 500.ms).slide(
+        ).animate().fadeIn(duration: const Duration(milliseconds: 500)).slide(
           begin: const Offset(0, 0.3),
           end: const Offset(0, 0),
         ),
@@ -179,8 +179,8 @@ class _WillCardContent extends StatelessWidget {
             color: NeonColors.neonCyan,
           ),
         ).animate().fadeIn(
-          duration: 500.ms,
-          delay: 150.ms,
+          duration: const Duration(milliseconds: 500),
+          delay: const Duration(milliseconds: 150),
         ),
       ],
     );
@@ -236,7 +236,7 @@ class _WillCardContent extends StatelessWidget {
           ),
         ],
       ).animate().fadeIn(
-        duration: 400.ms,
+        duration: const Duration(milliseconds: 400),
         delay: (index * 200).ms,
       ),
     );
@@ -267,7 +267,7 @@ class _WillCardContent extends StatelessWidget {
           ),
         ),
       ),
-    ).animate().fadeIn(duration: 300.ms);
+    ).animate().fadeIn(duration: const Duration(milliseconds: 300));
   }
 
   Widget _buildWill() {
@@ -291,8 +291,8 @@ class _WillCardContent extends StatelessWidget {
           fontStyle: FontStyle.italic,
         ),
       ).animate().fadeIn(
-        duration: 600.ms,
-        delay: 200.ms,
+        duration: const Duration(milliseconds: 600),
+        delay: const Duration(milliseconds: 200),
       ),
     );
   }

@@ -1,0 +1,75 @@
+# -------------------------------------------------
+# Xcode / Swift 기본 무시 규칙
+# -------------------------------------------------
+DerivedData/
+build/
+*.xcworkspace
+*.xcodeproj/project.xcworkspace/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/
+*.xcuserdata
+*.xcuserstate
+*.ipa
+*.app
+*.dSYM/
+*.framework/
+*.xcframework/
+*.swiftpm/
+*.swiftformat
+*.xcconfig
+
+# -------------------------------------------------
+# Swift Package Manager (SPM) 캐시
+# -------------------------------------------------
+.swiftpm/
+Packages/
+Package.resolved
+
+# -------------------------------------------------
+# CocoaPods
+# -------------------------------------------------
+Pods/
+Podfile.lock
+*.xcworkspace
+
+# -------------------------------------------------
+# Carthage (만약 사용한다면)
+# -------------------------------------------------
+Carthage/
+Carthage/Checkouts/
+Carthage/Build/
+
+# -------------------------------------------------
+# 테스트/코드 커버리지
+# -------------------------------------------------
+*.xccovreport
+*.xccovarchive
+*.profdata
+coverage/
+*.gcda
+*.gcno
+
+# -------------------------------------------------
+# 임시·로그 파일
+# -------------------------------------------------
+*.log
+*.swp
+*.DS_Store
+*.tmp
+*.bak
+
+# -------------------------------------------------
+# 대용량 리소스 (앱에 포함되지 않아도 되는 경우)
+# -------------------------------------------------
+*.sqlite*
+*.db*
+*.mp4
+*.mov
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.zip
+*.tar
+*.gz

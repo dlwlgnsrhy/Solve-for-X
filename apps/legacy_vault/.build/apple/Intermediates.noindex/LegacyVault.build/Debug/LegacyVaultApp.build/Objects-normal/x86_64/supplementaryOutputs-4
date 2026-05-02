@@ -1,0 +1,30 @@
+{
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/AppLifecycleService.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/AppLifecycleService.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/AppLifecycleService.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/AppLifecycleService.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/AppLifecycleService.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/AppLifecycleService.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/DeadManSwitchService.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/DeadManSwitchService.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/DeadManSwitchService.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/DeadManSwitchService.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/DeadManSwitchService.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/DeadManSwitchService.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/EmbeddingService.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/EmbeddingService.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/EmbeddingService.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/EmbeddingService.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/EmbeddingService.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/EmbeddingService.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Core/Services/EncryptionService.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/EncryptionService.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/EncryptionService.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/EncryptionService.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/EncryptionService.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/EncryptionService.swiftdeps"
+  }
+}

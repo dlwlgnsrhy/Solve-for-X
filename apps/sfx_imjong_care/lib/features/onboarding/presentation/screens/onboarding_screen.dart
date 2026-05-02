@@ -60,10 +60,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   ],
                 ),
-              ).animate().fadeIn(duration: 600.ms).slideY(
+              ).animate().fadeIn(duration: const Duration(milliseconds: 600)).slideY(
                     begin: -0.3,
                     end: 0,
-                    duration: 600.ms,
+                    duration: const Duration(milliseconds: 600),
                     curve: Curves.easeOut,
                   ),
 
@@ -80,8 +80,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   height: 1.5,
                 ),
               ).animate()
-                  .fadeIn(delay: 200.ms, duration: 600.ms)
-                  .slideY(begin: -0.3, end: 0, duration: 600.ms, curve: Curves.easeOut),
+                  .fadeIn(delay: const Duration(milliseconds: 200), duration: const Duration(milliseconds: 600))
+                  .slideY(begin: -0.3, end: 0, duration: const Duration(milliseconds: 600), curve: Curves.easeOut),
 
               const SizedBox(height: 8),
 
@@ -95,8 +95,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   height: 1.5,
                 ),
               ).animate()
-                  .fadeIn(delay: 350.ms, duration: 600.ms)
-                  .slideY(begin: -0.3, end: 0, duration: 600.ms, curve: Curves.easeOut),
+                  .fadeIn(delay: const Duration(milliseconds: 350), duration: const Duration(milliseconds: 600))
+                  .slideY(begin: -0.3, end: 0, duration: const Duration(milliseconds: 600), curve: Curves.easeOut),
 
               const Spacer(flex: 1),
 
@@ -134,8 +134,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
               ).animate()
-                  .fadeIn(delay: 500.ms, duration: 500.ms)
-                  .slideY(begin: 0.3, end: 0, duration: 500.ms, curve: Curves.easeOut),
+                  .fadeIn(delay: const Duration(milliseconds: 500), duration: const Duration(milliseconds: 500))
+                  .slideY(begin: 0.3, end: 0, duration: const Duration(milliseconds: 500), curve: Curves.easeOut),
 
               const SizedBox(height: 16),
             ],
@@ -156,11 +156,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           final template = CardTemplate.values[index];
           return _SampleCard(template: template)
               .animate()
-              .fadeIn(delay: (400 + index * 100).ms, duration: 500.ms)
+              .fadeIn(delay: (400 + index * 100).ms, duration: const Duration(milliseconds: 500))
               .slideX(
                 begin: index.isEven ? -0.5 : 0.5,
                 end: 0,
-                duration: 500.ms,
+                duration: const Duration(milliseconds: 500),
                 curve: Curves.easeOut,
               );
         },

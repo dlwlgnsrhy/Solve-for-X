@@ -1,0 +1,30 @@
+{
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/GeneratedAssetSymbols.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMapView.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMapView.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMapView.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMapView.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMapView.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMapView.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMappingMainView.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMappingMainView.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMappingMainView.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMappingMainView.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMappingMainView.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMappingMainView.swiftdeps"
+  },
+  "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/legacy_vault/Features/value_mapping/presentation/ValueMappingTimelineView.swift" : {
+    "const-values" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMappingTimelineView.swiftconstvalues",
+    "dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMappingTimelineView.d",
+    "diagnostics" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMappingTimelineView.dia",
+    "object" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMappingTimelineView.o",
+    "swift-dependencies" : "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/apple/Intermediates.noindex/LegacyVault.build/Debug/LegacyVaultApp.build/Objects-normal/x86_64/ValueMappingTimelineView.swiftdeps"
+  }
+}

@@ -468,7 +468,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 ],
               );
             },
-          ).animate().fadeIn(duration: 600.ms).scale(
+          ).animate().fadeIn(duration: const Duration(milliseconds: 600)).scale(
               begin: const Offset(0.8, 0.8), end: const Offset(1, 1)),
           const SizedBox(height: 8),
           Text(
@@ -478,7 +478,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               fontSize: 12,
               letterSpacing: 0.5,
             ),
-          ).animate().fadeIn(duration: 600.ms, delay: 200.ms),
+          ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 200)),
           const SizedBox(height: 28),
 
           // Target Age Section
@@ -488,7 +488,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             title: '목표 나이',
             subtitle: '${_currentTargetAge ?? 80}세',
             onTap: _showChangeTargetAgeDialog,
-          ).animate().fadeIn(duration: 500.ms, delay: 300.ms).slideY(begin: 0.2, end: 0),
+          ).animate().fadeIn(duration: const Duration(milliseconds: 500), delay: const Duration(milliseconds: 300)).slideY(begin: 0.2, end: 0),
           const SizedBox(height: 24),
 
           // Data Management Section
@@ -499,7 +499,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             subtitle: '모든 데이터를 삭제하고 다시 시작',
             isDestructive: true,
             onTap: _showResetDialog,
-          ).animate().fadeIn(duration: 500.ms, delay: 400.ms).slideY(begin: 0.2, end: 0),
+          ).animate().fadeIn(duration: const Duration(milliseconds: 500), delay: const Duration(milliseconds: 400)).slideY(begin: 0.2, end: 0),
           const SizedBox(height: 24),
 
           // About Section
@@ -509,21 +509,21 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             title: 'SFX Memento Mori에 대해',
             subtitle: '버전 1.0.0 · 개인정보 처리방침',
             onTap: _showAboutDialog,
-          ).animate().fadeIn(duration: 500.ms, delay: 500.ms).slideY(begin: 0.2, end: 0),
+          ).animate().fadeIn(duration: const Duration(milliseconds: 500), delay: const Duration(milliseconds: 500)).slideY(begin: 0.2, end: 0),
           const SizedBox(height: 12),
           _buildSettingsCard(
             icon: Icons.rate_review_outlined,
             title: '앱 평가하기',
             subtitle: '앱 스토어에서 리뷰 남기기',
             onTap: _rateApp,
-          ).animate().fadeIn(duration: 500.ms, delay: 600.ms).slideY(begin: 0.2, end: 0),
+          ).animate().fadeIn(duration: const Duration(milliseconds: 500), delay: const Duration(milliseconds: 600)).slideY(begin: 0.2, end: 0),
           const SizedBox(height: 12),
           _buildSettingsCard(
             icon: Icons.info_outline,
             title: '개인정보 처리방침',
             subtitle: '데이터 보호 정책 보기',
             onTap: _showPrivacyPolicyDialog,
-          ).animate().fadeIn(duration: 500.ms, delay: 700.ms).slideY(begin: 0.2, end: 0),
+          ).animate().fadeIn(duration: const Duration(milliseconds: 500), delay: const Duration(milliseconds: 700)).slideY(begin: 0.2, end: 0),
           const SizedBox(height: 32),
 
           // Version footer
@@ -536,7 +536,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 letterSpacing: 1,
               ),
             ),
-          ).animate().fadeIn(duration: 500.ms, delay: 800.ms),
+          ).animate().fadeIn(duration: const Duration(milliseconds: 500), delay: const Duration(milliseconds: 800)),
           const SizedBox(height: 20),
         ],
       ),

@@ -13,6 +13,7 @@ telegram_commander/main.py
   /report  → 즉시 리포트 생성
 """
 
+import os
 import sys
 import logging
 import argparse
@@ -29,6 +30,14 @@ from _shared import config
 from _shared.llm_client import LLMClient
 from _shared.telegram_client import TelegramClient
 from _shared.notion_client import NotionClient
+
+# 프로젝트 키워드와 실제 경로 매핑
+PROJECT_MAP = {
+    "Origin": "apps/origin",
+    "Legacy Vault": "apps/sfx_legacy_vault",
+    "Memento Mori": "apps/sfx_memento_mori",
+    "Imjong Care": "apps/sfx_imjong_care",
+}
 
 logging.basicConfig(
     level=logging.INFO,
@@ -182,14 +191,37 @@ def handle_confirm(telegram: TelegramClient, state: dict):
     )
     
     try:
+        # 작업 내용에서 프로젝트 키워드 추출하여 작업 경로(cwd) 결정
+        work_dir = REPO_PATH
+        for keyword, rel_path in PROJECT_MAP.items():
+            if keyword.lower() in agent_tasks.lower():
+                work_dir = REPO_PATH / rel_path
+                # 만약 디렉토리가 없으면 생성 (에이전트가 바로 작업할 수 있게)
+                if not work_dir.exists():
+                    work_dir.mkdir(parents=True, exist_ok=True)
+                    logger.info(f"[Commander] 새 프로젝트 디렉토리 생성: {work_dir}")
+                break
+
         # Hermes 실행 (백그라운드 독립 프로세스로)
-        prompt = f"다음 작업을 수행해:\n{agent_tasks}"
+        # 세션 ID 미리 생성 (모니터링 및 프로세스 관리를 위함)
+        session_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_") + os.urandom(3).hex()
+        
+        # 참조할 프로젝트 명세서가 있다면 프롬프트에 추가
+        spec_info = ""
+        for keyword in PROJECT_MAP:
+            if keyword.lower() in agent_tasks.lower():
+                spec_path = REPO_PATH / "CORE/projects" / f"{keyword.lower().replace(' ', '_')}.md"
+                if spec_path.exists():
+                    spec_info = f"\n\n[참조 명세서]: {spec_path}\n위 명세서의 기술 원칙과 AGENTS.md 지침을 엄격히 준수해."
+                break
+
+        prompt = f"다음 작업을 수행해:\n{agent_tasks}{spec_info}"
         hermes_bin = "/Users/apple/.local/bin/hermes"
         
         log_file = open("/tmp/hermes_worker.log", "w")
         subprocess.Popen(
-            [hermes_bin, "chat", "-q", prompt, "--yolo", "--max-turns", "15"],
-            cwd=str(REPO_PATH),
+            [hermes_bin, "chat", "-q", prompt, "--yolo", "--max-turns", "15", "--source", session_id],
+            cwd=str(work_dir),
             stdout=log_file,
             stderr=subprocess.STDOUT,
             start_new_session=True

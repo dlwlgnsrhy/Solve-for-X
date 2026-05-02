@@ -9,6 +9,26 @@
 /scripts/automations/visual_tester/cloudflared
 /scripts/automations/visual_tester/cloudflared.tgz
 
-# Logs
+# Logs & Runtime files
 /scripts/automations/health_receiver/*.out
 /scripts/automations/health_receiver/*.err
+/scripts/automations/telegram_commander/.state.json
+
+# Python cache (all automations)
+scripts/automations/**/__pycache__/
+scripts/automations/**/*.pyc
+
+# macOS
+.DS_Store
+**/.DS_Store
+apps/sfx_legacy_vault/lib/features/auth/presentation/screens/login_screen.dart
+apps/sfx_legacy_vault/lib/features/onboarding/presentation/screens/eula_screen.dart
+apps/sfx_legacy_vault/lib/features/onboarding/presentation/screens/setup_required_screen.dart
+apps/sfx_legacy_vault/lib/features/onboarding/presentation/screens/welcome_screen.dart
+apps/sfx_legacy_vault/lib/features/vault/presentation/screens/home_screen.dart
+apps/sfx_legacy_vault/lib/features/vault/presentation/screens/vault_setup_screen.dart
+apps/sfx_memento_mori/lib/features/home/presentation/pages/home_page.dart
+apps/sfx_memento_mori/lib/features/home/presentation/widgets/week_grid.dart
+apps/sfx_memento_mori/lib/features/onboarding/presentation/pages/onboarding_page.dart
+apps/sfx_memento_mori/lib/features/onboarding/presentation/pages/welcome_page.dart
+apps/sfx_memento_mori/lib/features/settings/presentation/pages/settings_page.dart

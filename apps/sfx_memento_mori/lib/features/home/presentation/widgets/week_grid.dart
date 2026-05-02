@@ -71,7 +71,7 @@ class _WeekGridState extends State<WeekGrid> {
                     fontWeight: FontWeight.w500,
                     letterSpacing: 2,
                   ),
-                ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.3, end: 0),
+                ).animate().fadeIn(duration: const Duration(milliseconds: 600)).slideY(begin: -0.3, end: 0),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -92,7 +92,7 @@ class _WeekGridState extends State<WeekGrid> {
                       ),
                     ).animate(
                       onPlay: (ctrl) => ctrl.repeat(period: 2.5.seconds),
-                    ).fadeIn(duration: 800.ms).slideY(begin: -0.5, end: 0)
+                    ).fadeIn(duration: const Duration(milliseconds: 800)).slideY(begin: -0.5, end: 0)
                         .scale(begin: const Offset(0.98, 0.98), end: const Offset(1, 1), duration: 1.seconds),
                     const SizedBox(width: 8),
                     Text(
@@ -102,7 +102,7 @@ class _WeekGridState extends State<WeekGrid> {
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
                       ),
-                    ).animate().fadeIn(duration: 800.ms, delay: 200.ms),
+                    ).animate().fadeIn(duration: const Duration(milliseconds: 800), delay: const Duration(milliseconds: 200)),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -112,7 +112,7 @@ class _WeekGridState extends State<WeekGrid> {
                     color: Colors.white54,
                     fontSize: 13,
                   ),
-                ).animate().fadeIn(duration: 800.ms, delay: 300.ms).slideY(begin: -0.3, end: 0),
+                ).animate().fadeIn(duration: const Duration(milliseconds: 800), delay: const Duration(milliseconds: 300)).slideY(begin: -0.3, end: 0),
                 const SizedBox(height: 4),
                 Text(
                   '"오늘을 소중히, 그 순간순간이 당신의 전부입니다"',
@@ -121,7 +121,7 @@ class _WeekGridState extends State<WeekGrid> {
                     fontSize: 12,
                     fontStyle: FontStyle.italic,
                   ),
-                ).animate().fadeIn(duration: 800.ms, delay: 400.ms),
+                ).animate().fadeIn(duration: const Duration(milliseconds: 800), delay: const Duration(milliseconds: 400)),
               ],
             ),
           ),
@@ -142,7 +142,7 @@ class _WeekGridState extends State<WeekGrid> {
                 currentWeekIndex: currentWeekIndex,
               ),
             ),
-          ).animate().fadeIn(duration: 1000.ms, delay: 200.ms),
+          ).animate().fadeIn(duration: const Duration(milliseconds: 1000), delay: const Duration(milliseconds: 200)),
 
           // Legend
           Padding(
@@ -162,7 +162,7 @@ class _WeekGridState extends State<WeekGrid> {
                 ),
               ],
             ),
-          ).animate().fadeIn(duration: 600.ms, delay: 600.ms),
+          ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 600)),
         ],
       ),
     );
@@ -204,7 +204,7 @@ class _WeekGridState extends State<WeekGrid> {
           }),
         ],
       ),
-    ).animate().fadeIn(duration: 600.ms, delay: 400.ms);
+    ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 400));
   }
 
   /// Builds the grid using ListView.builder for rows of weeks (performance).
@@ -262,8 +262,8 @@ class _WeekGridState extends State<WeekGrid> {
                     if (animateEntrance) {
                       cell = cell
                           .animate()
-                          .fadeIn(duration: 300.ms, delay: (index * 4).ms)
-                          .scale(begin: const Offset(0.5, 0.5), end: const Offset(1, 1), duration: 300.ms);
+                          .fadeIn(duration: const Duration(milliseconds: 300), delay: (index * 4).ms)
+                          .scale(begin: const Offset(0.5, 0.5), end: const Offset(1, 1), duration: const Duration(milliseconds: 300));
                     }
 
                     return SizedBox(width: cellSize, height: cellSize, child: cell);

@@ -81,7 +81,8 @@ def _monitor_loop(telegram_client: TelegramClient):
                         old_status = session_data["status"]
                         msg_id = session_data["msg_id"]
                         
-                        if status == "running":
+                        # 로컬 상태가 running일 때만 진행 상황 업데이트 시도
+                        if old_status == "running":
                             # 실행 중인데 메시지 카운트가 늘었거나 10초마다 한 번씩 경과 시간 업데이트
                             now = time.time()
                             if msg_count > session_data.get("last_count", -1) or (now - session_data.get("last_ui_update", 0) > 10):
@@ -127,9 +128,11 @@ def _monitor_loop(telegram_client: TelegramClient):
                                         session_data["msg_id"] = new_id
                         
                         import os
-                        is_process_dead = os.system('pgrep -f "hermes chat" > /dev/null') != 0
+                        # 해당 세션 ID를 가진 프로세스가 실제로 떠 있는지 확인
+                        is_process_dead = os.system(f'pgrep -f "{session_id}" > /dev/null') != 0
                         
                         # 프로세스가 죽었으면 즉각 종료 처리 (DB ended_at 누락 방어)
+                        # 단, 시작한지 너무 직후(5초 이내)에는 체크하지 않음 (프로세스 생성 지연 고려)
                         if is_process_dead and time.time() - session_data.get("start_time", time.time()) > 5:
                             status = "ended"
                             end_reason = "completed/exited"

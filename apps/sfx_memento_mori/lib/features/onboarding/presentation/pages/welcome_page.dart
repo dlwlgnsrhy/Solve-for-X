@@ -158,7 +158,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                   ],
                 ),
               ),
-            ).animate().fadeIn(duration: 1500.ms),
+            ).animate().fadeIn(duration: const Duration(milliseconds: 1500)),
           ),
 
           // Bottom cyan glow
@@ -177,7 +177,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                   ],
                 ),
               ),
-            ).animate().fadeIn(duration: 1500.ms, delay: 300.ms),
+            ).animate().fadeIn(duration: const Duration(milliseconds: 1500), delay: const Duration(milliseconds: 300)),
           ),
 
           // Main content
@@ -219,8 +219,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                       );
                     },
                   ).animate()
-                      .fadeIn(duration: 800.ms)
-                      .slideY(begin: -0.5, end: 0, duration: 800.ms),
+                      .fadeIn(duration: const Duration(milliseconds: 800))
+                      .slideY(begin: -0.5, end: 0, duration: const Duration(milliseconds: 800)),
                   const SizedBox(height: 8),
                   Text(
                     '일상적 죽음의 기억',
@@ -229,7 +229,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                       fontSize: 14,
                       letterSpacing: 3,
                     ),
-                  ).animate().fadeIn(duration: 800.ms, delay: 200.ms),
+                  ).animate().fadeIn(duration: const Duration(milliseconds: 800), delay: const Duration(milliseconds: 200)),
                   const Spacer(flex: 1),
 
                   // Big number display with animated counter
@@ -243,7 +243,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                           fontWeight: FontWeight.bold,
                           letterSpacing: 2,
                         ),
-                      ).animate().fadeIn(duration: 600.ms, delay: 400.ms),
+                      ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 400)),
                       Text(
                         '=',
                         style: TextStyle(
@@ -251,7 +251,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                           fontSize: 32,
                           fontWeight: FontWeight.w300,
                         ),
-                      ).animate().fadeIn(duration: 600.ms, delay: 500.ms),
+                      ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 500)),
                       Text(
                         '$_countedValue주',
                         style: TextStyle(
@@ -274,7 +274,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                             if (mounted) _counterController.forward(from: 0.0);
                           });
                         },
-                      ).fadeIn(duration: 800.ms, delay: 600.ms).scale(
+                      ).fadeIn(duration: const Duration(milliseconds: 800), delay: const Duration(milliseconds: 600)).scale(
                         begin: const Offset(0.95, 0.95),
                         end: const Offset(1, 1),
                         duration: 1.5.seconds,
@@ -309,8 +309,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                     ),
                   )
                       .animate()
-                      .fadeIn(duration: 800.ms, delay: 800.ms)
-                      .slideY(begin: 0.5, end: 0, duration: 800.ms),
+                      .fadeIn(duration: const Duration(milliseconds: 800), delay: const Duration(milliseconds: 800))
+                      .slideY(begin: 0.5, end: 0, duration: const Duration(milliseconds: 800)),
 
                   const SizedBox(height: 8),
                   Text(
@@ -320,7 +320,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                       fontSize: 14,
                       fontStyle: FontStyle.italic,
                     ),
-                  ).animate().fadeIn(duration: 600.ms, delay: 1000.ms),
+                  ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 1000)),
 
                   const Spacer(flex: 1),
 
@@ -368,8 +368,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                       ),
                     ),
                   ).animate()
-                      .fadeIn(duration: 600.ms, delay: 1200.ms)
-                      .slideY(begin: 0.5, end: 0, duration: 600.ms),
+                      .fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 1200))
+                      .slideY(begin: 0.5, end: 0, duration: const Duration(milliseconds: 600)),
 
                   const SizedBox(height: 20),
                 ],

@@ -439,16 +439,16 @@ class _HomePageState extends ConsumerState<HomePage>
               if (lifeStats != null)
                 _buildTodayBadge(lifeStats)
                     .animate()
-                    .fadeIn(duration: 500.ms, delay: 100.ms)
-                    .slideY(begin: -0.5, end: 0, duration: 500.ms),
+                    .fadeIn(duration: const Duration(milliseconds: 500), delay: const Duration(milliseconds: 100))
+                    .slideY(begin: -0.5, end: 0, duration: const Duration(milliseconds: 500)),
               if (lifeStats != null) const SizedBox(height: 8),
 
               // Premium stats card
               if (lifeStats != null)
                 _buildPremiumStats(context, lifeStats)
                     .animate()
-                    .fadeIn(duration: 600.ms)
-                    .slideY(begin: -0.3, end: 0, duration: 600.ms),
+                    .fadeIn(duration: const Duration(milliseconds: 600))
+                    .slideY(begin: -0.3, end: 0, duration: const Duration(milliseconds: 600)),
               if (lifeStats != null) const SizedBox(height: 16),
 
               // Week grid
@@ -572,7 +572,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     ),
                   ],
                 ),
-              ).animate().fadeIn(duration: 400.ms),
+              ).animate().fadeIn(duration: const Duration(milliseconds: 400)),
               const SizedBox(height: 2),
               Text(
                 '일상적 죽음의 기억',
@@ -581,7 +581,7 @@ class _HomePageState extends ConsumerState<HomePage>
                   fontSize: 11,
                   letterSpacing: 1,
                 ),
-              ).animate().fadeIn(duration: 400.ms, delay: 200.ms),
+              ).animate().fadeIn(duration: const Duration(milliseconds: 400), delay: const Duration(milliseconds: 200)),
             ],
           ),
           Row(
@@ -595,7 +595,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 ),
                 onPressed: _isSharing ? null : _shareGrid,
                 tooltip: '내 인생 공유하기',
-              ).animate().fadeIn(duration: 400.ms, delay: 300.ms),
+              ).animate().fadeIn(duration: const Duration(milliseconds: 400), delay: const Duration(milliseconds: 300)),
               // Settings button
               IconButton(
                 icon: const Icon(
@@ -607,7 +607,7 @@ class _HomePageState extends ConsumerState<HomePage>
                   MaterialPageRoute(builder: (_) => const SettingsPage()),
                 ),
                 tooltip: '설정',
-              ).animate().fadeIn(duration: 400.ms, delay: 300.ms),
+              ).animate().fadeIn(duration: const Duration(milliseconds: 400), delay: const Duration(milliseconds: 300)),
             ],
           ),
         ],
@@ -652,7 +652,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 progress: progress,
                 size: 72,
               ).animate()
-                  .fadeIn(duration: 800.ms, delay: 200.ms)
+                  .fadeIn(duration: const Duration(milliseconds: 800), delay: const Duration(milliseconds: 200))
                   .scale(begin: const Offset(0.8, 0.8), end: const Offset(1, 1)),
               const SizedBox(width: 16),
               // Main stats
@@ -689,7 +689,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       ],
                     ).animate(
                       onPlay: (ctrl) => ctrl.repeat(period: 3.seconds),
-                    ).fadeIn(duration: 800.ms, delay: 300.ms),
+                    ).fadeIn(duration: const Duration(milliseconds: 800), delay: const Duration(milliseconds: 300)),
                     const SizedBox(height: 4),
                     // Progress percentage
                     Text(
@@ -699,7 +699,7 @@ class _HomePageState extends ConsumerState<HomePage>
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
-                    ).animate().fadeIn(duration: 600.ms, delay: 350.ms),
+                    ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 350)),
                     // Time of day label
                     Text(
                       timeLabel,
@@ -707,7 +707,7 @@ class _HomePageState extends ConsumerState<HomePage>
                         color: Colors.white54,
                         fontSize: 11,
                       ),
-                    ).animate().fadeIn(duration: 600.ms, delay: 400.ms),
+                    ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 400)),
                   ],
                 ),
               ),
@@ -730,7 +730,7 @@ class _HomePageState extends ConsumerState<HomePage>
                             label: '지난 주',
                             value: _formatNumber(lifeStats.elapsedWeeks),
                             color: NeonColors.neonPink,
-                          ).animate().fadeIn(duration: 600.ms, delay: 400.ms),
+                          ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 400)),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -738,7 +738,7 @@ class _HomePageState extends ConsumerState<HomePage>
                             label: '남은 일수',
                             value: _formatNumber(remainingDays),
                             color: NeonColors.neonCyan,
-                          ).animate().fadeIn(duration: 600.ms, delay: 450.ms),
+                          ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 450)),
                         ),
                       ],
                     ),
@@ -750,7 +750,7 @@ class _HomePageState extends ConsumerState<HomePage>
                             label: '지금까지 산 시간',
                             value: '$elapsedYears년 $elapsedMonths개월',
                             color: NeonColors.neonGreen,
-                          ).animate().fadeIn(duration: 600.ms, delay: 500.ms),
+                          ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 500)),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -758,7 +758,7 @@ class _HomePageState extends ConsumerState<HomePage>
                             label: '현재 나이',
                             value: '${lifeStats.currentAge}세',
                             color: NeonColors.todayPulse,
-                          ).animate().fadeIn(duration: 600.ms, delay: 550.ms),
+                          ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 550)),
                         ),
                       ],
                     ),
@@ -802,7 +802,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 ),
               ],
             ),
-          ).animate().fadeIn(duration: 600.ms, delay: 600.ms),
+          ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 600)),
         ],
       ),
     );
