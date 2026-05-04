@@ -44,13 +44,13 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
-def fetch_recent_articles(feeds: list) -> List[dict]:
+def fetch_recent_articles(feeds: list) -> tuple[List[dict], int]:
     """모든 RSS 피드에서 요일에 맞춰 최근 N시간 이내 기사를 수집합니다."""
-    # 주말(토/일)에는 수집 범위를 넓힘
-    is_weekend = datetime.datetime.now().weekday() >= 5
-    hours = WEEKEND_COLLECT_HOURS if is_weekend else DEFAULT_COLLECT_HOURS
+    # 주말(토/일) 및 월요일에는 수집 범위를 넓힘 (주말 기사 포함)
+    is_weekend_or_monday = datetime.datetime.now().weekday() in [0, 5, 6]
+    hours = WEEKEND_COLLECT_HOURS if is_weekend_or_monday else DEFAULT_COLLECT_HOURS
     
-    logger.info(f"[RSS] 수집 범위 설정: {hours}시간 (주말 여부: {is_weekend})")
+    logger.info(f"[RSS] 수집 범위 설정: {hours}시간 (주말/월요일 여부: {is_weekend_or_monday})")
     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=hours)
     articles = []
 
@@ -81,53 +81,64 @@ def fetch_recent_articles(feeds: list) -> List[dict]:
             logger.warning(f"[RSS] {name} 수집 실패: {e}")
 
     logger.info(f"[RSS] 총 {len(articles)}건 수집 완료")
-    return articles
+    return articles, hours
 
 
 # ── 2단계: 로컬 LLM 1차 필터링 ───────────────────────────────
 def filter_relevant(articles: List[dict], keywords: List[str], client: LLMClient) -> List[dict]:
     """
-    로컬 Qwen 14B로 키워드 관련성을 판단합니다.
-    빠른 yes/no 판단만 요청하므로 속도 중심 모델을 사용합니다.
+    외부 LLM (Qwen3.6 35B)으로 키워드 관련성을 판단합니다.
+    모든 기사를 한 번에 배치(batch)로 전송하여 속도를 극대화합니다.
     """
     if not articles:
         return []
 
     keyword_str = ", ".join(keywords)
-    relevant = []
+    
+    # 1. 배치 프롬프트 구성
+    articles_text = ""
+    for idx, article in enumerate(articles):
+        articles_text += f"[{idx}] Title: {article['title']}\nSummary: {article['summary'][:200]}\n\n"
 
     system_prompt = (
-        "You are an expert technical news curator for a senior software engineer. "
-        "Your goal is to identify high-quality articles about software engineering, "
-        "infrastructure, and AI that would interest a professional developer. "
-        "Strictly follow the output format."
+        "You are an expert technical news curator. "
+        "Select up to 5 most relevant articles for a senior software engineer."
     )
 
-    for article in articles:
-        prompt = (
-            f"Keywords: {keyword_str}\n\n"
-            f"Title: {article['title']}\n"
-            f"Summary: {article['summary'][:300]}\n\n"
-            "Question: Is this article relevant to any of the keywords or core software engineering topics?\n"
-            "Reply with ONLY 'yes' or 'no'."
-        )
-        response = client.ask(
-            user_prompt=prompt,
-            system_prompt=system_prompt,
-            use_external=False,  # 로컬 Qwen 14B — 속도 우선
-            max_tokens=10,       # 안정성을 위해 10으로 상향
-            temperature=0.0,
-        )
-        
-        is_yes = response and "yes" in response.strip().lower()
-        if is_yes:
-            relevant.append(article)
-        
-        # 디버그 로그 강화 (나중에 분석 가능하도록)
-        logger.info(f"  - [{ 'PASS' if is_yes else 'SKIP' }] {article['title'][:50]}... (Response: {response.strip() if response else 'None'})")
+    prompt = (
+        f"Keywords: {keyword_str}\n\n"
+        f"Articles:\n{articles_text}\n"
+        "Question: Which articles are highly relevant to the keywords or core software engineering topics?\n"
+        "Review the list and select up to 5 most relevant article indices.\n"
+        "You MUST reply in the following exact format with a comma-separated list of indices:\n\n"
+        "===OUTPUT_START===\n"
+        "0, 3, 15"
+    )
 
-    logger.info(f"[Filter] {len(articles)}건 → {len(relevant)}건 관련 기사 선별")
-    return relevant[:MAX_ITEMS_TO_SUMMARIZE]
+    response = client.ask(
+        user_prompt=prompt,
+        system_prompt=system_prompt,
+        use_external=True,
+        max_tokens=2000,
+        temperature=0.0,
+        timeout=(10, 300),  # 배치 처리 및 추론 시간 확보를 위해 300초로 대폭 상향
+    )
+
+    relevant = []
+    if response:
+        # 응답에서 숫자만 추출
+        import re
+        indices = re.findall(r'\d+', response)
+        for idx_str in indices:
+            idx = int(idx_str)
+            if 0 <= idx < len(articles):
+                if articles[idx] not in relevant:
+                    relevant.append(articles[idx])
+                if len(relevant) >= MAX_ITEMS_TO_SUMMARIZE:
+                    break
+
+    logger.info(f"[Filter] {len(articles)}건 → {len(relevant)}건 관련 기사 선별 완료 (Batch 처리)")
+    return relevant
 
 
 # ── 3단계: 외부 LLM 고품질 요약 ──────────────────────────────
@@ -144,13 +155,17 @@ def summarize_articles(articles: List[dict], client: LLMClient) -> List[dict]:
             f"Source: {article['source']}\n\n"
             f"Summarize this article in exactly 2 Korean sentences. "
             f"Focus on: what happened, why it matters to a senior engineer. "
-            f"Be concrete and avoid vague language. No bullet points."
+            f"Be concrete and avoid vague language. No bullet points.\n\n"
+            f"You MUST format your response as:\n"
+            f"===OUTPUT_START===\n"
+            f"[Your summary]"
         )
         summary = client.ask(
             user_prompt=prompt,
             use_external=True,  # 외부 Qwen3.6 35B — 품질 우선
-            max_tokens=150,
+            max_tokens=2000,    # 요약 시에도 추론 과정을 넉넉하게 담기 위해 대폭 상향
             temperature=0.3,
+            timeout=(10, 300),  # 타임아웃 방지 (300초)
         )
         article["kr_summary"] = summary or "(요약 실패)"
         summarized.append(article)
@@ -159,7 +174,7 @@ def summarize_articles(articles: List[dict], client: LLMClient) -> List[dict]:
 
 
 # ── 4단계: Telegram 배달 ──────────────────────────────────────
-def send_briefing(articles: List[dict], fetched_count: int, telegram: TelegramClient) -> None:
+def send_briefing(articles: List[dict], fetched_count: int, telegram: TelegramClient, hours: int) -> None:
     """
     Telegram으로 뉴스 브리핑을 전송합니다.
     주의: parse_mode 없이 plain text로 전송합니다.
@@ -171,7 +186,7 @@ def send_briefing(articles: List[dict], fetched_count: int, telegram: TelegramCl
     if not articles:
         telegram.send(
             f"📰 [Daily Tech Brief] {today}\n\n"
-            f"오늘은 관심 키워드에 해당하는 새 기사가 없습니다.\n"
+            f"최근 {hours}시간 이내 관심 키워드에 해당하는 새 기사가 없습니다.\n"
             f"(총 {fetched_count}건 수집 → 0건 선별)"
         )
         return
@@ -222,20 +237,26 @@ def main():
     telegram.send("🚀 [News Curator] 오늘의 기술 브리핑 수집을 시작합니다...")
 
     # 1. RSS 수집
-    articles = fetch_recent_articles(feeds)
+    articles, hours = fetch_recent_articles(feeds)
 
     if not articles:
-        telegram.send("ℹ️ [News Curator] 최근 24시간 이내 수집된 기사가 없습니다.")
+        telegram.send(f"ℹ️ [News Curator] 최근 {hours}시간 이내 수집된 기사가 없습니다.")
         return
 
-    # 2. 로컬 LLM 필터링
-    relevant = filter_relevant(articles, keywords, llm)
+    try:
+        # 2. 외부 LLM 필터링
+        relevant = filter_relevant(articles, keywords, llm)
 
-    # 3. 외부 LLM 요약
-    summarized = summarize_articles(relevant, llm)
+        # 3. 외부 LLM 요약
+        summarized = summarize_articles(relevant, llm)
 
-    # 4. Telegram 배달
-    send_briefing(summarized, len(articles), telegram)
+        # 4. Telegram 배달
+        send_briefing(summarized, len(articles), telegram, hours)
+
+    except Exception as e:
+        err_msg = f"❌ [News Curator] 뉴스 처리 중 오류가 발생했습니다.\n에러 내용: {e}"
+        logger.error(err_msg)
+        telegram.send(err_msg)
 
     logger.info("✅ Daily News Curator 완료")
 
