@@ -32,3 +32,10 @@ apps/sfx_memento_mori/lib/features/home/presentation/widgets/week_grid.dart
 apps/sfx_memento_mori/lib/features/onboarding/presentation/pages/onboarding_page.dart
 apps/sfx_memento_mori/lib/features/onboarding/presentation/pages/welcome_page.dart
 apps/sfx_memento_mori/lib/features/settings/presentation/pages/settings_page.dart
+
+# Android: fastlane env & keystore files
+apps/origin/fastlane/.env
+android/release-key.jks
+android/app/release-key.jks
+android/*.keystore
+
