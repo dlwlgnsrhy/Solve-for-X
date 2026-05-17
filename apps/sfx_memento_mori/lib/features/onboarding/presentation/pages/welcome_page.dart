@@ -81,31 +81,19 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       vsync: this,
       duration: const Duration(milliseconds: 2500),
     );
-    _counterController.addStatusListener((status) {
-      if (status == AnimationStatus.forward) {
-        _startCounting();
-      }
-    });
-  }
-
-  void _startCounting() {
-    final duration = _counterController.duration!.inMilliseconds;
-    final startTime = DateTime.now();
-
-    void tick() {
-      if (!mounted) return;
-      final elapsed = DateTime.now().difference(startTime).inMilliseconds;
-      final progress = (elapsed / duration).clamp(0.0, 1.0);
-      // Ease out cubic for natural feel
-      final easedProgress = 1 - math.pow(1 - progress, 3);
+    _counterController.addListener(() {
+      final easedProgress = 1 - math.pow(1 - _counterController.value, 3);
       setState(() {
         _countedValue = (_targetValue * easedProgress).round();
       });
-      if (progress < 1.0) {
-        Future.delayed(const Duration(milliseconds: 16), tick);
+    });
+    
+    // Trigger counting once shortly after UI mounts
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) {
+        _counterController.forward(from: 0.0);
       }
-    }
-    tick();
+    });
   }
 
   @override
@@ -267,13 +255,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                           ],
                         ),
                       ).animate(
-                        onPlay: (ctrl) {
-                          ctrl.repeat(period: 3.seconds);
-                          // Start counter when this animation begins
-                          Future.delayed(const Duration(milliseconds: 500), () {
-                            if (mounted) _counterController.forward(from: 0.0);
-                          });
-                        },
+                        onPlay: (ctrl) => ctrl.repeat(period: 3.seconds, reverse: true),
                       ).fadeIn(duration: const Duration(milliseconds: 800), delay: const Duration(milliseconds: 600)).scale(
                         begin: const Offset(0.95, 0.95),
                         end: const Offset(1, 1),
