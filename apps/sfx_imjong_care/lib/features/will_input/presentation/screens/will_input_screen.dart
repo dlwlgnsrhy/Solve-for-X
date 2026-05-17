@@ -23,6 +23,7 @@ class WillInputScreen extends ConsumerStatefulWidget {
 class _WillInputScreenState extends ConsumerState<WillInputScreen> {
   bool _eulaChecked = false;
   bool _generating = false;
+  bool _showErrors = false;
 
   final _nameController = TextEditingController();
   final _valueControllers = [
@@ -88,6 +89,46 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
 
   bool get _canGenerate {
     return ref.read(willFormControllerProvider.notifier).isValid && _eulaChecked;
+  }
+
+  void _handleGenerateTap() {
+    if (_generating) return;
+
+    final form = ref.read(willFormControllerProvider);
+    final isFormValid = ref.read(willFormControllerProvider.notifier).isValid;
+
+    if (isFormValid && _eulaChecked) {
+      _generateCard();
+    } else {
+      setState(() {
+        _showErrors = true;
+      });
+
+      String errorMessage = '모든 필드를 입력하고 EULA에 동의해주세요.';
+      if (!isFormValid) {
+        if (form.name.trim().isEmpty) {
+          errorMessage = '이름을 입력해주세요.';
+        } else if (form.values.any((v) => v.trim().isEmpty)) {
+          errorMessage = '내 가치를 모두 입력해주세요.';
+        } else if (form.will.trim().isEmpty) {
+          errorMessage = '한 줄 유언을 입력해주세요.';
+        }
+      } else if (!_eulaChecked) {
+        errorMessage = '카드 생성을 위해 EULA에 동의해주세요.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            errorMessage,
+            style: const TextStyle(fontFamily: 'Inter', fontSize: 13),
+          ),
+          backgroundColor: const Color(0xFFFF0055),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Future<void> _generateCard() async {
@@ -220,6 +261,9 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch willFormControllerProvider to trigger real-time validation updates
+    ref.watch(willFormControllerProvider);
+
     return Scaffold(
       body: ConstrainedBox(
         constraints: const BoxConstraints(
@@ -321,7 +365,7 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
                       child: _GenerateButton(
                         enabled: _canGenerate,
                         generating: _generating,
-                        onTap: _generateCard,
+                        onTap: _handleGenerateTap,
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -463,6 +507,7 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
   }
 
   Widget _buildNameField(BuildContext context) {
+    final form = ref.read(willFormControllerProvider);
     return NeonTextField(
       label: 'YOUR NAME / 당신의 이름',
       hintText: '이름을 입력하세요',
@@ -471,10 +516,12 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
       borderColor: NeonColors.neonPink,
       maxLength: 20,
       charCountHint: '최대 20자',
+      errorText: _showErrors && form.name.trim().isEmpty ? '이름을 입력해주세요.' : null,
     );
   }
 
   Widget _buildValueFields(BuildContext context) {
+    final form = ref.read(willFormControllerProvider);
     return Column(
       children: [
         NeonTextField(
@@ -485,6 +532,7 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
           borderColor: NeonColors.neonCyan,
           maxLength: 30,
           charCountHint: '최대 30자',
+          errorText: _showErrors && form.values[0].trim().isEmpty ? '첫 번째 가치를 입력해주세요.' : null,
         ),
         const SizedBox(height: 16),
         NeonTextField(
@@ -495,6 +543,7 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
           borderColor: NeonColors.neonGreen,
           maxLength: 30,
           charCountHint: '최대 30자',
+          errorText: _showErrors && form.values[1].trim().isEmpty ? '두 번째 가치를 입력해주세요.' : null,
         ),
         const SizedBox(height: 16),
         NeonTextField(
@@ -505,12 +554,14 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
           borderColor: NeonColors.neonPink,
           maxLength: 30,
           charCountHint: '최대 30자',
+          errorText: _showErrors && form.values[2].trim().isEmpty ? '세 번째 가치를 입력해주세요.' : null,
         ),
       ],
     );
   }
 
   Widget _buildWillField(BuildContext context) {
+    final form = ref.read(willFormControllerProvider);
     return NeonTextField(
       label: 'YOUR WILL / 당신의 유언',
       hintText: '한 줄 유언을 입력하세요',
@@ -520,6 +571,7 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
       maxLines: 2,
       maxLength: 80,
       charCountHint: '최대 80자',
+      errorText: _showErrors && form.will.trim().isEmpty ? '한 줄 유언을 입력해주세요.' : null,
     );
   }
 }
@@ -574,30 +626,16 @@ class _GenerateButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(28),
-          onTap: generating ? null : () {
-            if (enabled) {
-              onTap();
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text(
-                    '모든 필드를 입력하고 EULA에 동의해주세요.',
-                    style: TextStyle(fontFamily: 'Inter', fontSize: 13),
-                  ),
-                  backgroundColor: const Color(0xFFFF00AA),
-                  duration: const Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            }
-          },
+          onTap: generating ? null : onTap,
           child: generating
-              ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+              ? const Center(
+                  child: SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                    ),
                   ),
                 )
               : const Center(

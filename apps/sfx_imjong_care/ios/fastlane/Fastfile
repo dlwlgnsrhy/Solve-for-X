@@ -1,0 +1,82 @@
+# iOS Fastlane Fastfile
+# Orchestrates certificate signing, screenshots, building, and App Store Connect delivery
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Establish connection to App Store Connect API using Key"
+  def api_key
+    app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_content: ENV["ASC_KEY_CONTENT"],
+      is_key_content_base64: true
+    )
+  end
+
+  desc "Sync iOS certificates and profiles using fastlane match"
+  lane :sync_certs do
+    api_key_connection = nil
+    if ENV["ASC_KEY_ID"] && ENV["ASC_ISSUER_ID"] && ENV["ASC_KEY_CONTENT"]
+      api_key_connection = api_key
+    end
+
+    match(
+      type: "appstore",
+      readonly: !ENV["ASC_KEY_ID"].nil?,
+      api_key: api_key_connection
+    )
+    match(
+      type: "development",
+      readonly: !ENV["ASC_KEY_ID"].nil?,
+      api_key: api_key_connection
+    )
+  end
+
+  desc "Capture App Store Screenshots automatically"
+  lane :screenshots do
+    # Run integration test driving UI on simulator to capture screenshots
+    sh("cd .. && flutter drive --target=test_driver/app.dart")
+    # Wrap screenshots in device frames
+    frameit(path: "../fastlane/screenshots")
+  end
+
+  desc "Build and upload iOS Beta to TestFlight"
+  lane :beta do
+    sync_certs
+    
+    # Compile Flutter app for iOS
+    sh("cd ../.. && flutter build ios --release --no-codesign")
+
+    # Build and sign IPA using gym
+    gym(
+      scheme: "Runner",
+      workspace: "Runner.xcworkspace",
+      configuration: "Release",
+      output_directory: "../build",
+      output_name: "sfx_imjong_care.ipa",
+      export_method: "app-store"
+    )
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      ipa: "../build/sfx_imjong_care.ipa",
+      api_key: (ENV["ASC_KEY_ID"] ? api_key : nil),
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Release to App Store"
+  lane :release do
+    beta # Ensure beta is built and uploaded
+    
+    # Promote build to App Store submission
+    deliver(
+      ipa: "../build/sfx_imjong_care.ipa",
+      api_key: (ENV["ASC_KEY_ID"] ? api_key : nil),
+      submit_for_review: true,
+      automatic_release: true,
+      force: true # Skip HTML preview
+    )
+  end
+end

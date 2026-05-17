@@ -1,0 +1,9 @@
+# iOS Fastlane Matchfile
+# Syncs profiles and certificates using a secure private Git repository
+
+git_url(ENV['MATCH_GIT_URL'] || 'git@github.com:soluni/sfx-certificates.git')
+storage_mode("git")
+type("appstore") # Default profile type: appstore, development, adhoc, enterprise
+
+app_identifier([ENV['APP_IDENTIFIER'] || 'com.soluni.sfxImjongCare'])
+username(ENV['APPLE_ID'] || 'developer@soluni.com')

@@ -187,7 +187,9 @@ void main() {
       // Find and tap the generate button
       final buttonFinder = find.text('CARD GENERATE / 카드 생성');
       await tester.tap(buttonFinder);
-      await tester.pumpAndSettle();
+      // Pump for the 400ms delay and transition to avoid pumpAndSettle timeout from infinite looping animations
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Should navigate to the card render screen
       // The card screen also shows "SFX 임종 케어" as title

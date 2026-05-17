@@ -1,0 +1,5 @@
+# Android Fastlane Appfile
+# Defines package name and Google Play Console JSON Key path
+
+json_key_file(ENV['PLAY_STORE_JSON_KEY_PATH'] || 'fastlane/play-store-key.json')
+package_name(ENV['ANDROID_PACKAGE_NAME'] || 'com.soluni.sfx_imjong_care')

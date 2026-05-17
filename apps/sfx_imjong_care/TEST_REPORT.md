@@ -178,10 +178,10 @@ CONSUMER-CENTRIC UX EVALUATION:
   B01| CRITICAL | FIXED   | White screen crash (initState) | will_input_screen.dart
   B02| MINOR    | FIXED   | EULA Chinese characters        | app_constants.dart
   B03| MINOR    | FIXED   | Font config missing            | pubspec.yaml
-  B04| LOW      | OPEN    | No validation error message    | will_input_screen.dart
-  B05| LOW      | OPEN    | Font files not downloaded      | assets/fonts/
+  B04| LOW      | FIXED   | No validation error message    | will_input_screen.dart
+  B05| LOW      | FIXED   | Font files not downloaded      | assets/fonts/
 
-  Total: 5 issues | Fixed: 3 | Open: 2
+  Total: 5 issues | Fixed: 5 | Open: 0
 
 ================================================================================
 4. STATIC ANALYSIS RESULTS

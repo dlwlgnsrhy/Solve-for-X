@@ -13,6 +13,7 @@ class NeonTextField extends StatefulWidget {
   final int? maxLines;
   final int? maxLength;
   final String? charCountHint;
+  final String? errorText;
 
   const NeonTextField({
     super.key,
@@ -26,6 +27,7 @@ class NeonTextField extends StatefulWidget {
     this.maxLines = 1,
     this.maxLength,
     this.charCountHint,
+    this.errorText,
   });
 
   @override
@@ -57,6 +59,9 @@ class _NeonTextFieldState extends State<NeonTextField> {
   }
 
   Color get _borderColor {
+    if (widget.errorText != null) {
+      return const Color(0xFFFF0055);
+    }
     return widget.borderColor ?? const Color(0xFF00FF88);
   }
 
@@ -143,6 +148,21 @@ class _NeonTextFieldState extends State<NeonTextField> {
             ),
           ),
         ),
+        if (widget.errorText != null) ...[
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              widget.errorText!,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 12,
+                color: Color(0xFFFF0055),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
