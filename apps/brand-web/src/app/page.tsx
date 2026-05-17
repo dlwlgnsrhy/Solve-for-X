@@ -6,7 +6,7 @@ import styles from "./page.module.css";
 // --- Mock Data for Product Modals ---
 const productDetails: Record<string, any> = {
   lifelog: {
-    title: "Solve-for-X Life-Log",
+    title: "Solve-for-X Life-Log (Moon Whisper)",
     icon: "📖",
     features: [
       {
@@ -23,39 +23,75 @@ const productDetails: Record<string, any> = {
       }
     ]
   },
-  finance: {
-    title: "Solve-for-X Finance",
-    icon: "📈",
+  imjong: {
+    title: "SFX Imjong Care (임종케어)",
+    icon: "🌸",
     features: [
       {
-        title: "무한매수 알고리즘",
-        description: "개인의 뇌동매매를 100% 차단하며, 리스크를 완전히 분산하는 수학적 알고리즘(Infinite Buy Method)을 구동합니다."
+        title: "암호화된 디지털 유언장",
+        description: "로컬에서 강력한 AES-256 알고리즘으로 유언장을 암호화하여 DB 보안 유출 시에도 안전합니다."
       },
       {
-        title: "헤드리스 백엔드 연동",
-        description: "거래소 API와 직접 연결된 Core Engine이 사람의 수면 시간에도 끊임없이 로직을 점검하고 주문을 체결합니다."
+        title: "감성적 네온 카드 비주얼",
+        description: "Orbitron/Inter 폰트와 핫핑크 글로우 네온 액센트를 매핑하여 지극히 아름답고 엄숙한 성찰 경험을 빚어냅니다."
       },
       {
-        title: "시각화 대시보드",
-        description: "현재 자산 배분 비중, 핑퐁 거래 수익률 등을 오해의 여지 없이 직관적인 웹 대시보드로 브리핑합니다."
+        title: "100% 무인 로컬 아키텍처",
+        description: "Zero-Server 원칙을 적용하여 유저의 민감한 성찰 및 프라이버시가 클라우드에 노출되는 것을 완전 차단합니다."
+      }
+    ]
+  },
+  mementomori: {
+    title: "SFX Memento Mori (메멘토 모리)",
+    icon: "⌛",
+    features: [
+      {
+        title: "4,160주 생애 그리드 시각화",
+        description: "GridView 최적화 렌더러를 탑재하여 메모리 부하 없이 80년 수명의 흘러간 시간과 다가올 주차를 선명하게 체감합니다."
+      },
+      {
+        title: "네온 그린 시그니처 테마",
+        description: "Neon Green 라이트 글로우 테마의 시각적 디자인으로 어둠 속에서 빛나는 삶의 원초적 에너지를 시각화합니다."
+      },
+      {
+        title: "로컬 자가 완결형 상태",
+        description: "SharedPreferences 기반 무인 데이터 오프라인 자급형으로 기기 분실 전까지 데이터를 완벽 보존합니다."
+      }
+    ]
+  },
+  factory: {
+    title: "Sisyphus Factory (자율 에이전트 공장)",
+    icon: "⚙️",
+    features: [
+      {
+        title: "Telegram Commander 연동",
+        description: "1-Click 인라인 승인 보드와 실시간 SRE 모니터링 데몬이 결합된 완벽 무인 자율 오케스트레이터."
+      },
+      {
+        title: "3-Cycle 자율 검증 QA",
+        description: "개발 완료 시 AI 에이전트가 `analyze` 및 전체 테스트 스위트를 구동하여 무결성을 입증하기 전까지 릴리즈하지 않습니다."
+      },
+      {
+        title: "Fastlane Zero-Intervention 배포",
+        description: "인증서 동기화(Match) 및 ASC API key 연동을 통해 빌드부터 심사 제출까지 터치 없이 자율 질주합니다."
       }
     ]
   },
   core: {
-    title: "Solve-for-X Core Engine",
+    title: "SFX Core Basecamp (통합 백엔드)",
     icon: "⚡️",
     features: [
       {
-        title: "Java / Spring Boot 코어",
-        description: "가장 견고한 엔터프라이즈급 생태계를 보장하기 위해, 모든 데이터 정합성은 강력한 타입스크립팅과 마이크로서비스로 검증됩니다."
+        title: "단일 Flat-rate 가상화 인프라",
+        description: "BaaS의 무제한 추가 과금을 배제하고 월 $5 플랫 레이트 VPS 위에 Docker-compose로 자가 호스팅되는 PostgreSQL 통합망."
       },
       {
-        title: "AI 추론 엔진 통합",
-        description: "Qwen3-Coder 30B 로컬 모델과 직접 연결되어, 고객의 프라이버시 데이터를 외부 오픈AI 등에 절대 전송하지 않습니다."
+        title: "멀티테넌트 스키마 격리",
+        description: "하나의 DB 인스턴스 안에서 격리된 독자 스키마를 가동하되, 통합 SSO 유저 매핑 테이블을 공유하여 크로스폴리네이션을 활성화합니다."
       },
       {
         title: "Zero-Downtime 통제",
-        description: "모든 시스템은 컨테이너화되어 있으며, 어떠한 상황에서도 99.9%의 서비스 무결성을 유지하는 심장과도 같은 인프라입니다."
+        description: "모든 서비스는 컨테이너화되어 있으며, 어떠한 상황에서도 99.9%의 서비스 무결성을 유지하는 심장과도 같은 인프라입니다."
       }
     ]
   }
@@ -163,7 +199,7 @@ export default function Home() {
           </div>
           
           <div className={styles.appGrid}>
-            {/* Life-Log App */}
+            {/* 1. Life-Log App */}
             <div className={styles.appCard} onClick={() => window.open('https://play.google.com/store/apps/details?id=com.moon_whisper.mw', '_blank')}>
               <div className={styles.appHeader}>
                 <div className={styles.appName}>SFX Life-Log</div>
@@ -178,22 +214,68 @@ export default function Home() {
               <div className={styles.cardAction}>Google Play 설치 <span>↗</span></div>
             </div>
 
-            {/* Finance Dashboard */}
-            <div className={styles.appCard} onClick={() => setActiveModal('finance')}>
+            {/* 2. SFX Imjong Care */}
+            <div className={styles.appCard} onClick={() => setActiveModal('imjong')}>
               <div className={styles.appHeader}>
-                <div className={styles.appName}>SFX Finance</div>
+                <div className={styles.appName}>SFX Imjong Care</div>
                 <div className={styles.appStatus}>
-                  <span className={`${styles.statusDot} ${styles.statusWait}`}></span>
-                  Planning Phase
+                  <span className={`${styles.statusDot} ${styles.statusLive}`}></span>
+                  TestFlight Build Ready
                 </div>
               </div>
               <p className={styles.appDesc}>
-                수면 시간을 방해받지 않도록 모든 감정과 뇌동매매를 배제한, 자산 관리 지수 추종형 자동화 파이프라인. 알고리즘 기반으로 당신의 자본을 지킵니다.
+                핫핑크 글로우 네온 비주얼로 탄생한 디지털 유언장 성찰 플랫폼. AES-256 로컬 암호화 장벽으로 완벽한 프라이버시 존엄성을 사수합니다.
               </p>
-              <div className={styles.cardAction}>자세히 보기 <span>→</span></div>
+              <div className={styles.cardAction}>자세히 보기 / 정책 확인 <span>→</span></div>
             </div>
 
-            {/* SRE Blog - New Card */}
+            {/* 3. SFX Memento Mori */}
+            <div className={styles.appCard} onClick={() => setActiveModal('mementomori')}>
+              <div className={styles.appHeader}>
+                <div className={styles.appName}>SFX Memento Mori</div>
+                <div className={styles.appStatus}>
+                  <span className={`${styles.statusDot} ${styles.statusLive}`}></span>
+                  100% Green Tested
+                </div>
+              </div>
+              <p className={styles.appDesc}>
+                생애 4,160주의 격자를 최적화된 GridView로 직관 시각화하는 생의 자각 플랫폼. 네온 그린 컬러의 시각적 에너지로 죽음을 인지하여 삶을 채웁니다.
+              </p>
+              <div className={styles.cardAction}>자세히 보기 / 정책 확인 <span>→</span></div>
+            </div>
+
+            {/* 4. Sisyphus Factory */}
+            <div className={styles.appCard} onClick={() => setActiveModal('factory')}>
+              <div className={styles.appHeader}>
+                <div className={styles.appName}>Sisyphus Factory</div>
+                <div className={styles.appStatus}>
+                  <span className={`${styles.statusDot} ${styles.statusLive}`}></span>
+                  Commander Online
+                </div>
+              </div>
+              <p className={styles.appDesc}>
+                설계도 하나만 전달하면 코딩, QA 검증, Fastlane 앱스토어 제출 및 Vercel 웹 릴리즈까지 완전 무인 처리하는 자율형 소프트웨어 공장.
+              </p>
+              <div className={styles.cardAction}>공장 원칙 / 스펙 보기 <span>→</span></div>
+            </div>
+
+            {/* 5. SFX Core Basecamp */}
+            <div className={styles.appCard} onClick={() => setActiveModal('core')}>
+              <div className={styles.appHeader}>
+                <div className={styles.appName}>SFX Basecamp</div>
+                <div className={styles.appStatus}>
+                  <span className={`${styles.statusDot} ${sreStatus === 'LIVE' ? styles.statusLive : sreStatus === 'OFFLINE' ? styles.statusOffline : styles.statusWait}`}></span>
+                  {sreStatus === 'LIVE' ? 'System Live' : sreStatus === 'OFFLINE' ? 'System Offline' : 'Checking Status...'}
+                  {sreStatus === 'LIVE' && sreLatency && ` (${sreLatency}ms)`}
+                </div>
+              </div>
+              <p className={styles.appDesc}>
+                단일 플랫 레이트 VPS 위에 Docker-compose PostgreSQL 멀티 스키마로 자가 호스팅되는 플랫폼 통합 DB 심장부.
+              </p>
+              <div className={styles.cardAction}>통합 DB 스펙 보기 <span>→</span></div>
+            </div>
+
+            {/* 6. SRE Blog */}
             <div className={styles.appCard} onClick={() => window.open('https://medium.com/@dlwlgnsrhy/ai-transformation-chapter1-3a4b88302aef', '_blank')}>
               <div className={styles.appHeader}>
                 <div className={styles.appName}>SRE Blog</div>
@@ -206,22 +288,6 @@ export default function Home() {
                 기술과 철학의 융합. AI 자동화 시스템을 구축하며 얻은 아키텍처적 통찰과 SRE 여정을 기록합니다.
               </p>
               <div className={styles.cardAction}>Medium 읽기 <span>↗</span></div>
-            </div>
-
-            {/* Core Engine */}
-            <div className={styles.appCard} onClick={() => setActiveModal('core')}>
-              <div className={styles.appHeader}>
-                <div className={styles.appName}>SFX Core Engine</div>
-                <div className={styles.appStatus}>
-                  <span className={`${styles.statusDot} ${sreStatus === 'LIVE' ? styles.statusLive : sreStatus === 'OFFLINE' ? styles.statusOffline : styles.statusWait}`}></span>
-                  {sreStatus === 'LIVE' ? 'System Live' : sreStatus === 'OFFLINE' ? 'System Offline' : 'Checking Status...'}
-                  {sreStatus === 'LIVE' && sreLatency && ` (${sreLatency}ms)`}
-                </div>
-              </div>
-              <p className={styles.appDesc}>
-                안정성 99.9%를 타겟으로 구축된 백엔드 인프라. 모든 앱의 데이터 무결성을 실시간으로 보장하며, 로컬 AI 추론 엔진과 결속된 철벽의 시스템 심장입니다.
-              </p>
-              <div className={styles.cardAction}>아키텍처 스펙 보기 <span>→</span></div>
             </div>
           </div>
         </section>
