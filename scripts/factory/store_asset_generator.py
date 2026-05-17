@@ -15,7 +15,7 @@ class StoreAssetGenerator:
 
     def generate_store_mockup(self, screenshot_path: str, marketing_text: str, output_name: str = "mockup_store") -> dict:
         """Composes a high-fidelity marketing screenshot wrapper for App Store Connect (1242x2688)."""
-        screen_p = Path(screenshot_path).expanduser().resolve()
+        screen_p = Path(screenshot_path).expanduser().resolve() if screenshot_path else None
 
         if Image is None:
             return {
@@ -23,7 +23,7 @@ class StoreAssetGenerator:
                 "message": "Pillow (PIL) is not installed. Mockup generation skipped."
             }
 
-        if not screen_p.exists():
+        if not screen_p or not screen_p.exists() or screen_p.is_dir():
             # If the screenshot doesn't exist, create a fallback solid-colored placeholder screen
             print(f"⚠️ Screenshot not found at {screen_p}. Generating a placeholder mockup screen.")
             img_screen = Image.new('RGB', (800, 1600), color=(18, 18, 26))
@@ -68,16 +68,16 @@ class StoreAssetGenerator:
             phone_x = (canvas_w - phone_w) // 2
             phone_y = canvas_h - phone_h - 100 # Align near bottom
 
-            # Outer bezel shadow
+            # Outer bezel shadow (Neon Pink Glow)
             draw.rounded_rectangle(
-                [phone_x - 15, phone_y - 15, phone_x + phone_w + 15, phone_y + phone_h + 15],
-                radius=45, fill=(5, 5, 8), outline=(255, 0, 127, 30), width=4
+                [phone_x - 18, phone_y - 18, phone_x + phone_w + 18, phone_y + phone_h + 18],
+                radius=48, fill=(5, 5, 8), outline=(255, 0, 127, 40), width=6
             )
 
-            # Matte black frame bezel
+            # Matte black frame bezel (Dual Matte Bezel)
             draw.rounded_rectangle(
-                [phone_x - 5, phone_y - 5, phone_x + phone_w + 5, phone_y + phone_h + 5],
-                radius=40, fill=(15, 15, 20), outline=(255, 255, 255, 15), width=8
+                [phone_x - 6, phone_y - 6, phone_x + phone_w + 6, phone_y + phone_h + 6],
+                radius=42, fill=(15, 15, 20), outline=(0, 255, 136, 60), width=8
             )
 
             # Inner Screen positioning & pasting
@@ -93,23 +93,60 @@ class StoreAssetGenerator:
                 radius=30, fill=(0, 0, 0)
             )
 
-            # 5. Write Premium Branding Copy (Marketing Text)
-            # Draw beautiful typography background banner
+            # 5. Write Premium Branding Copy (Marketing Text) with Dynamic Custom Font Loading
             text_y = 280
-            draw.text(
-                (canvas_w // 2, text_y),
-                marketing_text,
-                fill=(255, 255, 255),
-                anchor="mm",
-                align="center",
-                # Fallback to default but double font-size via bold overlays if custom fonts aren't mapped
-            )
+            root_dir = Path(__file__).parent.parent.parent.resolve()
+            orbitron_font_path = root_dir / "apps" / "sfx_imjong_care" / "assets" / "fonts" / "Orbitron-Bold.ttf"
+            inter_font_path = root_dir / "apps" / "sfx_imjong_care" / "assets" / "fonts" / "Inter-SemiBold.ttf"
+            
+            font = None
+            if orbitron_font_path.exists():
+                try:
+                    font = ImageFont.truetype(str(orbitron_font_path), size=54)
+                except Exception:
+                    pass
+
+            if not font and inter_font_path.exists():
+                try:
+                    font = ImageFont.truetype(str(inter_font_path), size=50)
+                except Exception:
+                    pass
+
+            # Render soft premium neon text glow shadow
+            if font:
+                for dx, dy in [(-3, -3), (3, -3), (-3, 3), (3, 3), (0, -4), (0, 4), (-4, 0), (4, 0)]:
+                    draw.text(
+                        (canvas_w // 2 + dx, text_y + dy),
+                        marketing_text,
+                        fill=(0, 255, 136, 50),
+                        font=font,
+                        anchor="mm",
+                        align="center",
+                    )
+                # Primary text rendering
+                draw.text(
+                    (canvas_w // 2, text_y),
+                    marketing_text,
+                    fill=(255, 255, 255),
+                    font=font,
+                    anchor="mm",
+                    align="center",
+                )
+            else:
+                # Basic fallback text drawing
+                draw.text(
+                    (canvas_w // 2, text_y),
+                    marketing_text,
+                    fill=(255, 255, 255),
+                    anchor="mm",
+                    align="center",
+                )
 
             # Neon accent bar under text
-            bar_w, bar_h = 300, 6
+            bar_w, bar_h = 320, 6
             bar_x = (canvas_w - bar_w) // 2
             draw.rounded_rectangle(
-                [bar_x, text_y + 80, bar_x + bar_w, text_y + 80 + bar_h],
+                [bar_x, text_y + 90, bar_x + bar_w, text_y + 90 + bar_h],
                 radius=3, fill=(0, 255, 136) # Quantum Green accent bar
             )
 
