@@ -28,9 +28,11 @@ export default function RootLayout({
               <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--gray)', marginLeft: '0.4rem', letterSpacing: '0' }}>by soluni</span>
             </div>
             <div className="nav-links">
-              <a href="#vision">Vision</a>
-              <a href="#ecosystem">Products</a>
-              <a href="#principles">Principles</a>
+              <a href="/">Home</a>
+              <a href="/#vision">Vision</a>
+              <a href="/#ecosystem">Products</a>
+              <a href="/support">Support</a>
+              <a href="/admin/service-desk" style={{ color: 'var(--accent)', border: '1px solid var(--card-border)', padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'var(--card-bg)' }}>SRE Desk</a>
             </div>
           </div>
         </nav>
