@@ -16,6 +16,17 @@ telegram_commander/main.py
 import os
 import sys
 import logging
+# Disable Telegram integration unless allowed
+if os.getenv('DISABLE_TELEGRAM') == '1':
+    class DummyTelegramClient:
+        def send(self, *args, **kwargs):
+            return True
+        def send_chunked(self, *args, **kwargs):
+            return True
+        def edit_message(self, *args, **kwargs):
+            return True
+    TelegramClient = DummyTelegramClient
+
 import argparse
 import datetime
 import subprocess
@@ -28,7 +39,15 @@ if _AUTOMATIONS_DIR not in sys.path:
 
 from _shared import config
 from _shared.llm_client import LLMClient
-from _shared.telegram_client import TelegramClient
+import os
+if os.getenv('DISABLE_TELEGRAM') == '1':
+    class DummyTelegramClient:
+        def send(self, *args, **kwargs): return True
+        def send_chunked(self, *args, **kwargs): return True
+        def edit_message(self, *args, **kwargs): return True
+    TelegramClient = DummyTelegramClient
+else:
+    from _shared.telegram_client import TelegramClient
 from _shared.notion_client import NotionClient
 
 # 프로젝트 키워드와 실제 경로 매핑
@@ -153,11 +172,18 @@ def handle_start(telegram: TelegramClient, notion: NotionClient, llm: LLMClient,
         f"━━━━━━━━━━━━━━━━━━━━\n"
         f"{briefing}\n\n"
         f"⚠️ **[승인 대기 중]**\n"
-        f"위 계획대로 작업을 시작할까요?\n"
-        f"👉 /confirm : 에이전트 작업 즉시 시작\n"
-        f"👉 /feedback [수정할 내용] : 계획 수정 후 다시 검토"
+        f"위 계획대로 작업을 시작할까요?"
     )
-    telegram.send_chunked(msg)
+    
+    reply_markup = {
+        "inline_keyboard": [
+            [
+                {"text": "🟢 승인 및 실행 (Confirm)", "callback_data": "/confirm"},
+                {"text": "ℹ️ 상태 확인 (Status)", "callback_data": "/status"}
+            ]
+        ]
+    }
+    telegram.send_chunked(msg, reply_markup=reply_markup)
 
 def handle_confirm(telegram: TelegramClient, state: dict):
     if state.get("status") != "pending_confirmation":
@@ -269,10 +295,20 @@ def handle_feedback(telegram: TelegramClient, llm: LLMClient, state: dict, feedb
             
             state["current_plan"] = new_plan
             save_state(state)
+            
+            reply_markup = {
+                "inline_keyboard": [
+                    [
+                        {"text": "🟢 승인 및 실행 (Confirm)", "callback_data": "/confirm"},
+                        {"text": "ℹ️ 상태 확인 (Status)", "callback_data": "/status"}
+                    ]
+                ]
+            }
             telegram.send(
                 f"🔄 계획이 수정되었습니다.\n\n━━━━━━━━━━━━━━━━━━━━\n{new_plan}\n\n"
                 f"⚠️ **[승인 대기 중]**\n"
-                f"이대로 진행할까요? /confirm 또는 /feedback [추가수정]"
+                f"이대로 진행할까요?",
+                reply_markup=reply_markup
             )
         except Exception as e:
             # 3사이클 모두 실패 시 에러 던짐
@@ -359,11 +395,32 @@ def main():
     from worker_monitor import start_monitor
     start_monitor(telegram)
 
-    if args.once:
-        for update in get_updates(token):
+    import requests
+
+    def handle_update_item(update):
+        if "callback_query" in update:
+            cb = update["callback_query"]
+            cb_data = cb.get("data", "")
+            cb_id = cb.get("id", "")
+            try:
+                requests.post(
+                    f"https://api.telegram.org/bot{token}/answerCallbackQuery",
+                    json={"callback_query_id": cb_id},
+                    timeout=5
+                )
+            except Exception as e:
+                logger.warning(f"[Telegram] answerCallbackQuery 실패: {e}")
+            if cb_data:
+                process_message(cb_data, telegram, notion, llm, state)
+        else:
             msg = update.get("message", {})
             text = msg.get("text", "")
-            if text: process_message(text, telegram, notion, llm, state)
+            if text:
+                process_message(text, telegram, notion, llm, state)
+
+    if args.once:
+        for update in get_updates(token):
+            handle_update_item(update)
         return
 
     logger.info("🤖 Telegram Commander 온라인 (Orchestrator Mode)")
@@ -374,10 +431,7 @@ def main():
         updates = get_updates(token, offset)
         for update in updates:
             offset = update["update_id"] + 1
-            msg = update.get("message", {})
-            text = msg.get("text", "")
-            if text:
-                process_message(text, telegram, notion, llm, state)
+            handle_update_item(update)
 
 if __name__ == "__main__":
     main()

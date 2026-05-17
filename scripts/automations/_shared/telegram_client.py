@@ -19,11 +19,13 @@ class TelegramClient:
         self._chat_id = config.require("TELEGRAM_CHAT_ID")
         self._base_url = f"https://api.telegram.org/bot{self._token}"
 
-    def send(self, text: str, parse_mode: Optional[str] = None) -> Optional[int]:
+    def send(self, text: str, parse_mode: Optional[str] = None, reply_markup: Optional[dict] = None) -> Optional[int]:
         """단순 텍스트 메시지 전송. 성공 시 message_id 반환, 실패 시 None 반환."""
         payload: dict = {"chat_id": self._chat_id, "text": text}
         if parse_mode:
             payload["parse_mode"] = parse_mode
+        if reply_markup:
+            payload["reply_markup"] = reply_markup
             
         for attempt in range(3):
             try:
@@ -82,7 +84,9 @@ class TelegramClient:
             logger.error(f"[Telegram] 사진 전송 실패: {e}")
             return False
 
-    def send_chunked(self, text: str, chunk_size: int = 4000) -> None:
+    def send_chunked(self, text: str, chunk_size: int = 4000, reply_markup: Optional[dict] = None) -> None:
         """Telegram 4096자 제한을 고려해 긴 텍스트를 분할 전송합니다."""
-        for i in range(0, len(text), chunk_size):
-            self.send(text[i : i + chunk_size])
+        chunks = [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
+        for i, chunk in enumerate(chunks):
+            is_last = (i == len(chunks) - 1)
+            self.send(chunk, reply_markup=(reply_markup if is_last else None))
