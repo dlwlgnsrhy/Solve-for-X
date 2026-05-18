@@ -415,6 +415,25 @@ def main():
 
     import requests
 
+    # 텔레그램 자동완성 명령어 메뉴에 /antigravity 공식 등록
+    try:
+        commands_payload = {
+            "commands": [
+                {"command": "start", "description": "오늘 계획 세우기"},
+                {"command": "confirm", "description": "계획 승인 및 에이전트 실제 실행"},
+                {"command": "feedback", "description": "계획 수정 및 지시"},
+                {"command": "antigravity", "description": "Antigravity 자율 코딩 및 캡처 보고"},
+                {"command": "status", "description": "상태 확인"}
+            ]
+        }
+        res = requests.post(f"https://api.telegram.org/bot{token}/setMyCommands", json=commands_payload, timeout=5)
+        if res.status_code == 200:
+            logger.info("[Telegram] /antigravity 포함 자동완성 명령어 등록 성공")
+        else:
+            logger.warning(f"[Telegram] /antigravity 명령어 등록 실패: {res.text}")
+    except Exception as e:
+        logger.warning(f"[Telegram] /antigravity 명령어 등록 중 예외 발생: {e}")
+
     def handle_update_item(update):
         if "callback_query" in update:
             cb = update["callback_query"]
