@@ -26,8 +26,7 @@ except Exception:
 class AntigravityBridge:
     def __init__(self):
         self.token = os.getenv("TELEGRAM_BOT_TOKEN")
-        # Default fallback admin chat ID for Jihun
-        self.chat_id = os.getenv("TELEGRAM_ADMIN_CHAT_ID", "155136709") 
+        self.chat_id = os.getenv("TELEGRAM_CHAT_ID", "8493423236") 
 
     def send_telegram_status(self, text, reply_markup=None):
         """지훈님께 실시간 작업 상태 전송"""
