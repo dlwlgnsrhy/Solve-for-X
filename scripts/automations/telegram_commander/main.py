@@ -354,6 +354,21 @@ def get_updates(token: str, offset: int = 0) -> list:
         time.sleep(3)  # 네트워크 단절 시 무한 루프 폭주 방지
         return []
 
+def handle_antigravity(telegram: TelegramClient, prompt: str):
+    if not prompt:
+        telegram.send("⚠️ /antigravity [명령어 내용] 형식으로 코딩 지시를 내려주십시오.")
+        return
+    
+    logger.info(f"[Commander] Antigravity 작업자 트리거: {prompt}")
+    try:
+        bridge_script = str(REPO_PATH / "scripts/factory/support/antigravity_bridge.py")
+        subprocess.Popen(
+            [sys.executable, bridge_script, prompt],
+            start_new_session=True
+        )
+    except Exception as e:
+        telegram.send(f"❌ Antigravity 브릿지 구동 실패: {e}")
+
 def process_message(text: str, telegram: TelegramClient, notion: NotionClient, llm: LLMClient, state: dict):
     text = text.strip()
     logger.info(f"[Commander] 수신: {text}")
@@ -364,6 +379,8 @@ def process_message(text: str, telegram: TelegramClient, notion: NotionClient, l
         handle_confirm(telegram, state)
     elif text.startswith("/feedback"):
         handle_feedback(telegram, llm, state, text[len("/feedback"):].strip())
+    elif text.startswith("/antigravity"):
+        handle_antigravity(telegram, text[len("/antigravity"):].strip())
     elif text == "/status":
         handle_status(telegram, state)
     else:
@@ -372,6 +389,7 @@ def process_message(text: str, telegram: TelegramClient, notion: NotionClient, l
             "/start — 오늘 계획 세우기\n"
             "/confirm — 계획 승인 및 에이전트 실제 실행\n"
             "/feedback [내용] — 계획 수정 및 지시\n"
+            "/antigravity [명령] — Antigravity 자율 코딩 및 텔레그램 캡처 보고\n"
             "/status — 상태 확인"
         )
 
