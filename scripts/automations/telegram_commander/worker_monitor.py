@@ -3,7 +3,15 @@ import time
 import logging
 import threading
 from pathlib import Path
-from _shared.telegram_client import TelegramClient
+import os
+if os.getenv('DISABLE_TELEGRAM') == '1':
+    class DummyTelegramClient:
+        def send(self, *args, **kwargs): return True
+        def send_chunked(self, *args, **kwargs): return True
+        def edit_message(self, *args, **kwargs): return True
+    TelegramClient = DummyTelegramClient
+else:
+    from _shared.telegram_client import TelegramClient
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +62,11 @@ def _monitor_loop(telegram_client: TelegramClient):
                 
                 for row in rows:
                     session_id = row["id"]
+                    
+                    # 백그라운드 크론/시스템 상태 점검 세션은 텔레그램 스팸 방지를 위해 모니터링 제외
+                    if session_id.startswith("cron_") or session_id.startswith("system_"):
+                        continue
+                        
                     status = "ended" if row["ended_at"] else "running"
                     end_reason = row["end_reason"] or "알 수 없음"
                     msg_count = row["message_count"]
