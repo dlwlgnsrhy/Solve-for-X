@@ -1,0 +1,25 @@
+{
+  "colors": {
+    "background": "#0A0A0F",
+    "surface": "#1A1A2E",
+    "secondarySurface": "#2A2A3E",
+    "accent": "#00FF88",
+    "secondaryAccent": "#8B5CF6",
+    "alert": "#FF3860",
+    "textPrimary": "#E8E8ED",
+    "textSecondary": "#8E8EA0"
+  },
+  "typography": {
+    "headlines": { "font": "SF Pro Display (iOS) / Roboto (Android) / Inter (Web)", "sizeRange": "18-34pt" },
+    "body": { "font": "SF Pro Text (iOS) / Roboto (Android) / Inter (Web)", "sizeRange": "14-16pt" },
+    "caption": { "font": "SF Pro Text (iOS) / Roboto (Android) / Inter (Web)", "sizeRange": "11-12pt" }
+  },
+  "spacing": { "xs": 4, "sm": 8, "md": 16, "lg": 24, "xl": 32, "xxl": 48 },
+  "radii": { "sm": 8, "md": 12, "lg": 16 },
+  "shadows": { "card": "0px 4px 12px rgba(0,0,0,0.3)", "elevation": "0px 8px 24px rgba(0,0,0,0.4)" },
+  "platformOverrides": {
+    "iOS": { "headlineFont": "SF Pro Display", "bodyFont": "SF Pro Text" },
+    "Android": { "headlineFont": "Roboto", "bodyFont": "Roboto" },
+    "Web": { "headlineFont": "Inter", "bodyFont": "Inter" }
+  }
+}

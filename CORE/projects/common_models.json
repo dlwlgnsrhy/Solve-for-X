@@ -1,0 +1,61 @@
+{
+  "version": "1.0.0",
+  "description": "Cross-platform shared data model for Legacy Vault (iOS, Android, Web)",
+  "models": {
+    "VoiceLogEntry": {
+      "fields": {
+        "id": { "type": "uuid:4", "description": "Unique identifier" },
+        "title": { "type": "string", "description": "Recording title" },
+        "recordingDate": { "type": "epoch_ms", "description": "Recording timestamp" },
+        "transcript": { "type": "string", "description": "Full STT transcription" },
+        "aiSummary": { "type": "string|null", "description": "On-device AI summary" },
+        "aiEnrichment": { "type": "string|null", "description": "AI enrichment notes" },
+        "sentiment": { "type": "number", "range": "-100 to 100", "description": "Emotion score" },
+        "durationMs": { "type": "number", "description": "Audio duration in ms" },
+        "audioURL": { "type": "string|null", "description": "File URL or base64 encoded audio data" },
+        "keywords": { "type": "string[]", "description": "Extracted keywords" }
+      }
+    },
+    "VaultRecord": {
+      "fields": {
+        "id": { "type": "uuid:4", "description": "Unique identifier" },
+        "name": { "type": "string", "description": "Vault display name" },
+        "vaultType": { "type": "enum", "values": ["passwords", "legal", "financial", "photos", "videos", "custom"], "description": "Vault content category" },
+        "encryptedData": { "type": "base64", "description": "AES-GCM ciphertext" },
+        "salt": { "type": "hex_string", "description": "PBKDF2 salt" },
+        "lastPingDate": { "type": "epoch_ms", "description": "Last heartbeat timestamp" },
+        "deadlineDays": { "type": "number", "description": "Dead man switch deadline in days" },
+        "targetEmails": { "type": "string[]", "description": "Recipients for dead man switch" },
+        "status": { "type": "enum", "values": ["active", "paused", "expired", "alert_sent"], "description": "Vault lifecycle status" }
+      }
+    },
+    "InheritanceContact": {
+      "fields": {
+        "id": { "type": "uuid:4", "description": "Unique identifier" },
+        "name": { "type": "string", "description": "Contact name" },
+        "email": { "type": "string", "description": "Contact email address" },
+        "relationship": { "type": "enum", "values": ["spouse", "child", "friend", "organization"], "description": "Relationship to deceased" },
+        "notificationStatus": { "type": "number", "description": "0=pending, 1=alert_7d, 2=alert_3d, 3=alert_1d, 4=delivered" }
+      }
+    },
+    "ChatMessage": {
+      "fields": {
+        "id": { "type": "uuid:4", "description": "Unique identifier" },
+        "role": { "type": "enum", "values": ["user", "assistant"], "description": "Message sender role" },
+        "content": { "type": "string", "description": "Message body text" },
+        "timestamp": { "type": "epoch_ms", "description": "Message creation timestamp" },
+        "embeddingId": { "type": "uuid:4|null", "description": "FK to vector index if embedded" }
+      }
+    },
+    "ValueKeyword": {
+      "fields": {
+        "id": { "type": "uuid:4", "description": "Unique identifier" },
+        "word": { "type": "string", "description": "The keyword text" },
+        "frequency": { "type": "number", "description": "Occurrence count" },
+        "firstOccurrence": { "type": "epoch_ms", "description": "First seen timestamp" },
+        "lastOccurrence": { "type": "epoch_ms", "description": "Last seen timestamp" },
+        "category": { "type": "enum", "values": ["family", "career", "emotion", "challenge", "peace", "growth"], "description": "Value category tag" }
+      }
+    }
+  }
+}
