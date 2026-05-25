@@ -53,3 +53,19 @@ android/*.keystore
 **/.packages
 **/Package.resolved
 **/.swiftpm/
+
+# Personal/Editor settings
+.vscode/
+
+# Local logs
+logs/
+
+# Test screenshots
+apps/origin/.screenshots/
+apps/origin/.screenshots-report/
+
+# Python cache & build reports (recursive)
+**/__pycache__/
+**/*.pyc
+scripts/factory/reports/
+
