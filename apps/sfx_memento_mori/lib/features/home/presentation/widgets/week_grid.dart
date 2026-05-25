@@ -169,41 +169,45 @@ class _WeekGridState extends State<WeekGrid> {
   }
 
   Widget _buildYearMarkers(List<int> yearMarkers, int totalRows) {
-    return SizedBox(
-      height: 20,
-      child: Stack(
-        children: [
-          // Background line
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 10,
-            child: Container(
-              height: 1,
-              color: NeonColors.yearMarker.withValues(alpha: 0.3),
-            ),
-          ),
-          // Year labels
-          ...yearMarkers.map((weekIndex) {
-            final col = weekIndex % columns;
-            final age = weekIndex ~/ 52;
-            return Positioned(
-              left: (col / columns) * MediaQuery.of(context).size.width *
-                      (1 - 24 / MediaQuery.of(context).size.width) -
-                  12,
-              top: 0,
-              child: Text(
-                '$age세',
-                style: TextStyle(
-                  color: NeonColors.yearMarker.withValues(alpha: 0.6),
-                  fontSize: 9,
-                  fontWeight: FontWeight.w500,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final parentWidth = constraints.maxWidth;
+        return SizedBox(
+          height: 20,
+          child: Stack(
+            children: [
+              // Background line
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 10,
+                child: Container(
+                  height: 1,
+                  color: NeonColors.yearMarker.withValues(alpha: 0.3),
                 ),
               ),
-            );
-          }),
-        ],
-      ),
+              // Year labels
+              ...yearMarkers.map((weekIndex) {
+                final col = weekIndex % columns;
+                final age = weekIndex ~/ 52;
+                final leftPos = (col / columns) * parentWidth - 10;
+                return Positioned(
+                  left: leftPos.clamp(0.0, parentWidth - 30.0),
+                  top: 0,
+                  child: Text(
+                    '$age세',
+                    style: TextStyle(
+                      color: NeonColors.yearMarker.withValues(alpha: 0.6),
+                      fontSize: 9,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
     ).animate().fadeIn(duration: const Duration(milliseconds: 600), delay: const Duration(milliseconds: 400));
   }
 
@@ -253,11 +257,9 @@ class _WeekGridState extends State<WeekGrid> {
                     // Only apply staggered animation for first N cells
                     final animateEntrance = index < maxAnimatedCells;
 
-                    Widget cell = _WeekCell(
-                      isPast: isPast,
-                      isToday: isToday,
-                      index: index,
-                    );
+                    Widget cell = isToday
+                        ? const _TodayWeekCell()
+                        : _StaticWeekCell(isPast: isPast);
 
                     if (animateEntrance) {
                       cell = cell
@@ -385,42 +387,28 @@ class YearMarkerPainter extends CustomPainter {
   bool shouldRepaint(covariant YearMarkerPainter oldDelegate) => false;
 }
 
-class _WeekCell extends StatefulWidget {
-  final bool isPast;
-  final bool isToday;
-  final int index;
-
-  const _WeekCell({
-    required this.isPast,
-    required this.isToday,
-    required this.index,
-  });
+class _TodayWeekCell extends StatefulWidget {
+  const _TodayWeekCell();
 
   @override
-  State<_WeekCell> createState() => _WeekCellState();
+  State<_TodayWeekCell> createState() => _TodayWeekCellState();
 }
 
-class _WeekCellState extends State<_WeekCell>
+class _TodayWeekCellState extends State<_TodayWeekCell>
     with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Only create animation controller for today's cell
-    if (widget.isToday) {
-      _pulseController = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 1500),
-      )..repeat(reverse: true);
-      _pulseAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-        CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-      );
-    } else {
-      _pulseController = AnimationController(vsync: this);
-      _pulseAnimation = const AlwaysStoppedAnimation(1.0);
-    }
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -431,36 +419,44 @@ class _WeekCellState extends State<_WeekCell>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isToday) {
-      return AnimatedBuilder(
-        animation: _pulseAnimation,
-        builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              color: NeonColors.todayPulse,
-              borderRadius: BorderRadius.circular(3),
-              boxShadow: [
-                BoxShadow(
-                  color: NeonColors.todayPulse.withValues(
-                    alpha: 0.6 * _pulseAnimation.value,
-                  ),
-                  blurRadius: 8 * _pulseAnimation.value,
-                  spreadRadius: 1 * _pulseAnimation.value,
+    return AnimatedBuilder(
+      animation: _pulseAnimation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            color: NeonColors.todayPulse,
+            borderRadius: BorderRadius.circular(3),
+            boxShadow: [
+              BoxShadow(
+                color: NeonColors.todayPulse.withValues(
+                  alpha: 0.6 * _pulseAnimation.value,
                 ),
-                BoxShadow(
-                  color: NeonColors.neonGreen.withValues(
-                    alpha: 0.3 * _pulseAnimation.value,
-                  ),
-                  blurRadius: 12 * _pulseAnimation.value,
-                  spreadRadius: 0,
+                blurRadius: 8 * _pulseAnimation.value,
+                spreadRadius: 1 * _pulseAnimation.value,
+              ),
+              BoxShadow(
+                color: NeonColors.neonGreen.withValues(
+                  alpha: 0.3 * _pulseAnimation.value,
                 ),
-              ],
-            ),
-          );
-        },
-      );
-    } else if (widget.isPast) {
-      // StatelessWidget-equivalent: plain Container with no extra overhead
+                blurRadius: 12 * _pulseAnimation.value,
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _StaticWeekCell extends StatelessWidget {
+  final bool isPast;
+
+  const _StaticWeekCell({required this.isPast});
+
+  @override
+  Widget build(BuildContext context) {
+    if (isPast) {
       return Container(
         decoration: BoxDecoration(
           color: NeonColors.pastWeek,
@@ -468,7 +464,6 @@ class _WeekCellState extends State<_WeekCell>
         ),
       );
     } else {
-      // Future weeks: simplified no-shadow for performance
       return Container(
         decoration: BoxDecoration(
           color: NeonColors.neonGreen.withValues(alpha: 0.7),

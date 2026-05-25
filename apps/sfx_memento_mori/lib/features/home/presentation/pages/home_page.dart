@@ -30,6 +30,7 @@ class _HomePageState extends ConsumerState<HomePage>
   // Animated counter for remaining weeks
   late AnimationController _counterController;
   int _displayWeeks = 0;
+  int _targetWeeks = 0;
 
   @override
   void initState() {
@@ -39,7 +40,12 @@ class _HomePageState extends ConsumerState<HomePage>
     _counterController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
-    );
+    )..addListener(() {
+        final easedValue = Curves.easeOutCubic.transform(_counterController.value);
+        setState(() {
+          _displayWeeks = (_targetWeeks * easedValue).round();
+        });
+      });
   }
 
   Future<void> _checkReviewPrompt() async {
@@ -54,26 +60,8 @@ class _HomePageState extends ConsumerState<HomePage>
   /// Start the animated counter for remaining weeks
   void _animateRemainingWeeks(int targetWeeks) {
     if (targetWeeks == 0) return;
-
-    _displayWeeks = 0;
+    _targetWeeks = targetWeeks;
     _counterController.forward(from: 0.0);
-
-    final startTime = DateTime.now();
-    final duration = _counterController.duration!.inMilliseconds;
-
-    void tick() {
-      if (!mounted) return;
-      final elapsed = DateTime.now().difference(startTime).inMilliseconds;
-      final progress = (elapsed / duration).clamp(0.0, 1.0);
-      final easedProgress = 1 - math.pow(1 - progress, 3);
-      setState(() {
-        _displayWeeks = (targetWeeks * easedProgress).round();
-      });
-      if (progress < 1.0) {
-        Future.delayed(const Duration(milliseconds: 16), tick);
-      }
-    }
-    tick();
   }
 
   Future<void> _shareGrid() async {
