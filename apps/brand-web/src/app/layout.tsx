@@ -24,21 +24,19 @@ export default function RootLayout({
         <nav className="global-nav">
           <div className="nav-container">
             <div className="nav-logo">
-              Solve-for-X 
+              Solve-for-X
               <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--gray)', marginLeft: '0.4rem', letterSpacing: '0' }}>by soluni</span>
             </div>
             <div className="nav-links">
-              <a href="/">Home</a>
               <a href="/#vision">Vision</a>
               <a href="/#ecosystem">Products</a>
-              <a href="/support">Support</a>
-              <a href="/admin/service-desk" style={{ color: 'var(--accent)', border: '1px solid var(--card-border)', padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'var(--card-bg)' }}>SRE Desk</a>
+              <a href="/factory" style={{ color: '#00f0ff', fontWeight: 800 }}>App Factory ⚡️</a>
             </div>
           </div>
         </nav>
-        
+
         {children}
-        
+
         {/* 기업형 풋터 */}
         <footer className="global-footer">
           <div className="footer-container">

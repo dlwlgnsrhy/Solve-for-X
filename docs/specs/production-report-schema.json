@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "description": "Standard for Worker Sub-agent output reports",
+  "schema": {
+    "execution_id": "string (UUID or task_id)",
+    "timestamp": "ISO8601 string",
+    "worker_identity": "string (e.g., 'claude-code')",
+    "status": "success | failure | partial_success",
+    "artifacts": [
+      {
+        "type": "file | directory",
+        "path": "absolute/path/to/artifact",
+        "checksum": "sha256 (optional)"
+      }
+    ],
+    "metrics": {
+      "duration_seconds": "float",
+      "token_usage": "integer (if applicable)",
+      "complexity_score": "int (1-10)"
+    },
+    "logs_summary": "string (concint summary of execution steps)",
+    "errors": [
+      "string (list of encountered issues)"
+    ]
+  }
+}

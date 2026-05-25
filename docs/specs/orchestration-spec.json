@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "description": "Standard for Level 3 Orchestration tasks",
+  "schema": {
+    "task_id": "string (unique identifier, e.g., 'factory-01')",
+    "parent_id": "string (null if root task)",
+    "goal": "string (high-level objective)",
+    "subtasks": [
+      {
+        "id": "string",
+        "description": "string",
+        "status": "pending | in_progress | completed",
+        "toolsets": [
+          "terminal",
+          "file",
+          "web",
+          "browser"
+        ]
+      }
+    ],
+    "constraints": [
+      "string (e.g., 'no external network', 'use riverpod')"
+    ],
+    "success_criteria": [
+      "string (verifiable outcomes)"
+    ]
+  }
+}

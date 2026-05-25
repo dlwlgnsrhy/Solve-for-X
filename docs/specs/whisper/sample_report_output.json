@@ -1,0 +1,22 @@
+{
+  "execution_id": "factory-02-test",
+  "timestamp": "2026-05-12T18:03:52.774074",
+  "worker_identity": "hermes-agent",
+  "status": "success",
+  "artifacts": [
+    {
+      "path": "/Users/apple/.../main.dart",
+      "type": "file"
+    },
+    {
+      "path": "/Users/apple/.../pubspec.yaml",
+      "type": "file"
+    }
+  ],
+  "metrics": {
+    "duration_seconds": 12.5,
+    "complexity_score": 3
+  },
+  "logs_summary": "Successfully expanded template and injected dependencies.",
+  "errors": []
+}

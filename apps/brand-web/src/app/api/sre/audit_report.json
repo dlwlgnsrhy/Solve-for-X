@@ -1,0 +1,212 @@
+{
+  "status": "SUCCESS",
+  "last_updated": "2026-05-24 01:06:32",
+  "summary": {
+    "total_projects": 6,
+    "up_to_date": 2,
+    "outdated": 4,
+    "uninitialized": 0
+  },
+  "projects": [
+    {
+      "id": "moon_whisper",
+      "name": "Moon Whisper",
+      "path": "/Users/apple/Desktop/Moon_Whisper/Moon_Whisper/mw",
+      "type": "flutter",
+      "libraries": [
+        {
+          "name": "flutter_sound",
+          "current": "9.2.13",
+          "target": "9.2.13",
+          "status": "Up-to-Date"
+        },
+        {
+          "name": "record",
+          "current": "6.1.2",
+          "target": "6.1.2",
+          "status": "Up-to-Date"
+        },
+        {
+          "name": "audioplayers",
+          "current": "6.4.0",
+          "target": "6.4.0",
+          "status": "Up-to-Date"
+        },
+        {
+          "name": "shared_preferences",
+          "current": "2.0.15",
+          "target": "2.5.3",
+          "status": "Update Available"
+        },
+        {
+          "name": "provider",
+          "current": "6.1.1",
+          "target": "6.1.1",
+          "status": "Up-to-Date"
+        },
+        {
+          "name": "isar_community",
+          "current": "3.3.0",
+          "target": "3.3.0",
+          "status": "Up-to-Date"
+        }
+      ]
+    },
+    {
+      "id": "soluni_memo",
+      "name": "Soluni Memo",
+      "path": "/Users/apple/development/soluni/soluni-memo",
+      "type": "flutter",
+      "libraries": [
+        {
+          "name": "flutter_riverpod",
+          "current": "2.6.1",
+          "target": "2.6.1",
+          "status": "Up-to-Date"
+        },
+        {
+          "name": "shared_preferences",
+          "current": "2.5.3",
+          "target": "2.5.3",
+          "status": "Up-to-Date"
+        }
+      ]
+    },
+    {
+      "id": "sfx_imjong_care",
+      "name": "SFX Imjong Care",
+      "path": "/Users/apple/development/soluni/Solve-for-X/apps/sfx_imjong_care",
+      "type": "flutter",
+      "libraries": [
+        {
+          "name": "flutter_riverpod",
+          "current": "2.5.1",
+          "target": "2.6.1",
+          "status": "Update Available"
+        },
+        {
+          "name": "shared_preferences",
+          "current": "2.5.3",
+          "target": "2.5.3",
+          "status": "Up-to-Date"
+        },
+        {
+          "name": "flutter_animate",
+          "current": "4.5.0",
+          "target": "4.5.2",
+          "status": "Update Available"
+        }
+      ]
+    },
+    {
+      "id": "sfx_memento_mori",
+      "name": "SFX Memento Mori",
+      "path": "/Users/apple/development/soluni/Solve-for-X/apps/sfx_memento_mori",
+      "type": "flutter",
+      "libraries": [
+        {
+          "name": "flutter_riverpod",
+          "current": "2.6.1",
+          "target": "2.6.1",
+          "status": "Up-to-Date"
+        },
+        {
+          "name": "shared_preferences",
+          "current": "2.3.3",
+          "target": "2.5.3",
+          "status": "Update Available"
+        },
+        {
+          "name": "flutter_animate",
+          "current": "4.5.2",
+          "target": "4.5.2",
+          "status": "Up-to-Date"
+        }
+      ]
+    },
+    {
+      "id": "sfx_legacy_vault_v1",
+      "name": "SFX Legacy Vault",
+      "path": "/Users/apple/development/soluni/Solve-for-X/apps/sfx_legacy_vault_v1",
+      "type": "flutter",
+      "libraries": [
+        {
+          "name": "firebase_core",
+          "current": "3.6.0",
+          "target": "3.15.2",
+          "status": "Update Available"
+        },
+        {
+          "name": "cloud_firestore",
+          "current": "5.4.4",
+          "target": "5.6.12",
+          "status": "Update Available"
+        },
+        {
+          "name": "flutter_secure_storage",
+          "current": "10.0.0",
+          "target": "10.0.0",
+          "status": "Up-to-Date"
+        }
+      ]
+    },
+    {
+      "id": "brand_web",
+      "name": "Brand Web Console",
+      "path": "/Users/apple/development/soluni/Solve-for-X/apps/brand-web",
+      "type": "node",
+      "libraries": [
+        {
+          "name": "next",
+          "current": "16.2.1",
+          "target": "16.2.1",
+          "status": "Up-to-Date"
+        },
+        {
+          "name": "react",
+          "current": "19.2.4",
+          "target": "19.2.4",
+          "status": "Up-to-Date"
+        },
+        {
+          "name": "react-dom",
+          "current": "19.2.4",
+          "target": "19.2.4",
+          "status": "Up-to-Date"
+        }
+      ]
+    }
+  ],
+  "logs": [
+    "🚀 SRE AUTOMATED WEEKLY UPGRADE CYCLE KICKED OFF",
+    "⏰ Execution Timestamp: 2026-05-24 01:06:23",
+    "⚙️ Running active dependency modernization for project: Moon Whisper",
+    "⚙️ Modernized package 'shared_preferences' dependency version to ^2.5.3",
+    "💾 Updated pubspec.yaml for Moon Whisper",
+    "🧪 Running: 'flutter pub get' in /Users/apple/Desktop/Moon_Whisper/Moon_Whisper/mw",
+    "❌ Verification failed for Moon Whisper: The current Dart SDK version is 3.5.2.\n\nBecause url_launcher 6.3.2 requires SDK version ^3.6.0 and no versions of url_launcher match >6.3.2 <7.0.0, url_launcher ^6.3.2 is forbidden.\nSo, because multiplatform depends on url_launcher ^6.3.2, version solving failed.\n",
+    "🔁 Rolled back pubspec.yaml to prevent breaking build.",
+    "✨ Project Soluni Memo has 0 outdated dependencies. Scans passed.",
+    "⚙️ Running active dependency modernization for project: SFX Imjong Care",
+    "⚙️ Modernized package 'flutter_riverpod' dependency version to ^2.6.1",
+    "⚙️ Modernized package 'flutter_animate' dependency version to ^4.5.2",
+    "💾 Updated pubspec.yaml for SFX Imjong Care",
+    "🧪 Running: 'flutter pub get' in /Users/apple/development/soluni/Solve-for-X/apps/sfx_imjong_care",
+    "❌ Verification failed for SFX Imjong Care: The current Dart SDK version is 3.5.2.\n\nBecause sfx_imjong_care requires SDK version ^3.7.2, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Try using the Flutter SDK version: 3.44.0. \n",
+    "🔁 Rolled back pubspec.yaml to prevent breaking build.",
+    "⚙️ Running active dependency modernization for project: SFX Memento Mori",
+    "⚙️ Modernized package 'shared_preferences' dependency version to ^2.5.3",
+    "💾 Updated pubspec.yaml for SFX Memento Mori",
+    "🧪 Running: 'flutter pub get' in /Users/apple/development/soluni/Solve-for-X/apps/sfx_memento_mori",
+    "❌ Verification failed for SFX Memento Mori: The current Dart SDK version is 3.5.2.\n\nBecause sfx_memento_mori requires SDK version >=3.7.2 <4.0.0, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Try using the Flutter SDK version: 3.44.0. \n",
+    "🔁 Rolled back pubspec.yaml to prevent breaking build.",
+    "⚙️ Running active dependency modernization for project: SFX Legacy Vault",
+    "⚙️ Modernized package 'firebase_core' dependency version to ^3.15.2",
+    "⚙️ Modernized package 'cloud_firestore' dependency version to ^5.6.12",
+    "💾 Updated pubspec.yaml for SFX Legacy Vault",
+    "🧪 Running: 'flutter pub get' in /Users/apple/development/soluni/Solve-for-X/apps/sfx_legacy_vault_v1",
+    "❌ Verification failed for SFX Legacy Vault: The current Dart SDK version is 3.5.2.\n\nBecause sfx_legacy_vault requires SDK version ^3.7.2, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Try using the Flutter SDK version: 3.44.0. \n",
+    "🔁 Rolled back pubspec.yaml to prevent breaking build.",
+    "✨ Project Brand Web Console has 0 outdated dependencies. Scans passed."
+  ]
+}

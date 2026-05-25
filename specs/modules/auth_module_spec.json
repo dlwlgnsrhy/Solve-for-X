@@ -1,0 +1,18 @@
+{
+  "module_name": "authentication_feature",
+  "files": [
+    {
+      "path": "lib/features/auth/data/datasources/auth_api.dart",
+      "content": "class AuthApi { Future<void> login() async {} }"
+    },
+    {
+      "path": "lib/features/auth/domain/repositories/auth_repository.dart",
+      "content": "abstract class AuthRepository { Future<void> signIn(); }"
+    },
+    {
+      "app_name": "auth_ui_component",
+      "path": "lib/features/auth/presentation/widgets/login_button.dart",
+      "content": "import 'package:flutter/material.dart';\nclass LoginButton extends StatelessWidget { const LoginButton({super.key}); @override Widget build(BuildContext context) => ElevatedButton(onPressed: (){}, child: const Text('Login')); }"
+    }
+  ]
+}

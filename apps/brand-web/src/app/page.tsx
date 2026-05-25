@@ -245,7 +245,7 @@ export default function Home() {
             </div>
 
             {/* 4. Sisyphus Factory */}
-            <div className={styles.appCard} onClick={() => setActiveModal('factory')}>
+            <div className={styles.appCard} onClick={() => window.location.href = '/factory'}>
               <div className={styles.appHeader}>
                 <div className={styles.appName}>Sisyphus Factory</div>
                 <div className={styles.appStatus}>
@@ -256,7 +256,7 @@ export default function Home() {
               <p className={styles.appDesc}>
                 설계도 하나만 전달하면 코딩, QA 검증, Fastlane 앱스토어 제출 및 Vercel 웹 릴리즈까지 완전 무인 처리하는 자율형 소프트웨어 공장.
               </p>
-              <div className={styles.cardAction}>공장 원칙 / 스펙 보기 <span>→</span></div>
+              <div className={styles.cardAction}>실시간 공장 모니터링 기동 <span>→</span></div>
             </div>
 
             {/* 5. SFX Core Basecamp */}

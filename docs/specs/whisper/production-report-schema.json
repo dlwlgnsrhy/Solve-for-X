@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "description": "Standardized schema for reporting the outcome of sx-factory production tasks.",
+  "fields": {
+    "execution_id": {
+      "type": "string",
+      "description": "Unique identifier linked to the task_id or plan_id."
+    },
+    "timestamp": {
+      "type": "ISO8601 string",
+      "description": "Timestamp of when the production task was completed."
+    },
+    "worker_identity": {
+      "type": "string",
+      "description": "ID of the sub-agent/worker that performed the task (e.g., 'claude-code')."
+    },
+    "status": {
+      "type": "enum",
+      "values": [
+        "success",
+        "failure",
+        "partial_success"
+      ],
+      "description": "The final outcome of the execution."
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "path": "string (absolute path to created/modified file)",
+        "type": "string (file | directory | asset)",
+        "checksum_sha256": "string (optional)"
+      },
+      "description": "List of all physical outputs generated during this task."
+    },
+    "metrics": {
+      "duration_seconds": "float",
+      "complexity_score": "int (1-10)",
+      "token_usage": "integer (optional)"
+    },
+    "logs_summary": {
+      "type": "string",
+      "description": "A high-level, human-readable summary of the execution steps."
+    },
+    "errors": {
+      "type": "array",
+      "items": "string",
+      "description": "List of error messages or warnings encountered during execution (empty if success)."
+    }
+  }
+}

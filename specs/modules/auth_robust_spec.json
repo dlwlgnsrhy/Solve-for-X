@@ -1,0 +1,1 @@
+{"module_name": "robust_auth", "required_dependencies": ["dio: ^5.4.0"], "files": [{"path": "lib/features/auth/data/api.dart", "content": "class RobustApi {}"}, {"path": "lib/features/auth/conflict_test.txt", "content": "Original content"}]}
