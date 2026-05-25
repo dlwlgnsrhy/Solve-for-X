@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 /// Service for persisting user data with SharedPreferences.
 class PreferenceService {
@@ -26,14 +27,7 @@ class PreferenceService {
     _prefs?.setString(_keyUserId, userId);
   }
 
-  String _generateUUID() {
-    final List<int> bytes = List<int>.generate(16, (_) => 0);
-    // Set version 4 (random) and variant bits
-    bytes[6] = (bytes[6] & 0x0F) | 0x40;
-    bytes[8] = (bytes[8] & 0x3F) | 0x80;
-    final String hex = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join('');
-    return '${hex.substring(0,8)}-${hex.substring(8,12)}-4${hex.substring(13)}-a${hex.substring(17)}-${hex.substring(20)}';
-  }
+  String _generateUUID() => const Uuid().v4();
 
   /// Unique user identifier. Auto-generated on first launch.
   String get userId => _prefs?.getString(_keyUserId) ?? '';

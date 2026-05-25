@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:origin/core/services/database_service.dart';
 import 'package:origin/core/theme/app_theme.dart';
+import 'package:origin/features/origin_stamp/presentation/screens/verify_screen.dart';
 import 'package:origin/features/stamps/presentation/widgets/stamp_card.dart';
 
 /// Page listing document stamps.
@@ -53,8 +54,9 @@ class _StampsListPageState extends State<StampsListPage> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
+        child: Column(
+          key: const ValueKey('stampsList'),
+          children: [
               // Header
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -63,12 +65,35 @@ class _StampsListPageState extends State<StampsListPage> {
                     Icon(Icons.emoji_events_rounded,
                         size: 22, color: AppColor.neonGreen),
                     const SizedBox(width: 10),
-                    Text(
-                      'Stamps',
-                      style: style.textTheme.headlineMedium!.copyWith(
-                        color: AppColor.textPrimary,
+                    Expanded(
+                      child: Text(
+                        'Stamps',
+                        style: style.textTheme.headlineMedium!.copyWith(
+                          color: AppColor.textPrimary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.cardBg,
+                        foregroundColor: AppColor.neonGreen,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: const BorderSide(color: AppColor.neonGreen),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const VerifyPage(),
+                          ),
+                        );
+                      },
+                      child: const Text('Verify'),
+                    ).animate().fadeIn(duration: 400.ms),
                   ],
                 ).animate().fadeIn(duration: 400.ms),
               ),
@@ -86,7 +111,9 @@ class _StampsListPageState extends State<StampsListPage> {
                     final date = dateStr.isNotEmpty
                         ? DateTime.tryParse(dateStr)
                         : null;
-                    final title = stamp['content_hash'] as String? ?? 'Stamp';
+                    final formattedDate = date != null
+                        ? _formatStampDate(date)
+                        : '—';
                     final characters =
                         (stamp['content_length'] as num?)?.toInt() ?? 0;
                     final score = (stamp['authenticity_score'] as num?)
@@ -98,16 +125,19 @@ class _StampsListPageState extends State<StampsListPage> {
                         (stamp['rhythm_entropy'] as num?)?.toDouble() ?? 0.0;
                     final keystrokeEventCount =
                         (stamp['keystroke_event_count'] as num?)?.toInt() ?? 0;
+                    final contentHash =
+                        stamp['content_hash'] as String? ?? '';
 
                     return StampCard(
                       date: date ?? DateTime.now(),
-                      title: _truncateHash(title),
+                      title: formattedDate,
                       characters: characters,
                       score: score,
                       sessionId: sessionId,
                       userId: userId,
                       rhythmEntropy: rhythmEntropy,
                       keystrokeEventCount: keystrokeEventCount,
+                      contentHash: contentHash,
                     ).animate().fadeIn(
                           duration: 300.ms,
                           delay: (300 + index * 80).ms,
@@ -122,9 +152,12 @@ class _StampsListPageState extends State<StampsListPage> {
     );
   }
 
-  String _truncateHash(String hash) {
-    if (hash.length <= 16) return hash;
-    return '${hash.substring(0, 8)}...${hash.substring(hash.length - 8)}';
+  String _formatStampDate(DateTime date) {
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   Widget _buildEmptyState(ThemeData style) {

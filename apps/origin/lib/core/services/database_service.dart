@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:encrypt/encrypt.dart' as encrypt_pkg;
+import 'package:uuid/uuid.dart';
 
 import 'encryption_service.dart';
 
@@ -39,6 +40,8 @@ const String _colEventsKeyName = 'key_name';
 const String _colEventsTDelta = 't_delta';
 const String _colEventsTimestamp = 'timestamp';
 const String _colEventsIsBackspace = 'is_backspace';
+const String _colEventsPauseMarker = 'pause_marker';
+const String _colEventsPauseDuration = 'pause_duration';
 const String _colEventsPrevLength = 'prev_length';
 const String _colEventsNewLength = 'new_length';
 
@@ -127,8 +130,20 @@ class DatabaseService {
 
     _database = await openDatabase(
       dbPath,
-      version: 1,
+      version: 3,
       onCreate: _createDatabase,
+      onUpgrade: (Database db, int oldVersion, int newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+            'ALTER TABLE $_tblKeystrokeEvents ADD COLUMN pause_marker INTEGER NOT NULL DEFAULT 0',
+          );
+        }
+        if (oldVersion < 3) {
+          await db.execute(
+            'ALTER TABLE $_tblKeystrokeEvents ADD COLUMN pause_duration INTEGER NOT NULL DEFAULT 0',
+          );
+        }
+      },
     );
   }
 
@@ -148,6 +163,8 @@ class DatabaseService {
         t_delta       INTEGER NOT NULL,
         timestamp     TEXT    NOT NULL,
         is_backspace  INTEGER NOT NULL DEFAULT 0,
+        pause_marker  INTEGER NOT NULL DEFAULT 0,
+        pause_duration INTEGER NOT NULL DEFAULT 0,
         prev_length   INTEGER NOT NULL DEFAULT 0,
         new_length    INTEGER NOT NULL DEFAULT 0
       )
@@ -313,6 +330,8 @@ class DatabaseService {
         _colEventsTDelta: tDelta,
         _colEventsTimestamp: timestamp,
         _colEventsIsBackspace: isBackspace ? 1 : 0,
+        _colEventsPauseMarker: 0,
+        _colEventsPauseDuration: 0,
         _colEventsPrevLength: prevLength,
         _colEventsNewLength: newLength,
       },
@@ -334,6 +353,8 @@ class DatabaseService {
             _colEventsTDelta: event['t_delta'] as int,
             _colEventsTimestamp: event['timestamp'] as String,
             _colEventsIsBackspace: (event['is_backspace'] as bool?) == true ? 1 : 0,
+            _colEventsPauseMarker: (event['is_pause_marker'] as int?) ?? 0,
+            _colEventsPauseDuration: (event['pause_duration'] as int?) ?? 0,
             _colEventsPrevLength: event['prev_length'] as int,
             _colEventsNewLength: event['new_length'] as int,
           },
@@ -396,7 +417,11 @@ class DatabaseService {
   }
 
   Future<List<Map<String, dynamic>>> getAllStamps() async {
-    return (await _database?.query(_tblOriginStamps)) ?? [];
+    return (await _database?.query(
+      _tblOriginStamps,
+      orderBy: 'timestamp DESC',
+    )) ??
+        [];
   }
 
   Future<Map<String, dynamic>?> getStampBySessionId(String sessionId) async {
@@ -631,13 +656,7 @@ class DatabaseService {
     return result;
   }
 
-  String _generateUUID() {
-    final List<int> bytes = List<int>.generate(16, (_) => 0);
-    bytes[6] = (bytes[6] & 0x0F) | 0x40;
-    bytes[8] = (bytes[8] & 0x3F) | 0x80;
-    final String hex = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join('');
-    return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-4${hex.substring(13)}-a${hex.substring(17)}-${hex.substring(20)}';
-  }
+  String _generateUUID() => const Uuid().v4();
 }
 
 // =============================================================================

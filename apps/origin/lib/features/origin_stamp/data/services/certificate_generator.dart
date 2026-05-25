@@ -1,7 +1,10 @@
+
+
 /// Service for generating Origin Certificate documents.
 ///
 /// Takes stamp metadata and produces a JSON string representing
 /// a verifiable certificate for the authored content.
+/// Includes Ed25519 signature and public key for verification.
 class CertificateGenerator {
   /// Generate a JSON certificate string from stamp data.
   ///

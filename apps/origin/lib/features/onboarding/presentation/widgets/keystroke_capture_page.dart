@@ -103,38 +103,41 @@ class _KeystrokeCapturePageState extends ConsumerState<KeystrokeCapturePage> {
 
               // Text Field
               Expanded(
-                child: TextField(
-                  controller: _controller,
-                  focusNode: _focusNode,
-                  maxLines: null,
-                  keyboardType: TextInputType.multiline,
-                  autocorrect: true,
-                  enableSuggestions: true,
-                  decoration: InputDecoration(
-                    hintText: 'The best thoughts are not premeditated but spontaneous...',
-                    hintStyle: style.textTheme.bodyLarge!.copyWith(
-                      color: AppColor.textDim,
+                child: Container(
+                  key: const ValueKey('keystrokeTextField'),
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
+                    autocorrect: true,
+                    enableSuggestions: true,
+                    decoration: InputDecoration(
+                      hintText: 'The best thoughts are not premeditated but spontaneous...',
+                      hintStyle: style.textTheme.bodyLarge!.copyWith(
+                        color: AppColor.textDim,
+                      ),
+                      filled: true,
+                      fillColor: AppColor.bgSecondary,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: AppColor.divider),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: AppColor.divider),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: AppColor.neonGreen, width: 1.5),
+                      ),
+                      contentPadding: const EdgeInsets.all(20),
                     ),
-                    filled: true,
-                    fillColor: AppColor.bgSecondary,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: AppColor.divider),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      height: 1.7,
+                      color: AppColor.textPrimary,
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: AppColor.divider),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: AppColor.neonGreen, width: 1.5),
-                    ),
-                    contentPadding: const EdgeInsets.all(20),
-                  ),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    height: 1.7,
-                    color: AppColor.textPrimary,
                   ),
                 ),
               ),
@@ -164,6 +167,7 @@ class _KeystrokeCapturePageState extends ConsumerState<KeystrokeCapturePage> {
                 child: SizedBox(
                   height: 54,
                   child: ElevatedButton(
+                    key: const ValueKey('completeOnboardingBtn'),
                     onPressed: _completeOnboarding,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColor.neonGreen,

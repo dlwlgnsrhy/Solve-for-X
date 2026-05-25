@@ -21,6 +21,7 @@ class _AuthenticityScorePageState extends State<AuthenticityScorePage> {
   String _avgResponseTime = '--';
   String _backspaceRatio = '--';
   String _typeTokenRatio = '--';
+  String _pauseStats = '--';
   Map<String, dynamic>? _fingerprint;
   bool _isLoading = true;
   final List<String> _errors = [];
@@ -81,6 +82,25 @@ class _AuthenticityScorePageState extends State<AuthenticityScorePage> {
               backspaceRatio = '${(ratio * 100).toStringAsFixed(1)}%';
             }
 
+            // Pause statistics
+            int pauseCount = 0;
+            int totalPauseMs = 0;
+            for (final event in events) {
+              final isPause =
+                  (event['is_pause_marker'] as int?) == 1;
+              final pauseDuration =
+                  (event['pause_duration'] as int?) ?? 0;
+              if (isPause) {
+                pauseCount++;
+                totalPauseMs += pauseDuration;
+              }
+            }
+            if (pauseCount > 0) {
+              String pauseStatsText =
+                  'Pauses: $pauseCount (${totalPauseMs}ms total)';
+              _pauseStats = pauseStatsText;
+            }
+
             // Type-token ratio from unique keys used
             final uniqueKeys = events
                 .map((e) => e['key_name'] as String)
@@ -111,6 +131,7 @@ class _AuthenticityScorePageState extends State<AuthenticityScorePage> {
             _avgResponseTime = avgRTI;
             _backspaceRatio = backspaceRatio;
             _typeTokenRatio = typeTokenRatio;
+            // pauseStats already set above
             _fingerprint = fingerprint;
           });
         }
@@ -185,11 +206,14 @@ class _AuthenticityScorePageState extends State<AuthenticityScorePage> {
     return Column(
       children: [
         // Score gauge
-        ScoreGauge(score: _score).animate().scale(
-                          duration: 800.ms,
-                          delay: 300.ms,
-                          curve: Curves.easeOutCubic,
-                        ),
+        Container(
+          key: const ValueKey('scoreGauge'),
+          child: ScoreGauge(score: _score).animate().scale(
+                            duration: 800.ms,
+                            delay: 300.ms,
+                            curve: Curves.easeOutCubic,
+                          ),
+        ),
 
         const SizedBox(height: 32),
 
@@ -227,6 +251,8 @@ class _AuthenticityScorePageState extends State<AuthenticityScorePage> {
             _metricCard('Avg Response Time', _avgResponseTime, style),
             _metricCard('Backspace Ratio', _backspaceRatio, style),
             _metricCard('Type-Token Ratio', _typeTokenRatio, style),
+            if (_pauseStats != '--')
+              _metricCard('Pauses', _pauseStats, style),
           ],
         ).animate().slide(begin: const Offset(0, 0.15))
             .fadeIn(delay: 1000.ms),

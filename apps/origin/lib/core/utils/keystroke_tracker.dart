@@ -4,17 +4,24 @@ class KeystrokeRawEvent {
   final int timestamp;
   final bool isShift;
   final bool isControl;
+  final bool isPauseMarker;
+  final int? pauseDuration;
 
   KeystrokeRawEvent({
     required this.key,
     required this.timestamp,
     this.isShift = false,
     this.isControl = false,
+    this.isPauseMarker = false,
+    this.pauseDuration,
   });
 
   @override
-  String toString() => 'KeystrokeRawEvent(key: $key, ts: $timestamp)';
+  String toString() => 'KeystrokeRawEvent(key: $key, ts: $timestamp, pause: $isPauseMarker)';
 }
+
+/// Threshold in milliseconds to detect an input pause.
+const _pauseThresholdMs = 2000;
 
 /// Shared state object that bridges [RawKeyboardListener] and [TextInputFormatter].
 /// Tracks keystroke dynamics (press timing, sequence) for authenticity analysis.
@@ -24,20 +31,47 @@ class KeystrokeTracker {
   /// Maximum number of recent events to retain in memory.
   static const int maxRecentEvents = 1000;
 
+  int? _lastKeyTimestamp;
+  int? _pauseStartMs;
+
+  /// Returns the timestamp (ms) when the current pause started, or null.
+  int? get pauseStartMs => _pauseStartMs;
+
   /// Registers a key event with the tracker.
   void onKey(String key, DateTime time) {
     if (key.isEmpty) return;
 
+    final nowMs = time.millisecondsSinceEpoch;
+    final isPause = _lastKeyTimestamp != null &&
+        (nowMs - _lastKeyTimestamp!) > _pauseThresholdMs;
+
+    if (isPause) {
+      _pauseStartMs = _lastKeyTimestamp;
+    }
+
+    _lastKeyTimestamp = nowMs;
+
+    final int? pauseDuration = isPause && _pauseStartMs != null
+        ? nowMs - _pauseStartMs!
+        : null;
+
     final event = KeystrokeRawEvent(
       key: key,
-      timestamp: time.millisecondsSinceEpoch,
+      timestamp: nowMs,
       isShift: key.toUpperCase() != key,
       isControl: key.length > 1,
+      isPauseMarker: isPause,
+      pauseDuration: pauseDuration,
     );
 
     recentEvents.add(event);
     if (recentEvents.length > maxRecentEvents) {
       recentEvents.removeAt(0);
+    }
+
+    // Clear pause tracking after a non-pause event
+    if (!isPause) {
+      _pauseStartMs = null;
     }
   }
 
@@ -76,5 +110,6 @@ class KeystrokeTracker {
   /// Clears all tracked events and reset state.
   void clear() {
     recentEvents.clear();
+    _lastKeyTimestamp = null;
   }
 }

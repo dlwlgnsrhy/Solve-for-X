@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:crypto/crypto.dart';
+import 'package:uuid/uuid.dart';
 import 'package:origin/core/services/database_service.dart';
 import 'package:origin/core/services/preference_service.dart';
 import 'package:origin/core/theme/app_theme.dart';
@@ -119,13 +120,7 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
     });
   }
 
-  String _generateUUID() {
-    final List<int> bytes = List<int>.generate(16, (_) => 0);
-    bytes[6] = (bytes[6] & 0x0F) | 0x40;
-    bytes[8] = (bytes[8] & 0x3F) | 0x80;
-    final hex = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join('');
-    return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-4${hex.substring(13)}-a${hex.substring(17)}-${hex.substring(20)}';
-  }
+  String _generateUUID() => const Uuid().v4();
 
   /// Compute score metrics. Called BEFORE tracker.clear().
   Map<String, dynamic> _computeScores({int? backspaceCount}) {
@@ -236,6 +231,8 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
           't_delta': lastDelta,
           'timestamp': event.timestamp.toString(),
           'is_backspace': i < _eventDeleteFlags.length && _eventDeleteFlags[i] == 1,
+          'is_pause_marker': _tracker.recentEvents[i].isPauseMarker ? 1 : 0,
+          'pause_duration': _tracker.recentEvents[i].pauseDuration ?? 0,
           'prev_length': 0,
           'new_length': 0,
         });
@@ -384,6 +381,7 @@ class _KeystrokeWritePageState extends State<KeystrokeWritePage> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
+                  key: const ValueKey('completeDocumentBtn'),
                   onPressed: _saving ? null : _completeDocument,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _saving

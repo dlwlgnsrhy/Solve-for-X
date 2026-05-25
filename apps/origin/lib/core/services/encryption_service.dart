@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:math';
+
 import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,9 +19,9 @@ class EncryptionService {
 
   /// Generates a new random encryption key as a hex-encoded SHA-256 hash.
   String generateEncryptionKey() {
-    final String seed = DateTime.now().millisecondsSinceEpoch.toString() +
-        DateTime.now().microsecond.toString() +
-        _randomString(32);
+    final random = Random.secure();
+    final randomBytes = List<int>.generate(32, (_) => random.nextInt(256));
+    final seed = base64Encode(randomBytes);
     final bytes = sha256.convert(utf8.encode(seed));
     return bytes.toString();
   }
@@ -42,12 +44,6 @@ class EncryptionService {
   /// Deletes the stored encryption key.
   Future<void> deleteKey() async {
     await _prefs?.remove(_keyEncryptionKey);
-  }
-
-  String _randomString(int length) {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    final random = List<int>.generate(length, (_) => DateTime.now().millisecondsSinceEpoch % chars.length);
-    return random.map((i) => chars[i]).join();
   }
 }
 

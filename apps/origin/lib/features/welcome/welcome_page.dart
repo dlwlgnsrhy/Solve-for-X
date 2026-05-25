@@ -120,6 +120,7 @@ class WelcomePage extends StatelessWidget {
         width: double.infinity,
         height: 56,
         child: ElevatedButton(
+          key: const ValueKey('beginWritingBtn'),
           onPressed: () {
             Navigator.of(context).pushReplacementNamed('/keystroke-capture');
           },

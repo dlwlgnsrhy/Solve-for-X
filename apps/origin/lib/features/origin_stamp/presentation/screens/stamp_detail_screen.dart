@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:origin/core/services/database_service.dart';
 import 'package:origin/core/theme/app_theme.dart';
 import 'package:origin/features/home/presentation/widgets/score_gauge.dart';
 
@@ -36,18 +37,18 @@ class _StampDetailScreenState extends State<StampDetailScreen> {
     _revisionPattern =
         (widget.stamp['revision_pattern_score'] as num?)?.toDouble() ??
             0.0;
+    _loadSessionMetrics();
   }
 
-  // ignore: unused_element
+  /// Load per-session metrics (t_delta, backspace ratio, type-token ratio).
   Future<void> _loadSessionMetrics() async {
-    // TODO: wire up DB injection after the home provider refactor.
     try {
       final sessionId =
           widget.stamp['session_id'] as String? ?? '';
       if (sessionId.isEmpty) return;
 
-      final db = await _getDb();
-      final events = await db.getEventsForSession(sessionId);
+      final events =
+          await globalDatabaseService.getEventsForSession(sessionId);
 
       if (!mounted) return;
 
@@ -67,7 +68,7 @@ class _StampDetailScreenState extends State<StampDetailScreen> {
             backspaceCount++;
           }
         }
-        if (events.length > 0) {
+        if (events.isNotEmpty) {
           _backspaceRatio =
               '${((backspaceCount / events.length) * 100).toStringAsFixed(1)}%';
         }
@@ -79,18 +80,9 @@ class _StampDetailScreenState extends State<StampDetailScreen> {
                 .toStringAsFixed(2)
             : '--';
       }
-    } catch (e) {
-      debugPrint('[StampDetailScreen] Error loading metrics: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  Future<dynamic> _getDb() async {
-    // Lazy-load DatabaseService import to avoid circular dependency.
-    // In a real codebase this would be injected via DI.
-    // We use a dynamic export to the shared service.
-    return null;
   }
 
   @override
