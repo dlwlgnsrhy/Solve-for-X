@@ -39,3 +39,17 @@ android/release-key.jks
 android/app/release-key.jks
 android/*.keystore
 
+# -------------------------------------------------
+# General build and cache directories (recursive)
+# -------------------------------------------------
+**/node_modules/
+**/.next/
+**/.gradle/
+**/.build/
+**/build/
+**/Pods/
+**/.dart_tool/
+**/.pub-cache/
+**/.packages
+**/Package.resolved
+**/.swiftpm/
