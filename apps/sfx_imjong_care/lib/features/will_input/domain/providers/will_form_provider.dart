@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sfx_imjong_care/features/will_input/data/repositories/will_card_storage.dart';
 import 'package:sfx_imjong_care/features/will_input/domain/entities/will_card.dart';
@@ -28,6 +29,7 @@ class WillFormState {
 
 class WillFormController extends StateNotifier<WillFormState> {
   final WillCardStorage _storage;
+  Timer? _debounceTimer;
 
   WillFormController({WillCardStorage? storage})
       : _storage = storage ?? WillCardStorage(),
@@ -47,16 +49,19 @@ class WillFormController extends StateNotifier<WillFormState> {
     }
   }
 
-  /// Auto-save to local storage after state changes.
-  Future<void> _autoSave() async {
-    if (isValid) {
-      final card = WillCard(
-        name: state.name.trim(),
-        values: state.values.map((v) => v.trim()).toList(),
-        will: state.will.trim(),
-      );
-      await _storage.saveCard(card);
-    }
+  /// Auto-save to local storage after state changes with a 500ms debounce.
+  void _autoSave() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+      if (isValid) {
+        final card = WillCard(
+          name: state.name.trim(),
+          values: state.values.map((v) => v.trim()).toList(),
+          will: state.will.trim(),
+        );
+        await _storage.saveCard(card);
+      }
+    });
   }
 
   void updateName(String value) {
@@ -79,6 +84,7 @@ class WillFormController extends StateNotifier<WillFormState> {
   }
 
   void reset() {
+    _debounceTimer?.cancel();
     state = const WillFormState(values: ['', '', '']);
     _storage.clear();
   }
@@ -87,6 +93,12 @@ class WillFormController extends StateNotifier<WillFormState> {
       state.name.trim().isNotEmpty &&
       state.values.every((v) => v.trim().isNotEmpty) &&
       state.will.trim().isNotEmpty;
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
 }
 
 final willFormControllerProvider =

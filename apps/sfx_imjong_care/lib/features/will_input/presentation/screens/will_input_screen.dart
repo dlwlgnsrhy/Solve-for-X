@@ -58,6 +58,15 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
     if (_willController.text.isEmpty) {
       _willController.text = form.will;
     }
+    
+    // Restore persistent EULA state
+    AppStorage.isEulaAccepted().then((accepted) {
+      if (mounted) {
+        setState(() {
+          _eulaChecked = accepted;
+        });
+      }
+    });
   }
 
   @override
@@ -219,6 +228,7 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
                     ElevatedButton(
                       onPressed: () {
                         setState(() => _eulaChecked = true);
+                        AppStorage.setEulaAccepted(true);
                         Navigator.pop(context);
                         // Consumer feedback: confirm agreement
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -329,6 +339,7 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
                         setState(() {
                           _eulaChecked = checked;
                         });
+                        AppStorage.setEulaAccepted(checked);
                         // Consumer feedback: if EULA unchecked while form is valid,
                         // show a hint so the user knows why the button is disabled.
                         if (!checked && ref.read(willFormControllerProvider.notifier).isValid) {

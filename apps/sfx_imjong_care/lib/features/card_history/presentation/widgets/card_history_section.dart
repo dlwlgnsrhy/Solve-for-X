@@ -92,10 +92,10 @@ class _CardHistorySectionState extends State<CardHistorySection> {
     );
   }
 
-  void _deleteCard(int index) {
-    AppStorage.clearCardHistory();
-    // Note: full re-fetch happens on next build via FutureBuilder
+  void _deleteCard(int index) async {
+    await AppStorage.deleteCardFromHistory(index);
     if (mounted) {
+      setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(

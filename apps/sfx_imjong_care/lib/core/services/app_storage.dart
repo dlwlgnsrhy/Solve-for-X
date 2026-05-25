@@ -12,7 +12,20 @@ class AppStorage {
   static const String _cardGenerationCountKey = 'card_generation_count';
   static const String _reviewPromptedKey = 'review_prompted';
   static const String _cardHistoryKey = 'card_history';
+  static const String _eulaAcceptedKey = 'eula_accepted';
   static const int maxHistoryItems = 10;
+
+  /// Check if EULA has been accepted.
+  static Future<bool> isEulaAccepted() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_eulaAcceptedKey) ?? false;
+  }
+
+  /// Set EULA acceptance status.
+  static Future<void> setEulaAccepted(bool accepted) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_eulaAcceptedKey, accepted);
+  }
 
   /// Check if onboarding has been completed.
   static Future<bool> isOnboardingCompleted() async {
@@ -107,4 +120,20 @@ class AppStorage {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_cardHistoryKey);
   }
+
+  /// Delete a card from history at a specific index.
+  static Future<void> deleteCardFromHistory(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    final historyJson = prefs.getString(_cardHistoryKey);
+    if (historyJson == null) return;
+
+    try {
+      final List<Map<String, dynamic>> history = List<Map<String, dynamic>>.from(jsonDecode(historyJson));
+      if (index >= 0 && index < history.length) {
+        history.removeAt(index);
+        await prefs.setString(_cardHistoryKey, jsonEncode(history));
+      }
+    } catch (_) {}
+  }
 }
+

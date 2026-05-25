@@ -32,9 +32,9 @@ class WillCard {
 
   factory WillCard.fromMap(Map<String, dynamic> map) {
     return WillCard(
-      name: map['name'] as String,
-      values: List<String>.from(map['values'] as List),
-      will: map['will'] as String,
+      name: (map['name'] as String?) ?? '',
+      values: List<String>.from((map['values'] as List?) ?? []),
+      will: (map['will'] as String?) ?? '',
     );
   }
 
