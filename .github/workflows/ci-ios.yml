@@ -1,0 +1,86 @@
+name: CI - iOS (legacy_vault)
+
+on:
+  push:
+    branches: ["main", "develop", "release/v*"]
+    paths:
+      - "apps/legacy_vault/**"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "apps/legacy_vault/**"
+
+env:
+  MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
+  # SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  # APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  check-only:
+    if: github.event_name == 'pull_request'
+    name: Check Only (Lint & Build)
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16.2
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "16.2"
+
+      - name: Install SwiftLint
+        run: brew install swiftlint || true
+
+      - name: Privacy Audit
+        run: |
+          cd apps/legacy_vault
+          bash PrivacyAudit.sh
+
+      - name: Build (Debug, Simulator)
+        run: |
+          cd apps/legacy_vault
+          xcodebuild build \
+            -scheme legacy_vault \
+            -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+            -configuration Debug \
+            -quiet
+
+  full-ci:
+    if: github.event_name == 'push'
+    name: Full CI (Build & Fastlane)
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Ruby Dependencies
+        run: |
+          cd apps/legacy_vault
+          bundle install
+
+      - name: Install Fastlane Dependencies
+        run: |
+          cd apps/legacy_vault
+          bundle exec fastlane ios install_deps
+
+      - name: Privacy Audit
+        run: |
+          cd apps/legacy_vault
+          bash PrivacyAudit.sh
+
+      - name: Full CI with Fastlane
+        run: |
+          cd apps/legacy_vault
+          bundle exec fastlane ci
+        env:
+          MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
+          # APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
