@@ -1,0 +1,52 @@
+[
+  {
+    "cycle": 1,
+    "job_id": "ba2396e9-b968-4cf1-a1f7-ce26c24fb411",
+    "command": "Flutter Memento Mori Riverpod 프로바이더 최적화",
+    "app": "sfx_memento_mori",
+    "elapsed_seconds": 33.6,
+    "pixel_diff": 0.0,
+    "verdict": "PASS",
+    "status": "SUCCESS"
+  },
+  {
+    "cycle": 2,
+    "job_id": "93ba2bb4-224d-4b55-b789-64d0769d8368",
+    "command": "Imjong Care 서체 오버플로우 교정",
+    "app": "sfx_imjong_care",
+    "elapsed_seconds": 35.37,
+    "pixel_diff": 0.0,
+    "verdict": "PASS",
+    "status": "SUCCESS"
+  },
+  {
+    "cycle": 3,
+    "job_id": "d4dfea1e-cc5a-4037-ab52-ca69294de9cc",
+    "command": "Legacy Vault 마스터 비밀키 키체인 보안 패치",
+    "app": "sfx_legacy_vault_v1",
+    "elapsed_seconds": 39.05,
+    "pixel_diff": 0.0,
+    "verdict": "PASS",
+    "status": "SUCCESS"
+  },
+  {
+    "cycle": 4,
+    "job_id": "835edbff-072b-4f00-8245-9e126374a505",
+    "command": "Memento Mori 메인 대시보드 렌더링 최적화",
+    "app": "sfx_memento_mori",
+    "elapsed_seconds": 33.09,
+    "pixel_diff": 0.0,
+    "verdict": "PASS",
+    "status": "SUCCESS"
+  },
+  {
+    "cycle": 5,
+    "job_id": "6f4d1878-bded-4995-9ce4-d9a3d8fe10c9",
+    "command": "Legacy Vault 자동 핑 SRE 비용 절감 핫픽스",
+    "app": "sfx_legacy_vault_v1",
+    "elapsed_seconds": 37.92,
+    "pixel_diff": 0.0,
+    "verdict": "PASS",
+    "status": "SUCCESS"
+  }
+]

@@ -28,7 +28,15 @@ if _AUTOMATIONS_DIR not in sys.path:
 from _shared import config
 from _shared.notion_client import NotionClient
 from _shared.llm_client import LLMClient
-from _shared.telegram_client import TelegramClient
+import os
+if os.getenv('DISABLE_TELEGRAM') == '1':
+    class DummyTelegramClient:
+        def send(self, *args, **kwargs): return True
+        def send_chunked(self, *args, **kwargs): return True
+        def edit_message(self, *args, **kwargs): return True
+    TelegramClient = DummyTelegramClient
+else:
+    from _shared.telegram_client import TelegramClient
 
 REPO_PATH = Path(__file__).parent.parent.parent
 

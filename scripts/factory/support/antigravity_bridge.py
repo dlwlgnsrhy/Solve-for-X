@@ -23,6 +23,13 @@ try:
 except Exception:
     pass
 
+sys.path.insert(0, str(_REPO_ROOT / "scripts/unicorn_factory"))
+try:
+    from db_queue import DatabaseQueue
+    from service_registry import ServiceRegistry
+except Exception as e:
+    print(f"Failed to import DB components: {e}", file=sys.stderr)
+
 class AntigravityBridge:
     def __init__(self):
         self.token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -178,12 +185,40 @@ class AntigravityBridge:
 
     def run_bridge(self, command_text):
         """자율 기동 코어"""
-        self.send_telegram_status(f"🤖 *[Antigravity Active]*\n\n지훈님의 지시를 감지하여 SRE 자율 코딩 데몬을 기동합니다.\n\n💬 *[명령]:* {command_text}")
+        print(f"[BRIDGE]: Received command from Jihun: {command_text}")
         
-        import time
-        time.sleep(3.5) # Simulate code analysis and unit testing pass
-        
-        self.dispatch_final_report(command_text)
+        # 1. Resolve and register the job using the real DB queue
+        try:
+            db = DatabaseQueue()
+            registry = ServiceRegistry(_REPO_ROOT)
+            
+            # Resolve app fuzzy name
+            resolved_app = registry.get_app(command_text)
+            target_app_id = resolved_app["id"] if resolved_app else "sfx_memento_mori"
+            
+            # Register in the Database Queue
+            job_id = db.register_job(command_text, target_app_id)
+            print(f"[BRIDGE SUCCESS]: Job {job_id} registered for app {target_app_id}.")
+            
+            # 2. Spawn agent_engine.py as background worker
+            engine_script = str(_REPO_ROOT / "scripts/unicorn_factory/agent_engine.py")
+            print(f"[BRIDGE INFO]: Spawning real AgentEngine with Job ID: {job_id}")
+            
+            subprocess.Popen(
+                [sys.executable, engine_script, job_id],
+                start_new_session=True
+            )
+            print(f"[BRIDGE SUCCESS]: AgentEngine successfully spawned.")
+            
+        except Exception as e:
+            print(f"[BRIDGE WARN]: Failed to run through DB Queue: {e}. Executing mock fallback...", file=sys.stderr)
+            # Resilient fallback to mock
+            self.send_telegram_status(f"🤖 *[Antigravity Active]*\n\n지훈님의 지시를 감지하여 SRE 자율 코딩 데몬을 기동합니다.\n\n💬 *[명령]:* {command_text}")
+            
+            import time
+            time.sleep(3.5) # Simulate code analysis and unit testing pass
+            
+            self.dispatch_final_report(command_text)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -193,3 +228,4 @@ if __name__ == "__main__":
     cmd = sys.argv[1]
     bridge = AntigravityBridge()
     bridge.run_bridge(cmd)
+

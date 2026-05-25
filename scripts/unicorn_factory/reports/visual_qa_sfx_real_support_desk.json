@@ -1,0 +1,12 @@
+{
+  "status": "SUCCESS",
+  "timestamp": "2026-05-22T17:13:27.018119",
+  "baseline_image": "/Users/apple/development/soluni/Solve-for-X/docs/images/sfx_real_support_desk.png",
+  "current_image": "/Users/apple/development/soluni/Solve-for-X/docs/images/sfx_legacy_vault_home.png",
+  "diff_image": "/Users/apple/development/soluni/Solve-for-X/scripts/unicorn_factory/reports/diff_sfx_real_support_desk_vs_sfx_legacy_vault_home.png",
+  "total_pixels": 1024000,
+  "deviating_pixels": 0,
+  "pixel_difference_ratio": 0.0,
+  "threshold_percent": 1.5,
+  "passed": true
+}

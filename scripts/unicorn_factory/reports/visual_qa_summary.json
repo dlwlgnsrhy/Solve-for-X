@@ -1,0 +1,22 @@
+{
+  "app_id": "sfx_memento_mori",
+  "app_name": "SFX Memento Mori",
+  "timestamp": "2026-05-23 17:10:16",
+  "passed": true,
+  "max_difference_ratio": 0.0,
+  "threshold_percent": 1.5,
+  "routes": [
+    {
+      "route": "/",
+      "filename": "sfx_memento_mori_home.png",
+      "baseline_image": "/Users/apple/development/soluni/Solve-for-X/docs/images/sfx_real_memento_mori.png",
+      "current_image": "/Users/apple/development/soluni/Solve-for-X/docs/images/sfx_memento_mori_home.png",
+      "diff_image": "/Users/apple/development/soluni/Solve-for-X/scripts/unicorn_factory/reports/diff_sfx_real_memento_mori_vs_sfx_memento_mori_home.png",
+      "pixel_difference_ratio": 0.0,
+      "deviating_pixels": 0,
+      "total_pixels": 1024000,
+      "passed": true,
+      "status": "SUCCESS"
+    }
+  ]
+}

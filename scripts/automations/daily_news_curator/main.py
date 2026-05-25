@@ -224,6 +224,15 @@ def send_briefing(articles: List[dict], fetched_count: int, telegram: TelegramCl
 # ── 메인 ─────────────────────────────────────────────────────
 def main():
     config.load_env()
+    
+    # --- Override LLM for daily_news_curator ---
+    import os
+    os.environ["EXTERNAL_LLM_URL"] = "http://192.168.45.244:1234/v1/chat/completions"
+    os.environ["EXTERNAL_LLM_MODEL"] = "google/gemma-4-26b-a4b"
+    os.environ["LOCAL_LLM_URL"] = "http://192.168.45.244:1234/v1/chat/completions"
+    os.environ["LOCAL_LLM_MODEL"] = "google/gemma-4-26b-a4b"
+    # -------------------------------------------
+    
     logger.info("=" * 50)
     logger.info("📰 Daily News Curator 시작")
 

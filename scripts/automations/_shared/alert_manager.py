@@ -7,7 +7,14 @@ _shared/alert_manager.py
 import logging
 import datetime
 from pathlib import Path
-from .telegram_client import TelegramClient
+# Disable Telegram integration unless allowed
+if os.getenv('DISABLE_TELEGRAM') == '1':
+    class DummyTelegramClient:
+        def send(self, *args, **kwargs):
+            return True
+    TelegramClient = DummyTelegramClient
+else:
+    from .telegram_client import TelegramClient
 
 logger = logging.getLogger(__name__)
 

@@ -7,7 +7,15 @@ automations_dir = Path("/Users/apple/development/soluni/Solve-for-X/scripts/auto
 if str(automations_dir) not in sys.path:
     sys.path.insert(0, str(automations_dir))
 
-from _shared.telegram_client import TelegramClient
+import os
+if os.getenv('DISABLE_TELEGRAM') == '1':
+    class DummyTelegramClient:
+        def send(self, *args, **kwargs): return True
+        def send_chunked(self, *args, **kwargs): return True
+        def edit_message(self, *args, **kwargs): return True
+    TelegramClient = DummyTelegramClient
+else:
+    from _shared.telegram_client import TelegramClient
 
 client = TelegramClient()
 
