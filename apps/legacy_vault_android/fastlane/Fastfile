@@ -1,0 +1,66 @@
+default_platform(:android)
+
+platform :android do
+
+  desc "🔍 Privacy audit — check for network imports"
+  lane :privacy_audit do
+    # Android equivalent of privacy audit
+    grep_result = sh("bash", "-c", "grep -r \"fetch\\|OkHttp\\|URLSession\" --include=\"*.kt\" --include=\"*.java\" --include=\"*.gradle*\" --exclude-dir=build --exclude-dir=.gradle | wc -l").to_s.strip.to_i
+    if grep_result > 0
+      puts "❌ Privacy audit FAILED: #{grep_result} network imports found"
+      exit 1
+    end
+    puts "✅ Privacy audit passed: 0 network imports found"
+  end
+
+  desc "🧹 Lint — Kotlin style check"
+  lane :lint do
+    gradle(
+      task: "lint"
+    )
+  end
+
+  desc "🧪 Run Tests"
+  lane :tests do
+    gradle(
+      task: "test"
+    )
+  end
+
+  desc "🏗️ Build AAB"
+  lane :build_aab do
+    gradle(
+      task: "bundle",
+      build_type: "Release"
+    )
+    # Copy output to consistent location
+    sh("mkdir", "-p", "build/output")
+    sh("cp", "app/build/outputs/bundle/release/app-release.aab", "build/output/app-release.aab")
+    puts "✅ AAB built at build/output/app-release.aab"
+  end
+
+  desc "📤 Upload AAB to Google Play (Internal Testing)"
+  lane :upload_playstore do
+    supply(
+      json_key: "../keys/play_console_key_path.json",
+      package_name: "com.sfx.legacyvault",
+      aab: "build/output/app-release.aab",
+      track: "internal",
+      skip_upload_screenshots: true,
+      skip_upload_images: true,
+      skip_upload_apk: true
+    )
+    puts "✅ Uploaded to Google Play Internal Testing"
+  end
+
+  desc "🏭 CI Pipeline — audit → lint → test → build → upload"
+  lane :ci do
+    privacy_audit
+    lint
+    tests
+    build_aab
+    upload_playstore
+
+    puts "🎉 Full Android CI Pipeline Complete!"
+  end
+end

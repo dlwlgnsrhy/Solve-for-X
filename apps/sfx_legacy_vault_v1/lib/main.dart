@@ -52,10 +52,12 @@ class FirebaseConfigNotifier extends Notifier<AsyncValue<bool>> {
   Future<void> retryInitialization() async {
     state = const AsyncValue.loading();
     try {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-        name: 'retry_init',
-      );
+      if (!Firebase.apps.any((app) => app.name == 'retry_init')) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+          name: 'retry_init',
+        );
+      }
       await setConfigured(true);
     } catch (e) {
       // Firebase config is still placeholder — keep showing setup screen

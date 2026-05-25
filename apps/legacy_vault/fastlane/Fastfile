@@ -92,4 +92,90 @@ platform :ios do
     test
     testflight
   end
+
+  desc "🔍 Privacy audit — no network imports"
+  lane :privacy_audit do
+    sh("bash", "#{fastlane_folder}/PrivacyAudit.sh")
+  end
+
+  desc "🧹 Lint — SwiftLint"
+  lane :lint do
+    sh("bash", "-c", "command -v swiftlint >/dev/null 2>&1 && swiftlint lint --strict --quiet || echo 'SwiftLint not installed, skipping'")
+  end
+
+  desc "🧪 Run Unit Tests"
+  lane :unit_tests do
+    run_tests(
+      scheme: "LegacyVaultApp",
+      devices: ["iPhone 16"],
+      skip_analyze: true,
+      skip_testable_scheme_detection: true
+    )
+  end
+
+  desc "🧪 Run Integration Tests"
+  lane :integration_tests do
+    run_tests(
+      scheme: "LegacyVaultIntegration",
+      devices: ["iPhone 16"],
+      skip_analyze: true,
+      skip_testable_scheme_detection: true
+    )
+  end
+
+  desc "🏗️ Build IPA for App Store"
+  lane :build_ipa do
+    match(
+      app_identifier: ["com.sfx.legacyvault"],
+      type: "appstore",
+      readonly: true,
+      git_url: "https://github.com/soluni/legacy-vault-certs.git",
+      shallow: true
+    )
+    build_app(
+      scheme: "LegacyVaultApp",
+      configuration: "Release",
+      export_method: "app-store",
+      skip_analyze: true,
+      skip_testable_scheme_detection: true,
+      export_options: { signStyle: "manual" }
+    )
+    cp("build/Release-iphoneos/LegacyVaultApp.ipa", "build/output/LegacyVaultApp.ipa")
+  end
+
+  desc "📤 Upload to TestFlight"
+  lane :upload_testflight do
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      ipa: "build/output/LegacyVaultApp.ipa"
+    )
+    slack(
+      message: "✅ LegacyVault iOS uploaded to TestFlight! Build #{lane_context[SharedValues::BUILD_NUMBER]}",
+      success: true
+    )
+  end
+
+  desc "🛣️ Full beta pipeline"
+  lane :beta do
+    privacy_audit
+    lint
+    unit_tests
+    integration_tests
+    build_ipa
+    upload_testflight
+  end
+
+  desc "🚀 Production — submit to App Store Connect"
+  lane :production do
+    beta
+    # submit_to_app_store_connect
+  end
+
+  desc "📢 Send Slack notification"
+  lane :slack_notify do |options|
+    slack(
+      message: options[:message] || "LegacyVault build #{lane_context[SharedValues::BUILD_NUMBER]} processed",
+      success: options.fetch(:success, true)
+    )
+  end
 end

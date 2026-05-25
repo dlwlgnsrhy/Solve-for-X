@@ -51,13 +51,14 @@ function getTransporter() {
  * Deploy with: firebase deploy --only functions:deadlineChecker
  */
 exports.deadlineChecker = functions.pubsub
-  .schedule('every 60 minutes')
+  .schedule('every 6 hours')
   .timeZone('UTC')
   .onRun(async (context) => {
     console.log('Deadline checker started at:', new Date().toISOString());
 
     try {
-      const snapshot = await db.collection('users').get();
+      // Optimized Firestore read: Query only active or alerted users, skipping sent (delivered) ones to avoid scaling read costs.
+      const snapshot = await db.collection('users').where('status', 'in', ['active', 'alerted']).get();
       const now = admin.firestore.Timestamp.now();
       let checkedCount = 0;
       let sentCount = 0;

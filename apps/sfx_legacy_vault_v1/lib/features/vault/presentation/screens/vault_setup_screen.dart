@@ -6,7 +6,7 @@ import 'package:sfx_legacy_vault/core/services/encryption_service.dart';
 import 'package:sfx_legacy_vault/features/vault/domain/models/vault_model.dart';
 import 'package:sfx_legacy_vault/features/vault/presentation/providers/vault_provider.dart';
 import 'package:sfx_legacy_vault/features/vault/presentation/screens/home_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Vault setup screen - Step-by-step wizard with encryption progress
 class VaultSetupScreen extends ConsumerStatefulWidget {
@@ -104,9 +104,9 @@ class _VaultSetupScreenState extends ConsumerState<VaultSetupScreen>
 
       await ref.read(vaultNotifierProvider.notifier).saveVault(vault);
 
-      // Store passphrase locally
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('encryption_passphrase', passphrase);
+      // Store passphrase locally in secure storage (keychain/keystore)
+      const secureStorage = FlutterSecureStorage();
+      await secureStorage.write(key: 'encryption_passphrase', value: passphrase);
 
       if (mounted) {
         // Show success animation

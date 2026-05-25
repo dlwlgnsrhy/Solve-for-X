@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Firebase Authentication service wrapper.
@@ -34,7 +35,11 @@ class FirebaseAuthService {
     final provider = OAuthProvider('apple.com');
     provider.addScope('email');
     provider.addScope('name');
-    return _auth.signInWithPopup(provider);
+    if (kIsWeb) {
+      return _auth.signInWithPopup(provider);
+    } else {
+      return _auth.signInWithProvider(provider);
+    }
   }
 
   /// Sign out the current user.

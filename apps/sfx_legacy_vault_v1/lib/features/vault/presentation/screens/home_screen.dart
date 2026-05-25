@@ -13,6 +13,7 @@ import 'package:sfx_legacy_vault/features/vault/domain/models/vault_model.dart';
 import 'package:sfx_legacy_vault/features/vault/presentation/providers/vault_provider.dart';
 import 'package:sfx_legacy_vault/features/vault/presentation/screens/vault_setup_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Main home screen showing vault list dashboard.
 class HomeScreen extends ConsumerStatefulWidget {
@@ -24,18 +25,12 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with SingleTickerProviderStateMixin {
-  Timer? _countdownTimer;
   late AnimationController _pulseController;
 
   @override
   void initState() {
     super.initState();
     _autoPing();
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -52,7 +47,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   void dispose() {
-    _countdownTimer?.cancel();
     _pulseController.dispose();
     super.dispose();
   }
@@ -60,7 +54,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Future<void> _autoPing() async {
     final user = ref.read(currentUserProvider);
     if (user != null) {
+      final prefs = await SharedPreferences.getInstance();
+      final lastPingStr = prefs.getString('last_auto_ping_time') ?? '';
+      final now = DateTime.now();
+      if (lastPingStr.isNotEmpty) {
+        try {
+          final lastPing = DateTime.parse(lastPingStr);
+          // Only auto-ping if it's been more than 12 hours since last auto-ping
+          if (now.difference(lastPing).inHours < 12) {
+            return;
+          }
+        } catch (_) {}
+      }
       await ref.read(vaultNotifierProvider.notifier).pingAll(user.uid);
+      await prefs.setString('last_auto_ping_time', now.toIso8601String());
     }
   }
 
@@ -326,7 +333,7 @@ class _VaultDashboard extends ConsumerWidget {
                   pulseController: pulseController,
                 ),
               ).animate()
-                  .fadeIn(delay: const Duration(milliseconds: 300)),
+                  .fadeIn(delay: const Duration(milliseconds: 300));
             }),
 
             const SizedBox(height: 20),
@@ -639,10 +646,6 @@ class _VaultCard extends ConsumerWidget {
     final status = vault.visualStatus;
     final statusColor = _statusColor(status);
     final typeColor = _vaultTypeBorderColor(vault.vaultType);
-    final countdown = vault_utils.DateUtils.countdownComponents(
-      vault.lastActiveAt,
-      vault.deadlineDays,
-    );
     final progress = vault_utils.DateUtils.deadlineProgress(
       vault.lastActiveAt,
       vault.deadlineDays,
@@ -762,10 +765,8 @@ class _VaultCard extends ConsumerWidget {
             // ─── COUNTDOWN TIMER ───
             if (vault.status != 'paused')
               _StyledCountdown(
-                days: countdown['days'] ?? 0,
-                hours: countdown['hours'] ?? 0,
-                minutes: countdown['minutes'] ?? 0,
-                seconds: countdown['seconds'] ?? 0,
+                lastActiveAt: vault.lastActiveAt,
+                deadlineDays: vault.deadlineDays,
                 color: statusColor,
                 isExpired: status == VaultStatus.expired,
               ),
@@ -1074,45 +1075,80 @@ class _PulsingStatusBadge extends StatelessWidget {
 
 // ─── Styled Countdown ───────────────────────────────────────────────────────
 
-class _StyledCountdown extends StatelessWidget {
-  final int days;
-  final int hours;
-  final int minutes;
-  final int seconds;
+class _StyledCountdown extends StatefulWidget {
+  final DateTime lastActiveAt;
+  final int deadlineDays;
   final Color color;
   final bool isExpired;
 
   const _StyledCountdown({
-    required this.days,
-    required this.hours,
-    required this.minutes,
-    required this.seconds,
+    required this.lastActiveAt,
+    required this.deadlineDays,
     required this.color,
     required this.isExpired,
   });
 
   @override
+  State<_StyledCountdown> createState() => _StyledCountdownState();
+}
+
+class _StyledCountdownState extends State<_StyledCountdown> {
+  Timer? _timer;
+  late Map<String, int> _countdown;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateCountdown();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {
+          _updateCountdown();
+        });
+      }
+    });
+  }
+
+  void _updateCountdown() {
+    _countdown = vault_utils.DateUtils.countdownComponents(
+      widget.lastActiveAt,
+      widget.deadlineDays,
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final days = _countdown['days'] ?? 0;
+    final hours = _countdown['hours'] ?? 0;
+    final minutes = _countdown['minutes'] ?? 0;
+    final seconds = _countdown['seconds'] ?? 0;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _CountdownBox(
-          value: isExpired ? 0 : days,
+          value: widget.isExpired ? 0 : days,
           label: '일',
-          color: color,
+          color: widget.color,
         ),
         const SizedBox(width: 6),
-        _CountdownSeparator(color: color),
+        _CountdownSeparator(color: widget.color),
         const SizedBox(width: 6),
-        _CountdownBox(value: hours, label: '시간', color: color),
+        _CountdownBox(value: hours, label: '시간', color: widget.color),
         const SizedBox(width: 6),
-        _CountdownSeparator(color: color),
+        _CountdownSeparator(color: widget.color),
         const SizedBox(width: 6),
-        _CountdownBox(value: minutes, label: '분', color: color),
+        _CountdownBox(value: minutes, label: '분', color: widget.color),
         const SizedBox(width: 6),
-        _CountdownSeparator(color: color),
+        _CountdownSeparator(color: widget.color),
         const SizedBox(width: 6),
-        _CountdownBox(value: seconds, label: '초', color: color),
+        _CountdownBox(value: seconds, label: '초', color: widget.color),
       ],
     );
   }
@@ -1561,8 +1597,8 @@ class _DecryptionDialogState extends ConsumerState<_DecryptionDialog> {
     });
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final passphrase = prefs.getString('encryption_passphrase') ?? '';
+      const secureStorage = FlutterSecureStorage();
+      final passphrase = await secureStorage.read(key: 'encryption_passphrase') ?? '';
 
       if (passphrase.isEmpty) {
         setState(() {

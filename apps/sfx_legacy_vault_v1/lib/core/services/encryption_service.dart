@@ -4,6 +4,10 @@ import 'dart:typed_data';
 import 'dart:math' show Random;
 
 import 'package:encrypt/encrypt.dart' as encrypt_lib;
+import 'package:pointycastle/key_derivators/pbkdf2.dart';
+import 'package:pointycastle/key_derivators/api.dart';
+import 'package:pointycastle/digests/sha256.dart';
+import 'package:pointycastle/macs/hmac.dart';
 
 /// AES-256 client-side encryption service.
 ///
@@ -64,26 +68,13 @@ class EncryptionService {
         24, (index) => chars[r.nextInt(chars.length)].toString()).join();
   }
 
-  /// Derives a 256-bit AES key from passphrase + salt.
+  /// Derives a 256-bit AES key from passphrase + salt using PBKDF2 SHA-256.
   static encrypt_lib.Key _deriveKey(
       String passphrase, List<int> saltBytes) {
-    // Use simple but deterministic key derivation
-    // In production, consider using a proper KDF like PBKDF2
-    final combined = <int>[
-      ...utf8.encode(passphrase),
-      ...saltBytes,
-    ];
-
-    // Use hash to get exactly 32 bytes for AES-256
-    final bytes = <int>[];
-    for (int i = 0; i < 32; i++) {
-      int b = 0;
-      for (int j = 0; j < combined.length; j++) {
-        b ^= combined[j] ^ (i + j * 31);
-      }
-      bytes.add(b & 0xFF);
-    }
-    return encrypt_lib.Key(Uint8List.fromList(bytes));
+    final pbkdf2 = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64));
+    pbkdf2.init(Pbkdf2Parameters(Uint8List.fromList(saltBytes), 10000, 32));
+    final keyBytes = pbkdf2.process(Uint8List.fromList(utf8.encode(passphrase)));
+    return encrypt_lib.Key(keyBytes);
   }
 
   static List<int> _secureRandomBytes(int length) {
