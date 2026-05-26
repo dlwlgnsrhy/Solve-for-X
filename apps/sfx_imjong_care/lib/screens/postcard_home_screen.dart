@@ -60,9 +60,26 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
           [XFile(imageFile.path)],
           text: '임종 케어 엽서가 마음을 담아 배달되었습니다.\n온전한 감동을 동적 웹페이지에서도 만나보세요.',
         );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('엽서 이미지 캡처에 실패했습니다. 다시 시도해 주세요.'),
+              backgroundColor: AppTheme.heartStampRed,
+            ),
+          );
+        }
       }
     } catch (e) {
-      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('엽서 공유 중 오류가 발생했습니다: $e'),
+            backgroundColor: AppTheme.heartStampRed,
+          ),
+        );
+      }
       debugPrint("Capture & Share Error: $e");
     } finally {
       try {
@@ -187,7 +204,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                 style: GoogleFonts.notoSerifKr(
                   fontSize: 14,
                   fontStyle: FontStyle.italic,
-                  color: AppTheme.espressoTextLight.withOpacity(0.7),
+                  color: AppTheme.espressoTextLight.withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(height: 24),
@@ -309,7 +326,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
         border: Border.all(color: AppTheme.sepiaBorder, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -324,7 +341,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(2.0),
                 border: Border.all(
-                  color: AppTheme.sepiaBorder.withOpacity(0.8),
+                  color: AppTheme.sepiaBorder.withValues(alpha: 0.8),
                   style: BorderStyle.solid,
                   width: 1.0,
                 ),
@@ -414,7 +431,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
         border: Border.all(color: AppTheme.sepiaBorder, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -429,7 +446,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(2.0),
                 border: Border.all(
-                  color: AppTheme.sepiaBorder.withOpacity(0.8),
+                  color: AppTheme.sepiaBorder.withValues(alpha: 0.8),
                   width: 1.0,
                 ),
               ),
@@ -525,7 +542,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
               margin: const EdgeInsets.all(2.0),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: AppTheme.terracottaAccent.withOpacity(0.3),
+                  color: AppTheme.terracottaAccent.withValues(alpha: 0.3),
                   style: BorderStyle.solid,
                 ),
               ),

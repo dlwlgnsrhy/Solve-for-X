@@ -278,7 +278,7 @@ class _WillEditorScreenState extends ConsumerState<WillEditorScreen> {
                     hintText: '여기에 진심을 담아 마지막 한마디를 적어 내려가 보세요...\n(상단의 성찰 질문을 활용하면 보다 편하게 적을 수 있습니다)',
                     hintStyle: GoogleFonts.notoSerifKr(
                       fontSize: 14,
-                      color: AppTheme.espressoTextLight.withOpacity(0.4),
+                      color: AppTheme.espressoTextLight.withValues(alpha: 0.4),
                     ),
                     fillColor: Colors.transparent,
                     filled: true,
@@ -318,7 +318,7 @@ class _WillEditorScreenState extends ConsumerState<WillEditorScreen> {
                     hintText: '이름을 적어주세요 (기본값: 익명)',
                     hintStyle: GoogleFonts.notoSerifKr(
                       fontSize: 14,
-                      color: AppTheme.espressoTextLight.withOpacity(0.4),
+                      color: AppTheme.espressoTextLight.withValues(alpha: 0.4),
                     ),
                     fillColor: Colors.transparent,
                     filled: true,

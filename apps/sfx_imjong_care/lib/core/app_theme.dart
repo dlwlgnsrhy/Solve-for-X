@@ -72,7 +72,7 @@ class AppTheme {
           borderSide: const BorderSide(color: terracottaAccent, width: 1.5),
         ),
         labelStyle: GoogleFonts.notoSerifKr(color: espressoTextLight),
-        hintStyle: GoogleFonts.notoSerifKr(color: espressoTextLight.withOpacity(0.5)),
+        hintStyle: GoogleFonts.notoSerifKr(color: espressoTextLight.withValues(alpha: 0.5)),
       ),
     );
   }

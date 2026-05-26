@@ -1,30 +1,39 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sfx_imjong_care/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Imjong Care Postcard Home Screen Smoke Test', (WidgetTester tester) async {
+    // Build our app under ProviderScope and trigger a frame.
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MyApp(),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify that the AppBar title 'POSTCARD' is present.
+    expect(find.text('POSTCARD'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Verify that the instructions text is present.
+    expect(find.text('엽서를 터치하여 돌려보세요'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify info button is present and tap it.
+    final infoButtonFinder = find.byIcon(Icons.info_outline);
+    expect(infoButtonFinder, findsOneWidget);
+    await tester.tap(infoButtonFinder);
+    await tester.pumpAndSettle();
+
+    // Verify that the instruction dialog appears with title '아날로그 엽서 사용법'.
+    expect(find.text('아날로그 엽서 사용법'), findsOneWidget);
+
+    // Tap confirm button on the dialog to close it.
+    final closeButtonFinder = find.text('확인');
+    expect(closeButtonFinder, findsOneWidget);
+    await tester.tap(closeButtonFinder);
+    await tester.pumpAndSettle();
+
+    // Dialog should be gone
+    expect(find.text('아날로그 엽서 사용법'), findsNothing);
   });
 }
