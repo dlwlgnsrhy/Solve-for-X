@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Card template enum for SFX Imjong Care
-enum CardTemplate { neon, sunset, ocean, aurora }
+enum CardTemplate { neon, sunset, ocean, aurora, creamPostcard }
 
 extension CardTemplateExtension on CardTemplate {
   String get name {
@@ -14,6 +14,8 @@ extension CardTemplateExtension on CardTemplate {
         return 'OCEAN / 바다';
       case CardTemplate.aurora:
         return 'AURORA / 오로라';
+      case CardTemplate.creamPostcard:
+        return 'POSTCARD / 엽서';
     }
   }
 
@@ -27,6 +29,8 @@ extension CardTemplateExtension on CardTemplate {
         return Icons.water_drop_outlined;
       case CardTemplate.aurora:
         return Icons.auto_awesome_motion;
+      case CardTemplate.creamPostcard:
+        return Icons.local_post_office_outlined;
     }
   }
 
@@ -40,6 +44,8 @@ extension CardTemplateExtension on CardTemplate {
         return const Color(0xFF00DDFF);
       case CardTemplate.aurora:
         return const Color(0xFFAA00FF);
+      case CardTemplate.creamPostcard:
+        return const Color(0xFF594F45);
     }
   }
 
@@ -53,6 +59,8 @@ extension CardTemplateExtension on CardTemplate {
         return const Color(0x5000DDFF);
       case CardTemplate.aurora:
         return const Color(0x50AA00FF);
+      case CardTemplate.creamPostcard:
+        return const Color(0x60594F45);
     }
   }
 
@@ -66,6 +74,8 @@ extension CardTemplateExtension on CardTemplate {
         return const [Color(0xFF0A1628), Color(0xFF060E1A)];
       case CardTemplate.aurora:
         return const [Color(0xFF0A2818), Color(0xFF061A10)];
+      case CardTemplate.creamPostcard:
+        return const [Color(0xFFF7F5F0), Color(0xFFEFECE5)];
     }
   }
 
@@ -79,6 +89,8 @@ extension CardTemplateExtension on CardTemplate {
         return const [Color(0x3C00DDFF), Color(0x2800FF88)];
       case CardTemplate.aurora:
         return const [Color(0x3CAA00FF), Color(0x2800FF88)];
+      case CardTemplate.creamPostcard:
+        return const [Color(0x20594F45), Color(0x102A2621)];
     }
   }
 }

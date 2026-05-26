@@ -61,7 +61,12 @@ class _AppRootState extends State<_AppRoot> {
   @override
   void initState() {
     super.initState();
-    _onboardingFuture = AppStorage.isOnboardingCompleted();
+    _onboardingFuture = _initAppAndCheckOnboarding();
+  }
+
+  Future<bool> _initAppAndCheckOnboarding() async {
+    await AppStorage.initSeedDataIfNeeded();
+    return await AppStorage.isOnboardingCompleted();
   }
 
   @override

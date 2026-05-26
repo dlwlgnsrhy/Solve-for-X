@@ -3,6 +3,7 @@ import 'package:sfx_imjong_care/core/services/app_storage.dart';
 import 'package:sfx_imjong_care/core/theme/card_template.dart';
 import 'package:sfx_imjong_care/features/will_input/domain/entities/will_card.dart';
 import 'package:sfx_imjong_care/features/will_card/presentation/screens/will_card_screen.dart';
+import 'package:sfx_imjong_care/features/card_history/presentation/screens/will_history_hub_screen.dart';
 // Date formatting is handled inline to avoid extra intl dependency
 
 /// Displays the user's card history as scrollable thumbnails.
@@ -51,12 +52,34 @@ class _CardHistorySectionState extends State<CardHistorySection> {
                     letterSpacing: 1.5,
                   ),
                 ),
-                Text(
-                  '${history.length}개',
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 10,
-                    color: Color(0xFF666666),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const WillHistoryHubScreen(),
+                      ),
+                    ).then((_) => setState(() {}));
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '전체보기 (${history.length})',
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF00FF88),
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 9,
+                        color: Color(0xFF00FF88),
+                      ),
+                    ],
                   ),
                 ),
               ],

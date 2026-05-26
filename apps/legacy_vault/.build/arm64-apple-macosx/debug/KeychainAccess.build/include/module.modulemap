@@ -1,3 +1,0 @@
-module KeychainAccess {
-    header "/Users/apple/development/soluni/Solve-for-X/apps/legacy_vault/.build/arm64-apple-macosx/debug/KeychainAccess.build/include/KeychainAccess-Swift.h"
-}

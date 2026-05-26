@@ -83,6 +83,18 @@ class WillFormController extends StateNotifier<WillFormState> {
     _autoSave();
   }
 
+  /// Manually set the form state (used for editing an existing card)
+  void setForm(WillCard card) {
+    _debounceTimer?.cancel();
+    state = WillFormState(
+      name: card.name,
+      values: List<String>.from(card.values),
+      will: card.will,
+    );
+    // Persist as active card in storage
+    _storage.saveCard(card);
+  }
+
   void reset() {
     _debounceTimer?.cancel();
     state = const WillFormState(values: ['', '', '']);

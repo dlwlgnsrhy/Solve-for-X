@@ -14,7 +14,9 @@ import 'package:sfx_imjong_care/features/will_card/presentation/screens/will_car
 import 'package:sfx_imjong_care/features/card_history/presentation/widgets/card_history_section.dart';
 
 class WillInputScreen extends ConsumerStatefulWidget {
-  const WillInputScreen({super.key});
+  final WillCard? editCard;
+
+  const WillInputScreen({super.key, this.editCard});
 
   @override
   ConsumerState<WillInputScreen> createState() => _WillInputScreenState();
@@ -46,17 +48,32 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
     super.didChangeDependencies();
     if (_hasRestoredState) return; // Guard: only restore once
     _hasRestoredState = true;
-    final form = ref.read(willFormControllerProvider);
-    if (_nameController.text.isEmpty) {
-      _nameController.text = form.name;
-    }
-    for (var i = 0; i < 3; i++) {
-      if (_valueControllers[i].text.isEmpty) {
-        _valueControllers[i].text = form.values[i];
+
+    if (widget.editCard != null) {
+      // Force set form values for editing existing card to prevent routing data loss
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(willFormControllerProvider.notifier).setForm(widget.editCard!);
+        }
+      });
+      _nameController.text = widget.editCard!.name;
+      for (var i = 0; i < 3; i++) {
+        _valueControllers[i].text = widget.editCard!.values[i];
       }
-    }
-    if (_willController.text.isEmpty) {
-      _willController.text = form.will;
+      _willController.text = widget.editCard!.will;
+    } else {
+      final form = ref.read(willFormControllerProvider);
+      if (_nameController.text.isEmpty) {
+        _nameController.text = form.name;
+      }
+      for (var i = 0; i < 3; i++) {
+        if (_valueControllers[i].text.isEmpty) {
+          _valueControllers[i].text = form.values[i];
+        }
+      }
+      if (_willController.text.isEmpty) {
+        _willController.text = form.will;
+      }
     }
     
     // Restore persistent EULA state
@@ -269,6 +286,78 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
     );
   }
 
+  int _currentPromptIndex = 0;
+
+  static const List<_LifeValuePrompt> _prompts = [
+    _LifeValuePrompt(
+      question: '내 장례식에서 사람들이 슬피 우는 대신 신나게 춤출 수 있도록 틀어줬으면 하는 단 하나의 노래는?',
+      suggestedValues: ['음악과 축제', '마지막 댄스', '유쾌한 작별'],
+      suggestedWill: '슬퍼하기보다 나의 마지막 플레이리스트를 들으며 신나게 춤춰줘!',
+    ),
+    _LifeValuePrompt(
+      question: '오늘 밤 지구의 생이 마감된다면, 지인들에게 꼭 추천하고 싶은 내 인생 최애 명작은?',
+      suggestedValues: ['예술적 영감', '최고의 명작', '지혜의 전수'],
+      suggestedWill: '우리가 함께 살아온 날들은 한 편의 영화보다 훨씬 찬란했던 명작이었어.',
+    ),
+    _LifeValuePrompt(
+      question: '내 장례식장에 조의금 봉투 대신 들고 왔으면 하는 내가 가장 좋아하던 꽃이나 간식은?',
+      suggestedValues: ['달콤한 추억', '화사한 꽃다발', '소박한 작별'],
+      suggestedWill: '조의금 대신 맛있는 마카롱과 따뜻한 아메리카노 한 잔씩 들고 가볍게 모여줘.',
+    ),
+    _LifeValuePrompt(
+      question: '사후 세계로 갈 때 단 하나의 소지품만 가방에 넣어갈 수 있다면 무엇을 가져갈 것인가?',
+      suggestedValues: ['소중한 사진첩', '낡은 손편지', '추억의 물건'],
+      suggestedWill: '그 어떤 보석보다 우리들이 함께 웃으며 찍은 사진 한 장이 내 가방 속 최고 보물이야.',
+    ),
+    _LifeValuePrompt(
+      question: '먼 훗날 나의 힙한 묘비명(슬로건)을 딱 한 줄로 유쾌하게 정의한다면?',
+      suggestedValues: ['유쾌한 인생', '힙한 작별인사', '잠시 쉬어가기'],
+      suggestedWill: '실컷 놀다 갑니다! 너희도 남은 생 후회 없이 뜨겁게 놀아라!',
+    ),
+    _LifeValuePrompt(
+      question: '내가 사라진 후, 지인들이 나를 떠올릴 때 기억해 줬으면 하는 나의 가장 해맑은 버릇은?',
+      suggestedValues: ['해맑은 웃음', '익살스런 윙크', '따뜻한 포옹'],
+      suggestedWill: '슬퍼하기보다 내 멍청했던 윙크를 기억하며 다들 배꼽 빠지게 한번 웃어주렴.',
+    ),
+    _LifeValuePrompt(
+      question: '남겨진 소중한 가족/친구들에게 비밀로 숨겨둔 마지막 맛집 보물 지도를 양도한다면?',
+      suggestedValues: ['숨겨진 맛집', '소소한 비상금', '맛있는 공유'],
+      suggestedWill: '냉장고 뒤편 상자에 비상금이 있어! 그걸로 다들 내 단골 떡볶이집에서 먹방 파티해줘.',
+    ),
+  ];
+
+  void _shufflePrompt() {
+    setState(() {
+      _currentPromptIndex = (_currentPromptIndex + 1) % _prompts.length;
+    });
+  }
+
+  void _applyPrompt() {
+    final prompt = _prompts[_currentPromptIndex];
+    if (_nameController.text.isEmpty) {
+      _nameController.text = '임종 버디';
+      _onNameChanged('임종 버디');
+    }
+    for (var i = 0; i < 3; i++) {
+      _valueControllers[i].text = prompt.suggestedValues[i];
+      _onValueChanged(i, prompt.suggestedValues[i]);
+    }
+    _willController.text = prompt.suggestedWill;
+    _onWillChanged(prompt.suggestedWill);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          '💡 질문 카드 내용이 입력 폼에 기품 있게 반영되었습니다!',
+          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: Colors.black),
+        ),
+        backgroundColor: Color(0xFF00FF88),
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Watch willFormControllerProvider to trigger real-time validation updates
@@ -292,6 +381,8 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildTitle(),
+                      const SizedBox(height: 16),
+                      _buildPromptDeck(),
                       const SizedBox(height: 24),
                       _buildTemplateSelector(),
                       const SizedBox(height: 20),
@@ -394,6 +485,117 @@ class _WillInputScreenState extends ConsumerState<WillInputScreen> {
     return Text(
       'SFX 임종 케어',
       style: AppTypography.titleLarge,
+    );
+  }
+
+  Widget _buildPromptDeck() {
+    final prompt = _prompts[_currentPromptIndex];
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E1E2A), Color(0xFF13131C)],
+        ),
+        border: Border.all(
+          color: const Color(0xFF00FF88).withValues(alpha: 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00FF88).withValues(alpha: 0.05),
+            blurRadius: 10,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.wb_incandescent_outlined, color: Color(0xFF00FF88), size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    'LIFE QUESTION / 성찰 질문 카드',
+                    style: TextStyle(
+                      fontFamily: 'Orbitron',
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF00FF88).withValues(alpha: 0.8),
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ],
+              ),
+              GestureDetector(
+                onTap: _shufflePrompt,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00FF88).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.casino_outlined, color: Color(0xFF00FF88), size: 12),
+                      SizedBox(width: 4),
+                      Text(
+                        'SHUFFLE',
+                        style: TextStyle(
+                          fontFamily: 'Orbitron',
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF00FF88),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            prompt.question,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              ElevatedButton.icon(
+                onPressed: _applyPrompt,
+                icon: const Icon(Icons.auto_fix_high, size: 14),
+                label: const Text(
+                  '예시 답변 적용하기',
+                  style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00FF88),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -664,4 +866,16 @@ class _GenerateButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _LifeValuePrompt {
+  final String question;
+  final List<String> suggestedValues;
+  final String suggestedWill;
+
+  const _LifeValuePrompt({
+    required this.question,
+    required this.suggestedValues,
+    required this.suggestedWill,
+  });
 }
