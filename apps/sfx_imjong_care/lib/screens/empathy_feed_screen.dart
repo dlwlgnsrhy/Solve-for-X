@@ -89,15 +89,30 @@ class _EmpathyFeedScreenState extends State<EmpathyFeedScreen> {
             itemCount: wills.length,
             itemBuilder: (context, index) {
               final will = wills[index];
-              return _buildFeedCard(will);
+              return _FeedCardItem(
+                will: will,
+                firebaseService: _firebaseService,
+              );
             },
           );
         },
       ),
     );
   }
+}
 
-  Widget _buildFeedCard(WillCardModel will) {
+// Optimized Leaf Component for Isolated Reactive Rendering (Jank-Free 60fps)
+class _FeedCardItem extends StatelessWidget {
+  final WillCardModel will;
+  final FirebaseService firebaseService;
+
+  const _FeedCardItem({
+    required this.will,
+    required this.firebaseService,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0),
       decoration: BoxDecoration(
@@ -168,7 +183,7 @@ class _EmpathyFeedScreenState extends State<EmpathyFeedScreen> {
                     InkWell(
                       onTap: () {
                         HapticFeedback.selectionClick();
-                        _firebaseService.likeWill(will.id);
+                        firebaseService.likeWill(will.id);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
