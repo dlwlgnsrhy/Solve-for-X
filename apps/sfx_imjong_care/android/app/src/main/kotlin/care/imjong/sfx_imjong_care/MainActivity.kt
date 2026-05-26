@@ -1,0 +1,5 @@
+package care.imjong.sfx_imjong_care
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()
