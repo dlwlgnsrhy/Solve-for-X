@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:io';
 import 'app_theme.dart';
 
 class CustomErrorBoundary extends StatelessWidget {
@@ -176,9 +177,20 @@ class RestartWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Simply redirects to main app window to recover
+    // Safely redirects or restarts the app based on runtime platform
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      SystemNavigator.pop(); // or other hot-restart solutions. In real app, standard router works.
+      try {
+        if (Platform.isIOS) {
+          // Safe Soft Reset for iOS to bypass App Store rejection:
+          // Instantly clear stack and push new clean instance of root launcher instead of force crash
+          Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+        } else {
+          SystemNavigator.pop(); // Android standard back-stack pop to exit safely
+        }
+      } catch (e) {
+        // Safe fallback router reset
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      }
     });
     return const Scaffold(
       backgroundColor: AppTheme.creamBg,
