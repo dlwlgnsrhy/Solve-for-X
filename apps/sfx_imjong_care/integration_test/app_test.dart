@@ -107,6 +107,46 @@ void main() {
       await tester.pumpAndSettle();
       await Future.delayed(const Duration(seconds: 2));
 
+      // 8b. Click OutlinedButton to open NotaryMapScreen
+      print('[INTEGRATION] Action: Open Notary Map Screen');
+      final findNotaryBtn = find.text('📍 내 주변 공증 변호사/사무소 찾기');
+      expect(findNotaryBtn, findsOneWidget);
+      await tester.ensureVisible(findNotaryBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(findNotaryBtn);
+      await tester.pumpAndSettle();
+      
+      print('[SCREENSHOT] stage_8_notary_map');
+      await Future.delayed(const Duration(seconds: 4)); // allow screenshot script to snap
+      
+      // Go back from NotaryMapScreen
+      print('[INTEGRATION] Action: Go Back from Notary Map');
+      final mapBackBtn = find.byIcon(Icons.arrow_back);
+      expect(mapBackBtn, findsOneWidget);
+      await tester.tap(mapBackBtn);
+      await tester.pumpAndSettle();
+      await Future.delayed(const Duration(seconds: 2));
+
+      // 8c. Click ElevatedButton to open DocumentSubmitScreen
+      print('[INTEGRATION] Action: Open Document Submit Screen');
+      final sendDocBtn = find.text('✉️ 작성한 내용 제휴 법무법인 전송');
+      expect(sendDocBtn, findsOneWidget);
+      await tester.ensureVisible(sendDocBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(sendDocBtn);
+      await tester.pumpAndSettle();
+      
+      print('[SCREENSHOT] stage_9_document_submit');
+      await Future.delayed(const Duration(seconds: 4)); // allow screenshot script to snap
+      
+      // Go back from DocumentSubmitScreen
+      print('[INTEGRATION] Action: Go Back from Document Submit');
+      final submitBackBtn = find.byIcon(Icons.arrow_back);
+      expect(submitBackBtn, findsOneWidget);
+      await tester.tap(submitBackBtn);
+      await tester.pumpAndSettle();
+      await Future.delayed(const Duration(seconds: 2));
+
       // Go back to Home Screen from Legal Guide
       print('[INTEGRATION] Action: Go Back from Legal Guide');
       final legalBackBtn = find.byIcon(Icons.arrow_back);

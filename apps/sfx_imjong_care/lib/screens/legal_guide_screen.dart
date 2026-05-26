@@ -3,10 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/app_theme.dart';
+import '../models/will_card.dart';
 import '../providers/language_provider.dart';
+import 'notary_map_screen.dart';
+import 'document_submit_screen.dart';
 
 class LegalGuideScreen extends ConsumerStatefulWidget {
-  const LegalGuideScreen({super.key});
+  final WillCardModel? customWillCard;
+  const LegalGuideScreen({super.key, this.customWillCard});
 
   @override
   ConsumerState<LegalGuideScreen> createState() => _LegalGuideScreenState();
@@ -307,15 +311,9 @@ class _LegalGuideScreenState extends ConsumerState<LegalGuideScreen> {
                 child: OutlinedButton(
                   onPressed: () {
                     HapticFeedback.mediumImpact();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          isEn 
-                              ? 'Searching for verified notary offices near you...' 
-                              : '현재 위치 주변의 유언 전문 공증 변호사/사무소를 검색합니다...',
-                        ),
-                        backgroundColor: AppTheme.terracottaAccent,
-                      ),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const NotaryMapScreen()),
                     );
                   },
                   style: OutlinedButton.styleFrom(
@@ -341,14 +339,12 @@ class _LegalGuideScreenState extends ConsumerState<LegalGuideScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     HapticFeedback.mediumImpact();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          isEn 
-                              ? 'Connecting documents to partner Law Firm "Soluni Law"...' 
-                              : '준비 서류를 제휴 법무법인 "솔루니 상속 전문 센터"로 연동 발송합니다...',
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DocumentSubmitScreen(
+                          customWillCard: widget.customWillCard,
                         ),
-                        backgroundColor: AppTheme.espressoText,
                       ),
                     );
                   },

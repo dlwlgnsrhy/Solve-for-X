@@ -395,7 +395,11 @@ class _PostcardHomeScreenState extends ConsumerState<PostcardHomeScreen> with Si
                         HapticFeedback.lightImpact();
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const LegalGuideScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => LegalGuideScreen(
+                              customWillCard: widget.customWillCard,
+                            ),
+                          ),
                         );
                       },
                       icon: const Icon(Icons.gavel, color: AppTheme.creamBg),
