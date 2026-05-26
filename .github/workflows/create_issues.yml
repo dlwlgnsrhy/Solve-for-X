@@ -1,0 +1,58 @@
+name: Sync GitHub Milestones and Issues
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  issues: write
+
+jobs:
+  create-milestones-and-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Milestones and Issues via GitHub API
+        run: |
+          echo "📅 Creating Milestones..."
+          
+          # Create Milestone 2 and grab response
+          curl -s -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/milestones \
+            -d '{"title":"[Milestone 2] Cream Postcard Custom Styling & Fonts","description":"아침에 디자인하신 크림색 명조 엽서 감성 테마와 폰트들을 Flutter 앱 안에 완벽하게 이식하는 시각적 융합 단계"}'
+          
+          # Create Milestone 3
+          curl -s -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/milestones \
+            -d '{"title":"[Milestone 3] Life-Value Prompt Deck & Empathy Feed","description":"유서를 가볍고 위트있게 한 줄씩 시작하게 돕는 성찰 질문 덱과 소셜 피드 교감 보관소를 구축하는 기획 고도화 단계"}'
+
+          echo "🏷️ Milestone 2 관련 이슈 생성 중..."
+          curl -s -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues \
+            -d '{"title":"[MS2-Issue #1] Noto Serif KR & Cormorant Garamond 폰트 연동","body":"### Goal\n임종 유언 앱의 creamPostcard 템플릿에 명조 서체 구글 폰트를 연동하여 감성을 극대화합니다.\n\n### Tasks\n- [ ] Noto Serif KR 폰트 적용\n- [ ] Cormorant Garamond 영문 이탤릭 폰트 적용\n- [ ] 오프라인 대응 폴백 폰트 매핑","milestone":1}'
+
+          curl -s -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues \
+            -d '{"title":"[MS2-Issue #2] 사용자 아침 디자인(imjong-care-app.html) 100% 무결점 재현 3D 엽서 구현","body":"### Goal\n네온 SF 스타일을 완전히 배제하고, 아침에 디자인한 크림색 배경, 10px 안쪽 가이드선, 우표 데코, 미니멀한 엽서 본연의 감성을 Flutter 3D 카드에 100% 이식합니다.\n\n### Tasks\n- [ ] 4px Sharp BorderRadius 적용\n- [ ] 10px 마진 안쪽 액센트 선 Stack 빌드\n- [ ] 바코드 및 지문 스캔 걷어내고 우표 장식 및 미니멀 아날로그 서명선 이식","milestone":1}'
+
+          echo "🏷️ Milestone 3 관련 이슈 생성 중..."
+          curl -s -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues \
+            -d '{"title":"[MS3-Issue #1] 유서 입력을 돕는 가치 성찰 랜덤 질문 덱(Prompt Deck) 구현","body":"### Goal\n유서를 가볍고 위트 있게 한 줄씩 시작할 수 있게 돕는 7가지 성찰 질문 덱과 폼 자동 주입(Apply) 엔진을 장착합니다.\n\n### Tasks\n- [ ] 7가지 웰다잉 라이트 밸류 질문 데이터 구축\n- [ ] 🎲 SHUFFLE 및 자동 작성 적용 기능 장착","milestone":2}'
+
+          curl -s -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues \
+            -d '{"title":"[MS3-Issue #2] 3D 유서 엽서를 모아보고 하트 리액션을 교감하는 공감 아카이브 허브 화면 고도화","body":"### Goal\n히스토리 허브에 POSTCARD 필터 칩을 연동하고, 리스트 내 카드들이 엽서 템플릿을 온전히 계승하여 아름답게 보이게 만듭니다.\n\n### Tasks\n- [ ] POSTCARD 필터 칩 추가\n- [ ] _GridCardItem 내 엽서 질감 및 Noto Serif KR 폰트 일관성 적용","milestone":2}'
+
+          echo "🎉 GitHub Action을 통해 원격 이슈 및 마일스톤이 실제로 자동 연동 생성되었습니다!"
