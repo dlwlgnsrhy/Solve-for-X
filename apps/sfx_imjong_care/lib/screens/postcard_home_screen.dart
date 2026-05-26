@@ -1,34 +1,50 @@
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
+
 import '../core/app_theme.dart';
 import '../models/will_card.dart';
+import '../providers/language_provider.dart';
 import 'will_editor_screen.dart';
 import 'empathy_feed_screen.dart';
+import 'legal_guide_screen.dart';
 
-class PostcardHomeScreen extends StatefulWidget {
+class PostcardHomeScreen extends ConsumerStatefulWidget {
   final WillCardModel? customWillCard;
   const PostcardHomeScreen({super.key, this.customWillCard});
 
   @override
-  State<PostcardHomeScreen> createState() => _PostcardHomeScreenState();
+  ConsumerState<PostcardHomeScreen> createState() => _PostcardHomeScreenState();
 }
 
-class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTickerProviderStateMixin {
+class _PostcardHomeScreenState extends ConsumerState<PostcardHomeScreen> with SingleTickerProviderStateMixin {
   late AnimationController _flipController;
   late Animation<double> _flipAnimation;
   bool _isFront = true;
   final ScreenshotController _screenshotController = ScreenshotController();
 
-  // Active card getter: prefers customWillCard if passed, otherwise falls back to sample
-  WillCardModel get _activeCard => widget.customWillCard ?? _sampleCard;
+  WillCardModel _getSampleCard(LanguageLocale locale) {
+    final trans = LocalizationPack(locale);
+    return WillCardModel(
+      id: 'sample-1',
+      author: trans.translate('sample_author'),
+      content: trans.translate('sample_content'),
+      questionPrompt: trans.translate('sample_question'),
+      createdAt: DateTime.now(),
+    );
+  }
 
-  Future<void> _captureAndShare() async {
+  WillCardModel _getActiveCard(LanguageLocale locale) {
+    return widget.customWillCard ?? _getSampleCard(locale);
+  }
+
+  Future<void> _captureAndShare(LocalizationPack trans) async {
     if (_flipController.isAnimating) return;
     HapticFeedback.mediumImpact();
     
@@ -58,13 +74,15 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
         // Trigger native share dialog
         await Share.shareXFiles(
           [XFile(imageFile.path)],
-          text: '임종 케어 엽서가 마음을 담아 배달되었습니다.\n온전한 감동을 동적 웹페이지에서도 만나보세요.',
+          text: trans.translate('post_card') == 'POST CARD'
+              ? 'My sincere will postcard has been delivered. Feel the warmth.'
+              : '임종 케어 엽서가 마음을 담아 배달되었습니다.\n온전한 감동을 느껴보세요.',
         );
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('엽서 이미지 캡처에 실패했습니다. 다시 시도해 주세요.'),
+              content: Text('Failed to capture postcard image.'),
               backgroundColor: AppTheme.heartStampRed,
             ),
           );
@@ -75,7 +93,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('엽서 공유 중 오류가 발생했습니다: $e'),
+            content: Text('Error sharing postcard: $e'),
             backgroundColor: AppTheme.heartStampRed,
           ),
         );
@@ -92,15 +110,6 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
       }
     }
   }
-
-  // Temporary sample card data
-  final WillCardModel _sampleCard = WillCardModel(
-    id: 'sample-1',
-    author: '홍길동',
-    content: '내가 먼저 떠나도 슬퍼하지 마세요.\n우리가 나누었던 그 따스했던 미소와 다정한 말들은\n바람이 되어 언제나 당신 곁에 머물 것입니다.\n사랑합니다, 그리고 고맙습니다.',
-    questionPrompt: 'Q1. 사랑하는 이들에게 남기고 싶은 마지막 한마디는 무엇인가요?',
-    createdAt: DateTime.now(),
-  );
 
   @override
   void initState() {
@@ -134,6 +143,10 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final locale = ref.watch(languageProvider);
+    final trans = LocalizationPack(locale);
+    final activeCard = _getActiveCard(locale);
+
     return Scaffold(
       backgroundColor: AppTheme.creamBg,
       appBar: AppBar(
@@ -159,6 +172,23 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
         elevation: 0,
         centerTitle: true,
         actions: [
+          // Elegant language switcher
+          TextButton.icon(
+            key: const ValueKey('lang_toggle_btn'),
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              ref.read(languageProvider.notifier).toggleLanguage();
+            },
+            icon: const Icon(Icons.language, size: 16, color: AppTheme.espressoText),
+            label: Text(
+              locale == LanguageLocale.ko ? 'EN' : '한글',
+              style: GoogleFonts.cormorantGaramond(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: AppTheme.espressoText,
+              ),
+            ),
+          ),
           if (widget.customWillCard == null)
             IconButton(
               icon: const Icon(Icons.forum_outlined, color: AppTheme.espressoText),
@@ -169,7 +199,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                   MaterialPageRoute(builder: (context) => const EmpathyFeedScreen()),
                 );
               },
-              tooltip: '공감 피드',
+              tooltip: locale == LanguageLocale.en ? 'Empathy Feed' : '공감 피드',
             ),
           IconButton(
             icon: const Icon(Icons.info_outline, color: AppTheme.espressoText),
@@ -178,13 +208,42 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                 context: context,
                 builder: (context) => AlertDialog(
                   backgroundColor: AppTheme.cardBg,
-                  title: Text('아날로그 엽서 사용법', style: Theme.of(context).textTheme.titleLarge),
-                  content: Text('엽서를 터치하면 3D 플립 애니메이션과 함께 앞뒷면이 전환됩니다. 아날로그 감성의 마음을 전해보세요.',
-                      style: Theme.of(context).textTheme.bodyMedium),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
+                  title: Text(
+                    trans.translate('info_guide'), 
+                    style: GoogleFonts.notoSerifKr(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.espressoText,
+                    ),
+                  ),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          trans.translate('info_step1'),
+                          style: GoogleFonts.notoSerifKr(fontSize: 13, height: 1.5, color: AppTheme.espressoText),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          trans.translate('info_step2'),
+                          style: GoogleFonts.notoSerifKr(fontSize: 13, height: 1.5, color: AppTheme.espressoText),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          trans.translate('info_step3'),
+                          style: GoogleFonts.notoSerifKr(fontSize: 13, height: 1.5, color: AppTheme.espressoText),
+                        ),
+                      ],
+                    ),
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text('확인', style: TextStyle(color: AppTheme.terracottaAccent)),
+                      child: Text(
+                        trans.translate('close'), 
+                        style: const TextStyle(color: AppTheme.terracottaAccent, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
@@ -200,14 +259,20 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '엽서를 터치하여 돌려보세요',
-                style: GoogleFonts.notoSerifKr(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                  color: AppTheme.espressoTextLight.withValues(alpha: 0.7),
-                ),
+                trans.translate('tap_to_flip'),
+                style: locale == LanguageLocale.en
+                    ? GoogleFonts.cormorantGaramond(
+                        fontSize: 15,
+                        fontStyle: FontStyle.italic,
+                        color: AppTheme.espressoTextLight.withValues(alpha: 0.7),
+                      )
+                    : GoogleFonts.notoSerifKr(
+                        fontSize: 13,
+                        fontStyle: FontStyle.italic,
+                        color: AppTheme.espressoTextLight.withValues(alpha: 0.7),
+                      ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               Expanded(
                 child: Center(
                   child: Screenshot(
@@ -229,9 +294,9 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                                 ? Transform(
                                     transform: Matrix4.identity()..rotateY(pi),
                                     alignment: Alignment.center,
-                                    child: _buildCardBack(),
+                                    child: _buildCardBack(locale, activeCard),
                                   )
-                                : _buildCardFront(),
+                                : _buildCardFront(locale, activeCard),
                           );
                         },
                       ),
@@ -240,47 +305,114 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                 ),
               ),
               const SizedBox(height: 24),
-              Row(
+
+              // Zero-Overlap Bottom Action Grid
+              Column(
                 children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _toggleCard,
-                      icon: const Icon(Icons.flip, color: AppTheme.terracottaAccent),
-                      label: Text(
-                        _isFront ? '뒷면 보기' : '앞면 보기',
-                        style: GoogleFonts.notoSerifKr(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.terracottaAccent,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _toggleCard,
+                          icon: const Icon(Icons.flip, color: AppTheme.terracottaAccent),
+                          label: Text(
+                            trans.translate(_isFront ? 'view_back' : 'view_front'),
+                            style: GoogleFonts.notoSerifKr(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: AppTheme.terracottaAccent,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: AppTheme.terracottaAccent, width: 1.5),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4.0),
+                            ),
+                          ),
                         ),
                       ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: AppTheme.terracottaAccent, width: 1.5),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4.0),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _captureAndShare(trans),
+                          icon: const Icon(Icons.share, color: AppTheme.terracottaAccent),
+                          label: Text(
+                            trans.translate('share_postcard'),
+                            style: GoogleFonts.notoSerifKr(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: AppTheme.terracottaAccent,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: AppTheme.terracottaAccent, width: 1.5),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4.0),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (widget.customWillCard == null) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const WillEditorScreen()),
+                          );
+                        },
+                        icon: const Icon(Icons.edit, color: AppTheme.creamBg),
+                        label: Text(
+                          trans.translate('write_will'),
+                          style: GoogleFonts.notoSerifKr(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.creamBg,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.terracottaAccent,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4.0),
+                          ),
+                          elevation: 2,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
+                  ],
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: _captureAndShare,
-                      icon: const Icon(Icons.share, color: AppTheme.creamBg),
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LegalGuideScreen()),
+                        );
+                      },
+                      icon: const Icon(Icons.gavel, color: AppTheme.creamBg),
                       label: Text(
-                        '엽서 이미지 공유',
+                        trans.translate('legal_guide'),
                         style: GoogleFonts.notoSerifKr(
                           fontWeight: FontWeight.bold,
                           color: AppTheme.creamBg,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.terracottaAccent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: AppTheme.espressoText,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4.0),
                         ),
-                        elevation: 2,
+                        elevation: 1,
                       ),
                     ),
                   ),
@@ -290,33 +422,13 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
           ),
         ),
       ),
-      floatingActionButton: widget.customWillCard == null
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const WillEditorScreen()),
-                );
-              },
-              backgroundColor: AppTheme.terracottaAccent,
-              icon: const Icon(Icons.edit, color: AppTheme.creamBg),
-              label: Text(
-                '유서 작성하기',
-                style: GoogleFonts.notoSerifKr(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.creamBg,
-                ),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-            )
-          : null,
     );
   }
 
-  Widget _buildCardFront() {
+  Widget _buildCardFront(LanguageLocale locale, WillCardModel activeCard) {
+    final trans = LocalizationPack(locale);
+    final questionLabel = locale == LanguageLocale.en ? 'Reflection Question' : '성찰 질문';
+
     return Container(
       width: double.infinity,
       height: 420,
@@ -383,34 +495,47 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                 ),
                 const Spacer(),
                 // Question / Prompt
-                if (_activeCard.questionPrompt != null) ...[
+                if (activeCard.questionPrompt != null) ...[
                   Text(
-                    'Reflection Question',
-                    style: GoogleFonts.cormorantGaramond(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.italic,
-                      color: AppTheme.terracottaAccent,
-                    ),
+                    questionLabel,
+                    style: locale == LanguageLocale.en
+                        ? GoogleFonts.cormorantGaramond(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.italic,
+                            color: AppTheme.terracottaAccent,
+                          )
+                        : GoogleFonts.notoSerifKr(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.terracottaAccent,
+                          ),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    _activeCard.questionPrompt!,
-                    style: GoogleFonts.notoSerifKr(
-                      fontSize: 16,
-                      height: 1.5,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.espressoText,
-                    ),
+                    activeCard.questionPrompt!,
+                    style: locale == LanguageLocale.en
+                        ? GoogleFonts.cormorantGaramond(
+                            fontSize: 16,
+                            height: 1.4,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.espressoText,
+                          )
+                        : GoogleFonts.notoSerifKr(
+                            fontSize: 15,
+                            height: 1.5,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.espressoText,
+                          ),
                   ),
                 ],
                 const Spacer(),
                 // Bottom lines & signature guidelines
                 Column(
                   children: [
-                    _buildAddressLine('Sender: ${_activeCard.author}'),
+                    _buildAddressLine(locale, '${trans.translate('sender')}: ${activeCard.author}'),
                     const SizedBox(height: 12),
-                    _buildAddressLine('Date: ${_activeCard.createdAt.year}. ${_activeCard.createdAt.month}. ${_activeCard.createdAt.day}'),
+                    _buildAddressLine(locale, '${trans.translate('date')}: ${activeCard.createdAt.year}. ${activeCard.createdAt.month}. ${activeCard.createdAt.day}'),
                   ],
                 ),
               ],
@@ -421,7 +546,9 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
     );
   }
 
-  Widget _buildCardBack() {
+  Widget _buildCardBack(LanguageLocale locale, WillCardModel activeCard) {
+    final trans = LocalizationPack(locale);
+
     return Container(
       width: double.infinity,
       height: 420,
@@ -461,7 +588,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'MY LAST WILL',
+                      trans.translate('my_last_will'),
                       style: GoogleFonts.cormorantGaramond(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -476,12 +603,18 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                 Expanded(
                   child: SingleChildScrollView(
                     child: Text(
-                      _activeCard.content,
-                      style: GoogleFonts.notoSerifKr(
-                        fontSize: 15,
-                        height: 1.8,
-                        color: AppTheme.espressoText,
-                      ),
+                      activeCard.content,
+                      style: locale == LanguageLocale.en
+                          ? GoogleFonts.cormorantGaramond(
+                              fontSize: 16,
+                              height: 1.6,
+                              color: AppTheme.espressoText,
+                            )
+                          : GoogleFonts.notoSerifKr(
+                              fontSize: 14,
+                              height: 1.8,
+                              color: AppTheme.espressoText,
+                            ),
                     ),
                   ),
                 ),
@@ -491,11 +624,17 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      '서명: ',
-                      style: GoogleFonts.notoSerifKr(
-                        fontSize: 14,
-                        color: AppTheme.espressoTextLight,
-                      ),
+                      '${trans.translate('signature')}: ',
+                      style: locale == LanguageLocale.en
+                          ? GoogleFonts.cormorantGaramond(
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic,
+                              color: AppTheme.espressoTextLight,
+                            )
+                          : GoogleFonts.notoSerifKr(
+                              fontSize: 13,
+                              color: AppTheme.espressoTextLight,
+                            ),
                     ),
                     Container(
                       width: 120,
@@ -506,12 +645,18 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                       ),
                       alignment: Alignment.centerRight,
                       child: Text(
-                        _activeCard.author,
-                        style: GoogleFonts.notoSerifKr(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.espressoText,
-                        ),
+                        activeCard.author,
+                        style: locale == LanguageLocale.en
+                            ? GoogleFonts.cormorantGaramond(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.espressoText,
+                              )
+                            : GoogleFonts.notoSerifKr(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.espressoText,
+                              ),
                       ),
                     ),
                   ],
@@ -536,7 +681,6 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Stamp borders (wavy pattern representation)
           Positioned.fill(
             child: Container(
               margin: const EdgeInsets.all(2.0),
@@ -572,7 +716,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
     );
   }
 
-  Widget _buildAddressLine(String text) {
+  Widget _buildAddressLine(LanguageLocale locale, String text) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(bottom: 6),
@@ -583,10 +727,15 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
       ),
       child: Text(
         text,
-        style: GoogleFonts.notoSerifKr(
-          fontSize: 14,
-          color: AppTheme.espressoTextLight,
-        ),
+        style: locale == LanguageLocale.en
+            ? GoogleFonts.cormorantGaramond(
+                fontSize: 15,
+                color: AppTheme.espressoTextLight,
+              )
+            : GoogleFonts.notoSerifKr(
+                fontSize: 13,
+                color: AppTheme.espressoTextLight,
+              ),
       ),
     );
   }
