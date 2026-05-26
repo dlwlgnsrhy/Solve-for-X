@@ -2,6 +2,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:io';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import '../core/app_theme.dart';
 import '../models/will_card.dart';
 import 'will_editor_screen.dart';
@@ -18,9 +22,47 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
   late AnimationController _flipController;
   late Animation<double> _flipAnimation;
   bool _isFront = true;
+  final ScreenshotController _screenshotController = ScreenshotController();
 
   // Active card getter: prefers customWillCard if passed, otherwise falls back to sample
   WillCardModel get _activeCard => widget.customWillCard ?? _sampleCard;
+
+  Future<void> _captureAndShare() async {
+    HapticFeedback.mediumImpact();
+    
+    // Show quick progress loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: AppTheme.terracottaAccent),
+      ),
+    );
+
+    try {
+      final imageBytes = await _screenshotController.capture(
+        pixelRatio: 3.0, // High-resolution pixel ratio
+      );
+
+      // Close loading indicator
+      if (mounted) Navigator.pop(context);
+
+      if (imageBytes != null) {
+        final directory = await getTemporaryDirectory();
+        final imagePath = await File('${directory.path}/imjong_postcard.png').create();
+        await imagePath.writeAsBytes(imageBytes);
+
+        // Trigger native share dialog
+        await Share.shareXFiles(
+          [XFile(imagePath.path)],
+          text: '임종 케어 엽서가 마음을 담아 배달되었습니다.\n온전한 감동을 동적 웹페이지에서도 만나보세요.',
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      debugPrint("Capture & Share Error: $e");
+    }
+  }
 
   // Temporary sample card data
   final WillCardModel _sampleCard = WillCardModel(
@@ -127,50 +169,81 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
               const SizedBox(height: 24),
               Expanded(
                 child: Center(
-                  child: GestureDetector(
-                    onTap: _toggleCard,
-                    child: AnimatedBuilder(
-                      animation: _flipAnimation,
-                      builder: (context, child) {
-                        final angle = _flipAnimation.value * pi;
-                        final isUnder = angle > pi / 2;
+                  child: Screenshot(
+                    controller: _screenshotController,
+                    child: GestureDetector(
+                      onTap: _toggleCard,
+                      child: AnimatedBuilder(
+                        animation: _flipAnimation,
+                        builder: (context, child) {
+                          final angle = _flipAnimation.value * pi;
+                          final isUnder = angle > pi / 2;
 
-                        return Transform(
-                          transform: Matrix4.identity()
-                            ..setEntry(3, 2, 0.001) // perspective
-                            ..rotateY(angle),
-                          alignment: Alignment.center,
-                          child: isUnder
-                              ? Transform(
-                                  transform: Matrix4.identity()..rotateY(pi),
-                                  alignment: Alignment.center,
-                                  child: _buildCardBack(),
-                                )
-                              : _buildCardFront(),
-                        );
-                      },
+                          return Transform(
+                            transform: Matrix4.identity()
+                              ..setEntry(3, 2, 0.001) // perspective
+                              ..rotateY(angle),
+                            alignment: Alignment.center,
+                            child: isUnder
+                                ? Transform(
+                                    transform: Matrix4.identity()..rotateY(pi),
+                                    alignment: Alignment.center,
+                                    child: _buildCardBack(),
+                                  )
+                                : _buildCardFront(),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
               ),
-              ElevatedButton.icon(
-                onPressed: _toggleCard,
-                icon: const Icon(Icons.flip, color: AppTheme.creamBg),
-                label: Text(
-                  _isFront ? '뒷면(유서내용) 보기' : '앞면(우표/질문) 보기',
-                  style: GoogleFonts.notoSerifKr(
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.creamBg,
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _toggleCard,
+                      icon: const Icon(Icons.flip, color: AppTheme.terracottaAccent),
+                      label: Text(
+                        _isFront ? '뒷면 보기' : '앞면 보기',
+                        style: GoogleFonts.notoSerifKr(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.terracottaAccent,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppTheme.terracottaAccent, width: 1.5),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4.0),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.terracottaAccent,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4.0), // 4px sharp edge
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _captureAndShare,
+                      icon: const Icon(Icons.share, color: AppTheme.creamBg),
+                      label: Text(
+                        '엽서 이미지 공유',
+                        style: GoogleFonts.notoSerifKr(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.creamBg,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.terracottaAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4.0),
+                        ),
+                        elevation: 2,
+                      ),
+                    ),
                   ),
-                  elevation: 2,
-                ),
+                ],
               ),
             ],
           ),
