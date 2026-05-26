@@ -4,9 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/app_theme.dart';
 import '../models/will_card.dart';
+import 'will_editor_screen.dart';
 
 class PostcardHomeScreen extends StatefulWidget {
-  const PostcardHomeScreen({super.key});
+  final WillCardModel? customWillCard;
+  const PostcardHomeScreen({super.key, this.customWillCard});
 
   @override
   State<PostcardHomeScreen> createState() => _PostcardHomeScreenState();
@@ -16,6 +18,9 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
   late AnimationController _flipController;
   late Animation<double> _flipAnimation;
   bool _isFront = true;
+
+  // Active card getter: prefers customWillCard if passed, otherwise falls back to sample
+  WillCardModel get _activeCard => widget.customWillCard ?? _sampleCard;
 
   // Temporary sample card data
   final WillCardModel _sampleCard = WillCardModel(
@@ -61,6 +66,15 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
     return Scaffold(
       backgroundColor: AppTheme.creamBg,
       appBar: AppBar(
+        leading: widget.customWillCard != null
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: AppTheme.espressoText),
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.pop(context);
+                },
+              )
+            : null,
         title: Text(
           'POSTCARD',
           style: GoogleFonts.cormorantGaramond(
@@ -139,7 +153,6 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
               ElevatedButton.icon(
                 onPressed: _toggleCard,
                 icon: const Icon(Icons.flip, color: AppTheme.creamBg),
@@ -163,6 +176,29 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
           ),
         ),
       ),
+      floatingActionButton: widget.customWillCard == null
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WillEditorScreen()),
+                );
+              },
+              backgroundColor: AppTheme.terracottaAccent,
+              icon: const Icon(Icons.edit, color: AppTheme.creamBg),
+              label: Text(
+                '유서 작성하기',
+                style: GoogleFonts.notoSerifKr(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.creamBg,
+                ),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+            )
+          : null,
     );
   }
 
@@ -233,7 +269,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                 ),
                 const Spacer(),
                 // Question / Prompt
-                if (_sampleCard.questionPrompt != null) ...[
+                if (_activeCard.questionPrompt != null) ...[
                   Text(
                     'Reflection Question',
                     style: GoogleFonts.cormorantGaramond(
@@ -245,7 +281,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    _sampleCard.questionPrompt!,
+                    _activeCard.questionPrompt!,
                     style: GoogleFonts.notoSerifKr(
                       fontSize: 16,
                       height: 1.5,
@@ -258,9 +294,9 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                 // Bottom lines & signature guidelines
                 Column(
                   children: [
-                    _buildAddressLine('Sender: ${_sampleCard.author}'),
+                    _buildAddressLine('Sender: ${_activeCard.author}'),
                     const SizedBox(height: 12),
-                    _buildAddressLine('Date: ${_sampleCard.createdAt.year}. ${_sampleCard.createdAt.month}. ${_sampleCard.createdAt.day}'),
+                    _buildAddressLine('Date: ${_activeCard.createdAt.year}. ${_activeCard.createdAt.month}. ${_activeCard.createdAt.day}'),
                   ],
                 ),
               ],
@@ -326,7 +362,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                 Expanded(
                   child: SingleChildScrollView(
                     child: Text(
-                      _sampleCard.content,
+                      _activeCard.content,
                       style: GoogleFonts.notoSerifKr(
                         fontSize: 15,
                         height: 1.8,
@@ -356,7 +392,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
                       ),
                       alignment: Alignment.centerRight,
                       child: Text(
-                        _sampleCard.author,
+                        _activeCard.author,
                         style: GoogleFonts.notoSerifKr(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
