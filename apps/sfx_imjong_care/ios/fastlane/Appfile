@@ -1,7 +1,0 @@
-# iOS Fastlane Appfile
-# Defines bundle identifier, Apple developer accounts, and Team IDs
-
-app_identifier(ENV['APP_IDENTIFIER'] || 'com.soluni.sfxImjongCare')
-apple_id(ENV['APPLE_ID'] || 'developer@soluni.com')
-itc_team_id(ENV['ITC_TEAM_ID'] || '123456789') # App Store Connect Team ID
-team_id(ENV['TEAM_ID'] || 'ABC123XYZ') # Apple Developer Portal Team ID

@@ -1,12 +1,0 @@
-00:00 +0: loading /Users/apple/development/soluni/Solve-for-X/apps/life_log_v7/test/presentation/checkin_screen_test.dart                                                                              test/presentation/checkin_screen_test.dart:29:34: Error: Method not found: 'CheckinScreen'.
-      home: ProviderScope(child: CheckinScreen()),
-                                 ^^^^^^^^^^^^^
-00:00 +0 -1: loading /Users/apple/development/soluni/Solve-for-X/apps/life_log_v7/test/presentation/checkin_screen_test.dart [E]                                                                       
-  Failed to load "/Users/apple/development/soluni/Solve-for-X/apps/life_log_v7/test/presentation/checkin_screen_test.dart":
-  Compilation failed for testPath=/Users/apple/development/soluni/Solve-for-X/apps/life_log_v7/test/presentation/checkin_screen_test.dart: test/presentation/checkin_screen_test.dart:29:34: Error: Method not found: 'CheckinScreen'.
-        home: ProviderScope(child: CheckinScreen()),
-                                   ^^^^^^^^^^^^^
-  .
-
-To run this test again: /Users/apple/Desktop/Flutter/flutter/bin/cache/dart-sdk/bin/dart test /Users/apple/development/soluni/Solve-for-X/apps/life_log_v7/test/presentation/checkin_screen_test.dart -p vm --plain-name 'loading /Users/apple/development/soluni/Solve-for-X/apps/life_log_v7/test/presentation/checkin_screen_test.dart'
-00:00 +0 -1: Some tests failed.                                                                                                                                                                        
