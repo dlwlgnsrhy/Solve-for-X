@@ -6,6 +6,7 @@ import '../core/app_theme.dart';
 import '../models/will_card.dart';
 import '../providers/prompt_deck_provider.dart';
 import 'postcard_home_screen.dart';
+import '../services/firebase_service.dart';
 
 class WillEditorScreen extends ConsumerStatefulWidget {
   const WillEditorScreen({super.key});
@@ -49,7 +50,7 @@ class _WillEditorScreenState extends ConsumerState<WillEditorScreen> {
     );
   }
 
-  void _generatePostcard() {
+  Future<void> _generatePostcard() async {
     if (_contentController.text.trim().isEmpty) {
       HapticFeedback.vibrate();
       showDialog(
@@ -82,20 +83,57 @@ class _WillEditorScreenState extends ConsumerState<WillEditorScreen> {
 
     HapticFeedback.heavyImpact();
     
-    // Navigate to viewer screen with custom slide transition
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            PostcardHomeScreen(customWillCard: newCard),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
+    // Show Loading Modal Dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: AppTheme.terracottaAccent),
       ),
     );
+
+    bool isUploaded = false;
+    try {
+      // Lazy load auth session to guarantee valid user tokens
+      final firebaseService = FirebaseService();
+      if (firebaseService.currentUid == null) {
+        await firebaseService.signInAnonymously();
+      }
+      isUploaded = await firebaseService.uploadWill(newCard);
+    } catch (e) {
+      debugPrint("SRE Core Alert: Network/Firebase Persistence Bypass. $e");
+    }
+
+    // Close Loading Modal
+    if (mounted) Navigator.pop(context);
+
+    // Show status snackbar on failure but continue route fallback
+    if (!isUploaded && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('오프라인 환경으로 전환되어 로컬 엽서 뷰어로 안전하게 연결합니다.'),
+          backgroundColor: AppTheme.espressoTextLight,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+
+    if (mounted) {
+      // Navigate to viewer screen with custom slide transition
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              PostcardHomeScreen(customWillCard: newCard),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+        ),
+      );
+    }
   }
 
   @override
