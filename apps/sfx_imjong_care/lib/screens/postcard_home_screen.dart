@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import '../core/app_theme.dart';
 import '../models/will_card.dart';
 import 'will_editor_screen.dart';
+import 'empathy_feed_screen.dart';
 
 class PostcardHomeScreen extends StatefulWidget {
   final WillCardModel? customWillCard;
@@ -130,6 +131,18 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
         elevation: 0,
         centerTitle: true,
         actions: [
+          if (widget.customWillCard == null)
+            IconButton(
+              icon: const Icon(Icons.forum_outlined, color: AppTheme.espressoText),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EmpathyFeedScreen()),
+                );
+              },
+              tooltip: '공감 피드',
+            ),
           IconButton(
             icon: const Icon(Icons.info_outline, color: AppTheme.espressoText),
             onPressed: () {
