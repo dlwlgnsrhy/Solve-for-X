@@ -9,8 +9,10 @@ service cloud.firestore {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
       
       // Allow updates to 'likes' count by anyone, but changes to actual content only by owner
+      // Strictly enforce that 'likes' can only be incremented by exactly +1 to prevent manipulation
       allow update: if (request.auth != null && resource.data.userId == request.auth.uid) || 
-                     (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']));
+                     (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']) &&
+                      request.resource.data.likes == resource.data.likes + 1);
       
       // Allow deletion only by the owner
       allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
