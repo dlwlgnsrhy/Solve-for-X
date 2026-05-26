@@ -29,6 +29,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
   WillCardModel get _activeCard => widget.customWillCard ?? _sampleCard;
 
   Future<void> _captureAndShare() async {
+    if (_flipController.isAnimating) return;
     HapticFeedback.mediumImpact();
     
     // Show quick progress loading indicator
@@ -40,6 +41,7 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
       ),
     );
 
+    File? imageFile;
     try {
       final imageBytes = await _screenshotController.capture(
         pixelRatio: 3.0, // High-resolution pixel ratio
@@ -50,18 +52,27 @@ class _PostcardHomeScreenState extends State<PostcardHomeScreen> with SingleTick
 
       if (imageBytes != null) {
         final directory = await getTemporaryDirectory();
-        final imagePath = await File('${directory.path}/imjong_postcard.png').create();
-        await imagePath.writeAsBytes(imageBytes);
+        imageFile = await File('${directory.path}/imjong_postcard_${DateTime.now().millisecondsSinceEpoch}.png').create();
+        await imageFile.writeAsBytes(imageBytes);
 
         // Trigger native share dialog
         await Share.shareXFiles(
-          [XFile(imagePath.path)],
+          [XFile(imageFile.path)],
           text: '임종 케어 엽서가 마음을 담아 배달되었습니다.\n온전한 감동을 동적 웹페이지에서도 만나보세요.',
         );
       }
     } catch (e) {
       if (mounted) Navigator.pop(context);
       debugPrint("Capture & Share Error: $e");
+    } finally {
+      try {
+        if (imageFile != null && await imageFile.exists()) {
+          await imageFile.delete();
+          debugPrint("SRE Disk Cache Safeguard: Cleared temporary screenshot file.");
+        }
+      } catch (err) {
+        debugPrint("SRE Disk Cache Clear Error: $err");
+      }
     }
   }
 
