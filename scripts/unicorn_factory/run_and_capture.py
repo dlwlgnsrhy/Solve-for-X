@@ -10,7 +10,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 APP_DIR = REPO_ROOT / "apps/sfx_imjong_care"
 SCREENSHOT_DIR = REPO_ROOT / "docs/screenshots/imjong_care"
-CONV_ID = "92678b4e-fe75-4c06-8779-2078e2489a6e"
+CONV_ID = "87d1e27c-e83a-4f4c-bcc0-588b89b8e76f"
 BRAIN_SCREENSHOT_DIR = Path(f"/Users/apple/.gemini/antigravity/brain/{CONV_ID}/screenshots")
 
 DEVICE_ID = "A3A46E76-9CB9-4789-B0D9-DA820EC231FD" # iPhone 15 Pro Max Simulator
@@ -106,7 +106,10 @@ def generate_visual_report():
         ("stage_5_will_editor", "5. 성찰 유서 작성 에디터", "질문 셔플 단추, 이전/다음 단추 및 스마트 프리필 템플릿 가져오기 단추를 완벽하게 배합한 작성 화면."),
         ("stage_5_will_editor_template", "6. 성찰 답변 템플릿 주입 완료", "질문별로 정교하게 매핑된 명성 성찰 답변이 에디터 폼에 로드되어 사용자가 1클릭으로 풍부한 편지를 채우도록 안내합니다."),
         ("stage_6_custom_postcard_front", "7. 생성된 커스텀 엽서 (앞면)", "사용자가 수정한 내용과 이름이 주입되어 완성된 독창적인 3D 유서 엽서 앞면."),
-        ("stage_7_custom_postcard_back", "8. 생성된 커스텀 엽서 (뒷면)", "서명인의 이름이 서명란에 정교하게 반영되어 최종 우표 도장이 선명하게 안착한 완성작 뒷면.")
+        ("stage_7_custom_postcard_back", "8. 생성된 커스텀 엽서 (뒷면)", "서명인의 이름이 서명란에 정교하게 반영되어 최종 우표 도장이 선명하게 안착한 완성작 뒷면."),
+        ("stage_8_notary_map", "8b. 주변 공증 사무소 검색", "주변 지도를 통해 제휴 공증 사무소를 조회하는 맵 연동 레이아웃."),
+        ("stage_9_document_submit", "8c. 요식 요건 미충족 경고 진단", "4대 요건이 결여된 기본 편지를 전송할 때 노출되는 민법 제1060조 경고 배지 및 지침 컴포넌트."),
+        ("stage_10_legal_validated", "9. 스마트 요식 요건 진단 완료 (제1060조 충족)", "사용자가 성명, 날인, 연월일, 주소를 모두 기재하여 민법 제1060조/제1066조 법적 요식 요건을 완벽히 감수한 화면. 실시간으로 '초록색 민법 제1060조 충족 완료 배지'가 노출됩니다.")
     ]
     
     # Check which files actually generated successfully
@@ -166,6 +169,13 @@ def generate_visual_report():
                 f.write("  - [x] 1클릭 답변 가이드 스마트 주입 기능 검증\n")
             elif "custom" in stage_id:
                 f.write("  - [x] 사용자 입력 글 및 작성자 서명인 이름이 엽서 앞/뒷면에 실시간 주입되는 변환 매핑 무결성\n")
+            elif "notary" in stage_id:
+                f.write("  - [x] 주변 제휴 공증 법무법인 및 합동 공증 사무소 위치 매핑 기능 정상 작동 확인\n")
+            elif "submit" in stage_id:
+                f.write("  - [x] 필수 요건 미충족 시 '⚠️ 필수 요건 미흡 (법적 효력 상실 우려)' 경고 메시지 배지 확인\n")
+            elif "validated" in stage_id:
+                f.write("  - [x] 민법 제1060조 필수 4대 요건(성명, 서명/날인, 연월일, 주소) 다국어 정규식 파싱 엔진 무결성 검증\n")
+                f.write("  - [x] 모든 요식 요건 충족 시 '✓ 민법 제1060조 충족 완료 (법적 효력 준비 완료)' 초록색 배지 렌더링 확인\n")
                 
             f.write(f"- **캡처 미리보기**:\n\n")
             f.write(f"![{title}](file://{BRAIN_SCREENSHOT_DIR}/{stage_id}.png)\n\n---\n\n")

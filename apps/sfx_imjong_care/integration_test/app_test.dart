@@ -184,10 +184,13 @@ void main() {
       print('[SCREENSHOT] stage_5_will_editor_template');
       await Future.delayed(const Duration(seconds: 4)); // allow screenshot script to snap
 
-      // 12. Enter Author Name
-      print('[INTEGRATION] Action: Enter Author Name');
+      // 12. Enter Legal Holographic Will Content and Author Name
+      print('[INTEGRATION] Action: Enter Legal Holographic Will Content and Author Name');
       final textFields = find.byType(TextField);
       // Editor has two text fields: content (index 0) and author (index 1)
+      await tester.enterText(textFields.at(0), '유언자 테스터 지훈은 2026년 05월 27일에 서울시 강남구 테헤란로 152에서 이 글을 유언서로 남깁니다. (서명)');
+      await tester.pumpAndSettle();
+      await Future.delayed(const Duration(seconds: 1));
       await tester.enterText(textFields.at(1), '테스터 지훈');
       await tester.pumpAndSettle();
       await Future.delayed(const Duration(seconds: 2));
@@ -213,6 +216,30 @@ void main() {
       await tester.pumpAndSettle();
       
       print('[SCREENSHOT] stage_7_custom_postcard_back');
+      await Future.delayed(const Duration(seconds: 4)); // allow screenshot script to snap
+
+      // 16. Click Legal Guide button from custom postcard
+      print('[INTEGRATION] Action: Open Legal Guide from Custom Postcard');
+      final customLegalGuideBtn = find.text('⚖️ 유언공증 & 법률 준비 가이드');
+      expect(customLegalGuideBtn, findsOneWidget);
+      await tester.ensureVisible(customLegalGuideBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(customLegalGuideBtn);
+      await tester.pumpAndSettle();
+      await Future.delayed(const Duration(seconds: 2));
+
+      // 17. Click send to law firm to view DocumentSubmitScreen
+      print('[INTEGRATION] Action: Open Document Submit from Legal Guide');
+      final customSendDocBtn = find.text('✉️ 작성한 내용 제휴 법무법인 전송');
+      expect(customSendDocBtn, findsOneWidget);
+      await tester.ensureVisible(customSendDocBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(customSendDocBtn);
+      await tester.pumpAndSettle();
+      await Future.delayed(const Duration(seconds: 2));
+
+      // 18. DocumentSubmitScreen showing all requirements met (stage_10_legal_validated)
+      print('[SCREENSHOT] stage_10_legal_validated');
       await Future.delayed(const Duration(seconds: 4)); // allow screenshot script to snap
     } finally {
       // Restore original error builder to prevent TestWidgetsFlutterBinding assertion crash
