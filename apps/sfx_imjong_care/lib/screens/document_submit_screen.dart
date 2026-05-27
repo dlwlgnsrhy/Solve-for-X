@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../core/app_theme.dart';
 import '../models/will_card.dart';
 import '../providers/language_provider.dart';
+import '../utils/legal_validator.dart';
 
 class DocumentSubmitScreen extends ConsumerStatefulWidget {
   final WillCardModel? customWillCard;
@@ -258,6 +259,139 @@ class _DocumentSubmitScreenState extends ConsumerState<DocumentSubmitScreen> {
               ),
               const SizedBox(height: 24),
 
+              // 민법 제1060조 요식 요건 진단표
+              Text(
+                isEn ? 'Civil Act Article 1060 Legal Diagnosis' : '민법 제1060조 요식 요건 진단표',
+                style: GoogleFonts.notoSerifKr(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.espressoText,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardBg,
+                  borderRadius: BorderRadius.circular(4.0),
+                  border: Border.all(
+                    color: LegalValidator.validate(activeCard.content, author: activeCard.author).isFullyValid 
+                        ? AppTheme.terracottaAccent
+                        : AppTheme.heartStampRed.withValues(alpha: 0.5),
+                    width: 1.5,
+                  ),
+                ),
+                child: Builder(
+                  builder: (context) {
+                    final validationResult = LegalValidator.validate(activeCard.content, author: activeCard.author);
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Status Badge
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                          decoration: BoxDecoration(
+                            color: validationResult.isFullyValid
+                                ? const Color(0xFFE8F5E9)
+                                : const Color(0xFFFFEBEE),
+                            borderRadius: BorderRadius.circular(4.0),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                validationResult.isFullyValid ? Icons.check_circle : Icons.warning,
+                                color: validationResult.isFullyValid
+                                    ? const Color(0xFF2E7D32)
+                                    : AppTheme.heartStampRed,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  validationResult.isFullyValid
+                                      ? (isEn 
+                                          ? '✓ Civil Act Art. 1060 Satisfied (Legally Prepared)' 
+                                          : '✓ 민법 제1060조 충족 완료 (법적 효력 준비 완료)')
+                                      : (isEn 
+                                          ? '⚠️ Requirements Missing (Risk of Invalidity)' 
+                                          : '⚠️ 필수 요건 미흡 (법적 효력 상실 우려)'),
+                                  style: GoogleFonts.notoSerifKr(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: validationResult.isFullyValid
+                                        ? const Color(0xFF2E7D32)
+                                        : AppTheme.heartStampRed,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        
+                        // The 4 requirements check list
+                        _buildCheckItem(
+                          isEn ? '1. Testator Name' : '1. 성명 (testator name)',
+                          validationResult.hasName,
+                          validationResult.matchedName,
+                          isEn ? 'Please write your name in the letter content' : '성찰 내용 속에 본인의 이름을 명시해야 합니다.',
+                          isEn,
+                        ),
+                        const Divider(height: 16),
+                        _buildCheckItem(
+                          isEn ? '2. Signature / Seal' : '2. 날인/서명 여부 (signature/seal)',
+                          validationResult.hasSignature,
+                          validationResult.matchedSignature,
+                          isEn ? 'Include (Signature) or (Seal) at the end of content' : '내용 끝에 (인) 또는 (서명) 표시를 기재해야 합니다.',
+                          isEn,
+                        ),
+                        const Divider(height: 16),
+                        _buildCheckItem(
+                          isEn ? '3. Specific Date' : '3. 연월일 (specific date)',
+                          validationResult.hasDate,
+                          validationResult.matchedDate,
+                          isEn ? 'Specify year, month, and day (e.g. 2026.05.27)' : '연, 월, 일을 상세히 명시해야 합니다. (예: 2026년 5월 27일)',
+                          isEn,
+                        ),
+                        const Divider(height: 16),
+                        _buildCheckItem(
+                          isEn ? '4. Physical Address' : '4. 주소 (physical address)',
+                          validationResult.hasAddress,
+                          validationResult.matchedAddress,
+                          isEn ? 'Specify physical address in the content' : '구체적인 거주지 주소를 텍스트에 포함해야 합니다.',
+                          isEn,
+                        ),
+                        
+                        if (!validationResult.isFullyValid) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                              color: AppTheme.creamBg,
+                              borderRadius: BorderRadius.circular(4.0),
+                              border: Border.all(color: AppTheme.sepiaBorder, width: 1.0),
+                            ),
+                            child: Text(
+                              isEn
+                                  ? '⚠️ Under Korean Civil Act Article 1066, a holographic will must contain the testator\'s name, signature/seal, specific date, and detailed address inside the handwritten text to be legally binding.'
+                                  : '⚠️ 대한민국 민법 제1066조에 의거하여, 자필증서에 의한 유언은 유언자가 그 전문과 연월일, 주소, 성명을 자서하고 날인(또는 서명)하여야 법적 효력을 갖습니다. 누락된 항목이 있을 시 유언의 효력이 상실될 수 있으므로, 뒤로 가기 후 유언 편집 화면에서 텍스트 내에 추가해 주시기 바랍니다.',
+                              style: GoogleFonts.notoSerifKr(
+                                fontSize: 10,
+                                height: 1.5,
+                                color: AppTheme.espressoTextLight,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    );
+                  }
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Target law firm selector
               Text(
                 isEn ? 'Select Partner Law Firm' : '제휴 법무법인 선택',
@@ -411,6 +545,68 @@ class _DocumentSubmitScreenState extends ConsumerState<DocumentSubmitScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCheckItem(String title, bool isSatisfied, String? matchedValue, String guideline, bool isEn) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              isSatisfied ? Icons.check_circle_outline : Icons.error_outline,
+              color: isSatisfied ? const Color(0xFF2E7D32) : AppTheme.heartStampRed,
+              size: 16,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: GoogleFonts.notoSerifKr(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.espressoText,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              isSatisfied ? (isEn ? 'Detected' : '감지됨') : (isEn ? 'Missing' : '누락됨'),
+              style: GoogleFonts.notoSerifKr(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: isSatisfied ? const Color(0xFF2E7D32) : AppTheme.heartStampRed,
+              ),
+            ),
+          ],
+        ),
+        if (isSatisfied && matchedValue != null) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 24.0),
+            child: Text(
+              '${isEn ? "Matched: " : "감지 내용: "}"$matchedValue"',
+              style: GoogleFonts.notoSerifKr(
+                fontSize: 12,
+                color: AppTheme.espressoTextLight,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
+        if (!isSatisfied) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 24.0),
+            child: Text(
+              guideline,
+              style: GoogleFonts.notoSerifKr(
+                fontSize: 11,
+                color: AppTheme.espressoTextLight.withValues(alpha: 0.8),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
