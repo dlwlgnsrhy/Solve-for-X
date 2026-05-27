@@ -241,6 +241,34 @@ void main() {
       // 18. DocumentSubmitScreen showing all requirements met (stage_10_legal_validated)
       print('[SCREENSHOT] stage_10_legal_validated');
       await Future.delayed(const Duration(seconds: 4)); // allow screenshot script to snap
+
+      // 19. Back to Legal Guide Screen from Document Submit
+      print('[INTEGRATION] Action: Back to Legal Guide Screen from Document Submit');
+      final submitBackBtn2 = find.byIcon(Icons.arrow_back);
+      expect(submitBackBtn2, findsOneWidget);
+      await tester.tap(submitBackBtn2);
+      await tester.pumpAndSettle();
+      await Future.delayed(const Duration(seconds: 2));
+
+      // 20. Back to Postcard Home Screen from Legal Guide
+      print('[INTEGRATION] Action: Back to Postcard Home Screen from Legal Guide');
+      final legalBackBtn2 = find.byIcon(Icons.arrow_back);
+      expect(legalBackBtn2, findsOneWidget);
+      await tester.tap(legalBackBtn2);
+      await tester.pumpAndSettle();
+      await Future.delayed(const Duration(seconds: 2));
+
+      // 21. Tap "High-Res PDF Print/Export" Button
+      print('[INTEGRATION] Action: Click High-Res PDF Print/Export Button');
+      final printBtn = find.byKey(const ValueKey('pdf_print_btn'));
+      expect(printBtn, findsOneWidget);
+      await tester.ensureVisible(printBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(printBtn);
+      await tester.pumpAndSettle();
+
+      print('[SCREENSHOT] stage_11_pdf_print_view');
+      await Future.delayed(const Duration(seconds: 4)); // allow screenshot script to snap
     } finally {
       // Restore original error builder to prevent TestWidgetsFlutterBinding assertion crash
       ErrorWidget.builder = originalErrorBuilder;

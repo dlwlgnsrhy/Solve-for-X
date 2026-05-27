@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 import '../core/app_theme.dart';
 import '../models/will_card.dart';
@@ -391,6 +397,32 @@ class _PostcardHomeScreenState extends ConsumerState<PostcardHomeScreen> with Si
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
+                      key: const ValueKey('pdf_print_btn'),
+                      onPressed: () => _printPdf(activeCard, trans),
+                      icon: const Icon(Icons.print, color: AppTheme.creamBg),
+                      label: Text(
+                        locale == LanguageLocale.ko
+                            ? '🖨️ 고해상도 PDF 인쇄/내보내기'
+                            : '🖨️ High-Res PDF Print/Export',
+                        style: GoogleFonts.notoSerifKr(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.creamBg,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.heartStampRed,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4.0),
+                        ),
+                        elevation: 2,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
                       onPressed: () {
                         HapticFeedback.lightImpact();
                         Navigator.push(
@@ -550,6 +582,442 @@ class _PostcardHomeScreenState extends ConsumerState<PostcardHomeScreen> with Si
     );
   }
 
+  Widget _buildQRStamp(WillCardModel activeCard) {
+    final dateStr = "${activeCard.createdAt.year}-${activeCard.createdAt.month.toString().padLeft(2, '0')}-${activeCard.createdAt.day.toString().padLeft(2, '0')}";
+    final input = "${activeCard.content}|$dateStr|${activeCard.author}";
+    final bytes = utf8.encode(input);
+    final hash = sha256.convert(bytes).toString();
+
+    return Container(
+      width: 58,
+      height: 68,
+      decoration: BoxDecoration(
+        color: AppTheme.cardBg,
+        border: Border.all(color: AppTheme.terracottaAccent, width: 1.0),
+        borderRadius: BorderRadius.circular(2.0),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned.fill(
+            child: Container(
+              margin: const EdgeInsets.all(2.0),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: AppTheme.terracottaAccent.withValues(alpha: 0.3),
+                  style: BorderStyle.solid,
+                ),
+              ),
+            ),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 40,
+                height: 40,
+                child: QrImageView(
+                  data: hash,
+                  version: QrVersions.auto,
+                  size: 40.0,
+                  gapless: false,
+                  eyeStyle: const QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: AppTheme.espressoText,
+                  ),
+                  dataModuleStyle: const QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.square,
+                    color: AppTheme.espressoText,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'SECURE',
+                style: GoogleFonts.cormorantGaramond(
+                  fontSize: 8,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.terracottaAccent,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _printPdf(WillCardModel activeCard, LocalizationPack trans) async {
+    HapticFeedback.mediumImpact();
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: AppTheme.terracottaAccent),
+      ),
+    );
+
+    try {
+      final pdf = pw.Document();
+      final fontRegular = await PdfGoogleFonts.notoSerifKRRegular();
+      final fontBold = await PdfGoogleFonts.notoSerifKRBold();
+      
+      final dateStr = "${activeCard.createdAt.year}-${activeCard.createdAt.month.toString().padLeft(2, '0')}-${activeCard.createdAt.day.toString().padLeft(2, '0')}";
+      final input = "${activeCard.content}|$dateStr|${activeCard.author}";
+      final bytes = utf8.encode(input);
+      final hash = sha256.convert(bytes).toString();
+
+      final pageFormat = PdfPageFormat.a6.landscape.copyWith(
+        marginTop: 0,
+        marginBottom: 0,
+        marginLeft: 0,
+        marginRight: 0,
+      );
+
+      // Add Front Page
+      pdf.addPage(
+        pw.Page(
+          pageFormat: pageFormat,
+          build: (pw.Context context) {
+            return pw.Container(
+              width: pageFormat.width,
+              height: pageFormat.height,
+              decoration: pw.BoxDecoration(
+                color: PdfColor.fromHex('#FDFBF7'),
+                border: pw.Border.all(color: PdfColor.fromHex('#E2DCD2'), width: 1.5),
+              ),
+              child: pw.Stack(
+                children: [
+                  pw.Positioned.fill(
+                    child: pw.Container(
+                      margin: pw.EdgeInsets.all(10.0),
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(
+                          color: PdfColor.fromHex('#E2DCD2').shade(0.8),
+                          width: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                  pw.Padding(
+                    padding: pw.EdgeInsets.all(28.0),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                          children: [
+                            pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  'POST CARD',
+                                  style: pw.TextStyle(
+                                    font: fontBold,
+                                    fontSize: 18,
+                                    color: PdfColor.fromHex('#8C624B'),
+                                  ),
+                                ),
+                                pw.SizedBox(height: 2),
+                                pw.Container(
+                                  width: 50,
+                                  height: 1.5,
+                                  color: PdfColor.fromHex('#8C624B'),
+                                ),
+                              ],
+                            ),
+                            pw.Container(
+                              width: 45,
+                              height: 55,
+                              decoration: pw.BoxDecoration(
+                                border: pw.Border.all(color: PdfColor.fromHex('#8C624B'), width: 1.0),
+                              ),
+                              child: pw.Column(
+                                mainAxisAlignment: pw.MainAxisAlignment.center,
+                                children: [
+                                  pw.Text(
+                                    '♥',
+                                    style: pw.TextStyle(
+                                      font: fontBold,
+                                      fontSize: 16,
+                                      color: PdfColor.fromHex('#9E2A2B'),
+                                    ),
+                                  ),
+                                  pw.SizedBox(height: 2),
+                                  pw.Text(
+                                    'LOVE',
+                                    style: pw.TextStyle(
+                                      font: fontBold,
+                                      fontSize: 8,
+                                      color: PdfColor.fromHex('#8C624B'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        pw.Spacer(),
+                        if (activeCard.questionPrompt != null) ...[
+                          pw.Text(
+                            trans.locale == LanguageLocale.en ? 'Reflection Question' : '성찰 질문',
+                            style: pw.TextStyle(
+                              font: fontBold,
+                              fontSize: 10,
+                              color: PdfColor.fromHex('#8C624B'),
+                            ),
+                          ),
+                          pw.SizedBox(height: 4),
+                          pw.Text(
+                            activeCard.questionPrompt!,
+                            style: pw.TextStyle(
+                              font: fontRegular,
+                              fontSize: 11,
+                              color: PdfColor.fromHex('#2C1A14'),
+                            ),
+                          ),
+                        ],
+                        pw.Spacer(),
+                        pw.Column(
+                          children: [
+                            pw.Container(
+                              width: double.infinity,
+                              padding: pw.EdgeInsets.only(bottom: 4),
+                              decoration: pw.BoxDecoration(
+                                border: pw.Border(
+                                  bottom: pw.BorderSide(color: PdfColor.fromHex('#E2DCD2'), width: 1.0),
+                                ),
+                              ),
+                              child: pw.Text(
+                                '${trans.translate('sender')}: ${activeCard.author}',
+                                style: pw.TextStyle(
+                                  font: fontRegular,
+                                  fontSize: 11,
+                                  color: PdfColor.fromHex('#5C473E'),
+                                ),
+                              ),
+                            ),
+                            pw.SizedBox(height: 8),
+                            pw.Container(
+                              width: double.infinity,
+                              padding: pw.EdgeInsets.only(bottom: 4),
+                              decoration: pw.BoxDecoration(
+                                border: pw.Border(
+                                  bottom: pw.BorderSide(color: PdfColor.fromHex('#E2DCD2'), width: 1.0),
+                                ),
+                              ),
+                              child: pw.Text(
+                                '${trans.translate('date')}: ${activeCard.createdAt.year}. ${activeCard.createdAt.month}. ${activeCard.createdAt.day}',
+                                style: pw.TextStyle(
+                                  font: fontRegular,
+                                  fontSize: 11,
+                                  color: PdfColor.fromHex('#5C473E'),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+
+      // Add Back Page
+      pdf.addPage(
+        pw.Page(
+          pageFormat: pageFormat,
+          build: (pw.Context context) {
+            return pw.Container(
+              width: pageFormat.width,
+              height: pageFormat.height,
+              decoration: pw.BoxDecoration(
+                color: PdfColor.fromHex('#FDFBF7'),
+                border: pw.Border.all(color: PdfColor.fromHex('#E2DCD2'), width: 1.5),
+              ),
+              child: pw.Stack(
+                children: [
+                  pw.Positioned.fill(
+                    child: pw.Container(
+                      margin: pw.EdgeInsets.all(10.0),
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(
+                          color: PdfColor.fromHex('#E2DCD2').shade(0.8),
+                          width: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  pw.Positioned(
+                    top: 24,
+                    right: 24,
+                    child: pw.Container(
+                      width: 50,
+                      height: 60,
+                      decoration: pw.BoxDecoration(
+                        color: PdfColor.fromHex('#FDFBF7'),
+                        border: pw.Border.all(color: PdfColor.fromHex('#8C624B'), width: 1.0),
+                      ),
+                      child: pw.Stack(
+                        alignment: pw.Alignment.center,
+                        children: [
+                          pw.Positioned.fill(
+                            child: pw.Container(
+                              margin: pw.EdgeInsets.all(2.0),
+                              decoration: pw.BoxDecoration(
+                                border: pw.Border.all(
+                                  color: PdfColor.fromHex('#8C624B').shade(0.3),
+                                ),
+                              ),
+                            ),
+                          ),
+                          pw.Column(
+                            mainAxisAlignment: pw.MainAxisAlignment.center,
+                            children: [
+                              pw.SizedBox(
+                                width: 36,
+                                height: 36,
+                                child: pw.BarcodeWidget(
+                                  barcode: pw.Barcode.qrCode(),
+                                  data: hash,
+                                  width: 36,
+                                  height: 36,
+                                ),
+                              ),
+                              pw.SizedBox(height: 2),
+                              pw.Text(
+                                'SECURE',
+                                style: pw.TextStyle(
+                                  font: fontBold,
+                                  fontSize: 6,
+                                  color: PdfColor.fromHex('#8C624B'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  pw.Padding(
+                    padding: pw.EdgeInsets.all(28.0),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Row(
+                          children: [
+                            pw.Text(
+                              trans.translate('my_last_will'),
+                              style: pw.TextStyle(
+                                font: fontBold,
+                                fontSize: 14,
+                                color: PdfColor.fromHex('#8C624B'),
+                              ),
+                            ),
+                            pw.SizedBox(width: 8),
+                            pw.Text(
+                              '♥',
+                              style: pw.TextStyle(
+                                font: fontBold,
+                                fontSize: 12,
+                                color: PdfColor.fromHex('#9E2A2B'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        pw.SizedBox(height: 8),
+                        pw.Container(
+                          width: 180,
+                          height: 1,
+                          color: PdfColor.fromHex('#E2DCD2'),
+                        ),
+                        pw.SizedBox(height: 12),
+                        
+                        pw.Expanded(
+                          child: pw.Text(
+                            activeCard.content,
+                            style: pw.TextStyle(
+                              font: fontRegular,
+                              fontSize: 10,
+                              lineSpacing: 4.0,
+                              color: PdfColor.fromHex('#2C1A14'),
+                            ),
+                          ),
+                        ),
+                        
+                        pw.Container(
+                          height: 1,
+                          color: PdfColor.fromHex('#E2DCD2'),
+                        ),
+                        pw.SizedBox(height: 8),
+                        
+                        pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.end,
+                          children: [
+                            pw.Text(
+                              '${trans.translate('signature')}: ',
+                              style: pw.TextStyle(
+                                font: fontRegular,
+                                fontSize: 10,
+                                color: PdfColor.fromHex('#5C473E'),
+                              ),
+                            ),
+                            pw.Container(
+                              width: 100,
+                              decoration: pw.BoxDecoration(
+                                border: pw.Border(
+                                  bottom: pw.BorderSide(color: PdfColor.fromHex('#2C1A14'), width: 1.0),
+                                ),
+                              ),
+                              alignment: pw.Alignment.centerRight,
+                              child: pw.Text(
+                                activeCard.author,
+                                style: pw.TextStyle(
+                                  font: fontBold,
+                                  fontSize: 10,
+                                  color: PdfColor.fromHex('#2C1A14'),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+
+      if (mounted) Navigator.pop(context);
+
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+        name: 'imjong_postcard_${activeCard.author}.pdf',
+      );
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error printing PDF: $e'),
+            backgroundColor: AppTheme.heartStampRed,
+          ),
+        );
+      }
+      debugPrint("PDF Print Error: $e");
+    }
+  }
+
   Widget _buildCardBack(LanguageLocale locale, WillCardModel activeCard) {
     final trans = LocalizationPack(locale);
 
@@ -570,7 +1038,6 @@ class _PostcardHomeScreenState extends ConsumerState<PostcardHomeScreen> with Si
       ),
       child: Stack(
         children: [
-          // 10px inner margin
           Positioned.fill(
             child: Container(
               margin: const EdgeInsets.all(10.0),
@@ -582,6 +1049,11 @@ class _PostcardHomeScreenState extends ConsumerState<PostcardHomeScreen> with Si
                 ),
               ),
             ),
+          ),
+          Positioned(
+            top: 24,
+            right: 24,
+            child: _buildQRStamp(activeCard),
           ),
           Padding(
             padding: const EdgeInsets.all(28.0),
@@ -600,7 +1072,7 @@ class _PostcardHomeScreenState extends ConsumerState<PostcardHomeScreen> with Si
                         color: AppTheme.terracottaAccent,
                       ),
                     ),
-                    const Icon(Icons.favorite, color: AppTheme.heartStampRed, size: 18),
+                    const SizedBox(width: 60),
                   ],
                 ),
                 const Divider(height: 24),
@@ -623,7 +1095,6 @@ class _PostcardHomeScreenState extends ConsumerState<PostcardHomeScreen> with Si
                   ),
                 ),
                 const Divider(height: 24),
-                // Signature Line
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
