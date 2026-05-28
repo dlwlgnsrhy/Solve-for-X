@@ -1,0 +1,114 @@
+# -------------------------------------------------------------------------
+# MISCELLANEOUS & SYSTEM FILES
+# -------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.temporary
+.Trashes
+*.class
+*.log
+*.pyc
+*.swp
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# -------------------------------------------------------------------------
+# IDEs & EDITORS
+# -------------------------------------------------------------------------
+# IntelliJ IDEA
+*.iml
+*.ipr
+*.iws
+.idea/
+out/
+
+# Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+*.code-workspace
+
+# Xcode / Mac Development
+build/
+DerivedData/
+*.placeholder
+*.perspectivev3
+*.mode1v3
+*.mode2v3
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xsyncrefs
+*~.nib
+## Xcode 8+
+*.moved-aside
+
+# -------------------------------------------------------------------------
+# FLUTTER & DART DEVS
+# -------------------------------------------------------------------------
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Symlinks & Package definitions
+.packages
+.pub-cache/
+/doc/api/
+
+# Symbolication & Obfuscation
+app.*.symbols
+app.*.map.json
+
+# -------------------------------------------------------------------------
+# ANDROID SPECIFICS
+# -------------------------------------------------------------------------
+*.keystore
+*.jks
+*.properties
+/android/app/debug
+/android/app/profile
+/android/app/release
+/android/local.properties
+/android/key.properties
+/android/app/local.properties
+/android/.gradle/
+/android/app/build/
+
+# -------------------------------------------------------------------------
+# IOS/MACOS SPECIFICS
+# -------------------------------------------------------------------------
+/ios/Flutter/Generated.xcconfig
+/ios/Flutter/flutter_export_environment.sh
+/ios/Flutter/ephemeral/
+/ios/.symlinks/
+/ios/Pods/
+/ios/Podfile.lock
+/macos/Flutter/ephemeral/
+/macos/.symlinks/
+/macos/Pods/
+/macos/Podfile.lock
+
+# -------------------------------------------------------------------------
+# LOCAL ENVIRONMENTS & CREDENTIALS
+# -------------------------------------------------------------------------
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+
