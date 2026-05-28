@@ -2,11 +2,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /wills/{willId} {
-      // Allow read access to anyone (Empathy Feed history hub)
-      allow read: if true;
+      // Allow read access if the user is the owner, or if the will is explicitly marked as public
+      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || 
+                     (resource.data.isPublic == true);
       
-      // Allow creation if the user is authenticated and binds their own uid to the will
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // Allow creation if the user is authenticated, binds their own uid, and starts with 0 likes
+      allow create: if request.auth != null && 
+                     request.resource.data.userId == request.auth.uid &&
+                     request.resource.data.likes == 0;
       
       // Allow updates to 'likes' count by anyone, but changes to actual content only by owner
       // Strictly enforce that 'likes' can only be incremented by exactly +1 to prevent manipulation

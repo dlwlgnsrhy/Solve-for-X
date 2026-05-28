@@ -14,13 +14,20 @@ class FirebaseService {
       debugPrint("Firebase Auth: Signed in anonymously. UID: ${userCredential.user?.uid}");
       return userCredential;
     } catch (e) {
-      debugPrint("Firebase Auth Error: $e");
+      debugPrint("Firebase Auth Error (Safeguarded in debug mode): $e");
       return null;
     }
   }
 
   // Get current user UID
-  String? get currentUid => _auth.currentUser?.uid;
+  String? get currentUid {
+    final realUid = _auth.currentUser?.uid;
+    if (realUid == null && kDebugMode) {
+      // Return safe fallback mock UID to prevent app crash when Firebase Auth encounters simulator keychain bug
+      return "local-mock-uid-1234567890";
+    }
+    return realUid;
+  }
 
   // Upload Will Postcard to Cloud Firestore
   Future<bool> uploadWill(WillCardModel will) async {
