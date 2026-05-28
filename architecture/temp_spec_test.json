@@ -1,0 +1,10 @@
+{
+  "app_name": "SafeSpace",
+  "package_name": "com.safespace.privacy",
+  "design_system": "Cozy Warm Pastel",
+  "target_platform": "Flutter Mobile",
+  "landing_page": true,
+  "os_widgets": true,
+  "fidelity": "High fidelity",
+  "prompt": "A highly secure personal privacy lockbox app featuring an encrypted biometric vault, a private daily mindful journal with local-only storage, and real-time sentinel biometric lock logs."
+}
