@@ -1,0 +1,32 @@
+{
+  "app_name": "Antigravity SaaS Portal",
+  "package_name": "com.antigravity.saasportal",
+  "version": "1.2.0",
+  "api_base_url": "https://api.antigravity.cloud-native.net",
+  "primary_color": "#4F46E5",
+  "secondary_color": "#EC4899",
+  "background_color": "#090514",
+  "card_color": "#120B24",
+  "enable_chat": true,
+  "enable_profile": true,
+  "enable_settings": true,
+  "hero_title": "Forged in Real-Time",
+  "hero_subtitle": "This production build has been fully compiled and validated with zero errors.",
+  "dynamic_items": [
+    {
+      "title": "Quantum Compute Engine",
+      "description": "High-throughput asynchronous model swapping pipeline.",
+      "icon": "bolt"
+    },
+    {
+      "title": "Decoupled Data Plane",
+      "description": "Zero latency micro-services operating on edge servers.",
+      "icon": "layers"
+    },
+    {
+      "title": "Self-Repairing Mesh",
+      "description": "Automated healing loops correcting system deviations.",
+      "icon": "grain"
+    }
+  ]
+}
