@@ -87,7 +87,7 @@ html, body, [class*="css"], .stApp {
     transform: translateY(1px) !important;
 }
 
-/* Side navigation panel background overrides */
+/* Sidebar telemetry viewport and control plane isolation */
 [data-testid="stSidebar"] {
     background-color: #06030e !important;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
