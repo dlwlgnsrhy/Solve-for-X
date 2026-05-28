@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 
 # Set page configurations
 st.set_page_config(
-    page_title="Cloud-Native App Factory",
-    page_icon="🔮",
+    page_title="앱 생성 팩토리 (App Factory Console)",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -26,7 +26,8 @@ def start_static_web_server():
         return  # Server is already running on port 8502
     
     preview_dir = "/Users/apple/development/soluni/Solve-for-X/architecture/active_web_preview"
-    os.makedirs(preview_dir, exist_ok=True)
+    if not os.path.islink(preview_dir):
+        os.makedirs(preview_dir, exist_ok=True)
     
     # Write a beautiful temporary pre-compilation dashboard page if index.html doesn't exist
     index_fallback = os.path.join(preview_dir, "index.html")
@@ -72,8 +73,8 @@ def start_static_web_server():
         </head>
         <body>
           <div class="glow-card">
-            <h3>🔮 Awaiting Forge</h3>
-            <p>AI Forge 빌드를 가동하면 컴파일된 실제 앱이 이 자리에 실시간으로 구동됩니다.</p>
+            <h3>빌드 대기 중 (Awaiting Forge)</h3>
+            <p>앱 생성 빌드를 가동하면 컴파일된 실제 앱이 이 자리에 실시간으로 구동됩니다.</p>
             <div class="pulse"></div>
           </div>
         </body>
@@ -147,11 +148,11 @@ os.makedirs(BUILDS_DIR, exist_ok=True)
 STATUS_FILE_PATH = "/Users/apple/development/soluni/Solve-for-X/architecture/build_status.json"
 
 # =========================================================================
-#  🔮 REAL-TIME BACKGROUND APP ENGINE MONITOR (SIDEBAR)
+#  REAL-TIME BACKGROUND APP ENGINE MONITOR (SIDEBAR)
 # =========================================================================
 with st.sidebar:
-    st.markdown("<h3 style='color: #a78bfa; margin-bottom: 2px;'>🔮 App Engine Telemetry</h3>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #6b7280; font-size: 0.8rem; margin-top: 0;'>Real-time Local Daemon Pipeline</p>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #a78bfa; margin-bottom: 2px;'>앱 엔진 원격 모니터링 콘솔</h3>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6b7280; font-size: 0.8rem; margin-top: 0;'>실시간 로컬 파이프라인 상태 정보</p>", unsafe_allow_html=True)
     
     if os.path.exists(STATUS_FILE_PATH):
         try:
@@ -160,50 +161,50 @@ with st.sidebar:
             
             # Premium state styling colors and labels
             status_colors = {
-                "IDLE": ("#3b82f6", "Awaiting Dispatches"),
-                "PROCESSING": ("#f59e0b", "Compiling Tailored App"),
-                "SUCCESS": ("#10b981", "Tailored Successfully"),
-                "WARNING": ("#eab308", "Build Ready (Lints)"),
-                "ERROR": ("#ef4444", "Forging Failed"),
-                "OFFLINE": ("#6b7280", "Engine Offline")
+                "IDLE": ("#3b82f6", "요청 대기 중"),
+                "PROCESSING": ("#f59e0b", "앱 생성 및 빌드 진행 중"),
+                "SUCCESS": ("#10b981", "앱 생성 성공"),
+                "WARNING": ("#eab308", "빌드 완료 (경고 포함)"),
+                "ERROR": ("#ef4444", "빌드 및 생성 실패"),
+                "OFFLINE": ("#6b7280", "엔진 오프라인")
             }
             
             curr_status = state.get("status", "IDLE")
-            color, label = status_colors.get(curr_status, ("#6b7280", "Unknown State"))
+            color, label = status_colors.get(curr_status, ("#6b7280", "알 수 없는 상태"))
             
             # Status Box Card
             st.markdown(f"""
             <div style='padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); margin-bottom: 12px;'>
                 <div style='display: flex; justify-content: space-between; align-items: center;'>
-                    <span style='font-size: 0.85rem; color: #9ca3af; font-weight: bold;'>Pipeline Stage</span>
-                    <span style='background-color: {color}; color: #ffffff; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold;'>{curr_status}</span>
+                    <span style='font-size: 0.85rem; color: #9ca3af; font-weight: bold;'>파이프라인 단계</span>
+                    <span style='background-color: {color}; color: #ffffff; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold;'>{label}</span>
                 </div>
                 <div style='margin-top: 8px; font-size: 0.75rem; color: #6b7280;'>
-                    Current Stage: <span style='color: #d1d5db; font-weight: 500;'>{state.get("current_stage")}</span>
+                    현재 단계: <span style='color: #d1d5db; font-weight: 500;'>{state.get("current_stage")}</span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
             # Interactive Progress bar
             prog_val = float(state.get("progress", 0.0))
-            st.progress(prog_val, text=f"Stage Progress: {int(prog_val * 100)}%")
+            st.progress(prog_val, text=f"진행율: {int(prog_val * 100)}%")
             
             # Detailed Info Box
-            st.markdown("<p style='font-size: 0.8rem; color: #a78bfa; margin-bottom: 4px; font-weight: 500;'>Active Log telemetry:</p>", unsafe_allow_html=True)
-            st.info(state.get("message", "Awaiting requests..."))
+            st.markdown("<p style='font-size: 0.8rem; color: #a78bfa; margin-bottom: 4px; font-weight: 500;'>실시간 파이프라인 로그:</p>", unsafe_allow_html=True)
+            st.info(state.get("message", "새로운 빌드 요청을 대기 중입니다."))
             
             if state.get("error"):
-                st.error(f"Engine Exception:\n{state.get('error')}")
+                st.error(f"엔진 오류 정보:\n{state.get('error')}")
                 
-            st.markdown(f"<p style='font-size: 0.7rem; color: #4b5563; text-align: right;'>Last telemetry: {state.get('timestamp')}</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='font-size: 0.7rem; color: #4b5563; text-align: right;'>마지막 갱신: {state.get('timestamp')}</p>", unsafe_allow_html=True)
             
         except Exception as e:
-            st.caption(f"Reading telemetry stream... ({e})")
+            st.caption(f"실시간 로그 수집 중... ({e})")
     else:
         st.markdown("""
         <div style='padding: 15px; border-radius: 8px; background: rgba(59, 130, 246, 0.04); border: 1px dashed rgba(59, 130, 246, 0.2);'>
             <p style='color: #93c5fd; font-size: 0.8rem; margin: 0;'>
-                🟢 Local listener daemon ready to initialize. Run the daemon on this Mac to poll Repository Dispatch events and stream telemetry here.
+                로컬 리스너 데몬이 대기 중입니다. 이 기기에서 백그라운드 엔진을 가동하면 실시간 빌드 로그가 여기에 스트리밍됩니다.
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -211,60 +212,60 @@ with st.sidebar:
     st.divider()
     
     # Real-time Auto-Refresh mechanism
-    auto_refresh = st.checkbox("🔄 Auto-Poll Telemetry (3s)", value=True)
+    auto_refresh = st.checkbox("원격 정보 자동 폴링 (3초)", value=True)
 
-st.sidebar.caption("Antigravity Local Engine Integration v1.2")
+st.sidebar.caption("Antigravity 로컬 통합 빌드 콘솔 v1.2")
 st.sidebar.divider()
 
 
 # Title & Dashboard Branding
 st.markdown("""
 <div class='glass-card'>
-    <span class='pipeline-badge'>CONTROL PLANE v1.2.0</span>
-    <h1 class='gradient-text' style='margin: 10px 0 0 0; font-size: 2.8rem;'>CLOUD-NATIVE APP FACTORY</h1>
-    <p style='color: #a78bfa; margin-top: 5px;'>Autonomous Core Engine for On-Demand Micro-Tenant App Synthesis</p>
+    <span class='pipeline-badge'>통제 평면 v1.2.0 (CONTROL PLANE)</span>
+    <h1 class='gradient-text' style='margin: 10px 0 0 0; font-size: 2.8rem;'>앱 팩토리 관리 콘솔</h1>
+    <p style='color: #a78bfa; margin-top: 5px;'>실시간 다중 테넌트 플러터 앱 자동 합성 코어 엔진</p>
 </div>
 """, unsafe_allow_html=True)
 
 # Establish premium double tabs
 tab_manual, tab_ai = st.tabs([
-    "🔧 직접 매개변수 설정 (Direct Parameter Customization)", 
-    "🎨 AI & 오픈디자인 프로토타입 주조 (AI Design Forge)"
+    "직접 매개변수 설정 및 커스텀 빌드", 
+    "지능형 AI 브랜드 프로토타입 주조소"
 ])
 
 with tab_manual:
     col1, col2 = st.columns([1, 1.2])
     
     with col1:
-        st.markdown("<h3 style='color: #ec4899;'>🛠️ Application Parameters</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: #ec4899;'>애플리케이션 메타데이터 설정</h3>", unsafe_allow_html=True)
         
         with st.container(border=True):
-            app_name = st.text_input("Application Name", value="Horizon Portal", key="app_name_inp")
-            package_name = st.text_input("Package ID / Bundle Identifier", value="com.horizon.portal", key="pkg_name_inp")
-            version = st.text_input("Build Version", value="1.0.0", key="version_inp")
-            api_base_url = st.text_input("API Gateway Endpoint", value="https://api.horizon-platform.io", key="api_inp")
+            app_name = st.text_input("애플리케이션 이름 (Application Name)", value="Horizon Portal", key="app_name_inp")
+            package_name = st.text_input("패키지 고유 식별자 (Package ID)", value="com.horizon.portal", key="pkg_name_inp")
+            version = st.text_input("빌드 버전 (Build Version)", value="1.0.0", key="version_inp")
+            api_base_url = st.text_input("API 게이트웨이 엔드포인트 (API Base URL)", value="https://api.horizon-platform.io", key="api_inp")
             
             # Color palettes
             sub_col1, sub_col2 = st.columns(2)
             with sub_col1:
-                primary_color = st.color_picker("Primary Glow Color", value="#6366F1", key="p_color_picker")
+                primary_color = st.color_picker("주요 포인트 컬러 (Primary Glow)", value="#6366F1", key="p_color_picker")
             with sub_col2:
-                secondary_color = st.color_picker("Accent Highlight Color", value="#EC4899", key="s_color_picker")
+                secondary_color = st.color_picker("강조 하이라이트 컬러 (Accent Highlight)", value="#EC4899", key="s_color_picker")
                 
-            background_color = st.color_picker("Dark Background Color", value="#090514", key="bg_color_picker")
-            card_color = st.color_picker("Panel Card Color", value="#120B24", key="card_color_picker")
+            background_color = st.color_picker("어두운 배경 컬러 (Background Color)", value="#090514", key="bg_color_picker")
+            card_color = st.color_picker("패널 카드 컬러 (Card Color)", value="#120B24", key="card_color_picker")
 
-        st.markdown("<h3 style='color: #ec4899;'>⚡ Navigation & Modules</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: #ec4899;'>내비게이션 메뉴 및 컴포넌트 활성화</h3>", unsafe_allow_html=True)
         with st.container(border=True):
-            enable_chat = st.checkbox("Enable Chat Service Interface", value=True, key="enable_chat_cb")
-            enable_profile = st.checkbox("Enable Dynamic Profiles Portal", value=True, key="enable_profile_cb")
-            enable_settings = st.checkbox("Enable Platform Settings Dashboard", value=True, key="enable_settings_cb")
+            enable_chat = st.checkbox("채팅 서비스 인터페이스 활성화", value=True, key="enable_chat_cb")
+            enable_profile = st.checkbox("다이나믹 프로필 포털 활성화", value=True, key="enable_profile_cb")
+            enable_settings = st.checkbox("플랫폼 시스템 설정 대시보드 활성화", value=True, key="enable_settings_cb")
             
-            hero_title = st.text_input("Welcome Hero Header", value="Dynamic Workspace Active", key="hero_title_inp")
-            hero_subtitle = st.text_area("Welcome Hero Subtitle", value="Seamless multi-tenant edge client generated completely in real-time.", key="hero_sub_inp")
+            hero_title = st.text_input("웰컴 웰컴 히어로 대제목", value="Dynamic Workspace Active", key="hero_title_inp")
+            hero_subtitle = st.text_area("웰컴 히어로 설명 자막", value="Seamless multi-tenant edge client generated completely in real-time.", key="hero_sub_inp")
 
     with col2:
-        st.markdown("<h3 style='color: #a855f7;'>📜 Core JSON Specification</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: #a855f7;'>코어 애플리케이션 명세서 (JSON AST)</h3>", unsafe_allow_html=True)
         
         spec_data = {
             "app_name": app_name,
@@ -300,7 +301,7 @@ with tab_manual:
         }
         
         json_spec_str = st.text_area(
-            "Edit Raw Application AST (JSON)",
+            "로컬 명세 규격 직접 편집 (JSON AST)",
             value=json.dumps(spec_data, indent=2, ensure_ascii=False),
             height=320,
             key="json_spec_inp"
@@ -308,21 +309,21 @@ with tab_manual:
         
         clean_app_id = package_name.replace(".", "_").lower()
         target_build_path = os.path.join(BUILDS_DIR, clean_app_id)
-        st.markdown(f"**Target Build Destination:** `{target_build_path}`")
+        st.markdown(f"**이식 대상 빌드 경로:** `{target_build_path}`")
         
         act_col1, act_col2 = st.columns(2)
         with act_col1:
-            start_build = st.button("🔥 앱 생성 엔진 가동 (Build App)", key="btn_build_manual")
+            start_build = st.button("앱 생성 엔진 즉시 가동 (Build App)", key="btn_build_manual")
         with act_col2:
-            run_verify = st.button("🛡️ 무결성 테스트 검증 (Verify Integrity)", key="btn_verify_manual")
+            run_verify = st.button("정적 무결성 검증 테스트 (Verify Integrity)", key="btn_verify_manual")
 
 with tab_ai:
     ai_col1, ai_col2 = st.columns([1.15, 1])
     
     with ai_col1:
-        st.markdown("<h3 style='color: #3b82f6; margin-top: 0;'>🎨 AI 브랜드 프로토타입 주조소 (Design Forge)</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: #3b82f6; margin-top: 0;'>AI 브랜드 프로토타입 주조소 (Design Forge)</h3>", unsafe_allow_html=True)
         st.markdown("""
-        신규 모바일/웹 프로토타입 스펙을 상세히 설정하고 고성능 **Gemma 4 31B Instruct** 지능형 엔진을 가동하여 문법 오류 없는 Flutter 모바일 코드를 자동으로 주조합니다.
+        자연어 설명과 브랜드 디자인 시스템 토큰을 입력하고 지능형 컴파일러 엔진을 가동하여, 문법 오류가 없는 플러터 코드를 자동으로 주조하고 실시간 검증합니다.
         """)
         
         # Premium 86 Design Systems brand color tokens dictionary matching VoltAgent/awesome-design-md (72+ parity)
@@ -416,7 +417,7 @@ with tab_ai:
         }
         
         with st.container(border=True):
-            st.markdown("<h4 style='color: #60a5fa; margin: 0 0 10px 0;'>✨ 신규 프로토타입 설계</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color: #60a5fa; margin: 0 0 10px 0;'>신규 프로토타입 메타데이터</h4>", unsafe_allow_html=True)
             proto_project_name = st.text_input("프로젝트 이름 (Project Name)", value="SafeSpace", key="proto_name_inp")
             
             # Automatically calculate target Package ID programmatically inside backend
@@ -428,7 +429,7 @@ with tab_ai:
             
             st.divider()
             
-            st.markdown("<h4 style='color: #a78bfa; margin: 0 0 10px 0;'>🎨 브랜드 디자인 시스템 토큰</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color: #a78bfa; margin: 0 0 10px 0;'>브랜드 비주얼 컬러 시스템 토큰</h4>", unsafe_allow_html=True)
             proto_design_system = st.selectbox(
                 "브랜드 비주얼 컬러 시스템 선택",
                 options=list(brand_tokens.keys()),
@@ -436,7 +437,7 @@ with tab_ai:
                 key="proto_sys_sb"
             )
             
-            st.markdown("<h4 style='color: #a78bfa; margin: 15px 0 10px 0;'>📱 배포 아키텍처 플랫폼</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color: #a78bfa; margin: 15px 0 10px 0;'>배포 대상 플랫폼 및 아키텍처</h4>", unsafe_allow_html=True)
             proto_target_platform = st.selectbox(
                 "모바일/웹 빌드 아키텍처 지정",
                 options=["Flutter 모바일 (Flutter Mobile)", "반응형 웹 (Responsive Web)", "Flutter 데스크톱 (Flutter Desktop)"],
@@ -446,18 +447,18 @@ with tab_ai:
             
             st.divider()
             
-            st.markdown("<h4 style='color: #f472b6; margin: 0 0 5px 0;'>🔗 동반 레이아웃 (Companion Surfaces)</h4>", unsafe_allow_html=True)
-            proto_landing_page = st.toggle("랜딩 페이지 포함 (Include Landing Page)", value=True, key="proto_landing_tg")
-            proto_os_widgets = st.toggle("OS 위젯 포함 (Include OS Widgets)", value=True, key="proto_widgets_tg")
+            st.markdown("<h4 style='color: #f472b6; margin: 0 0 5px 0;'>다중 채널 레이아웃 동반 생성</h4>", unsafe_allow_html=True)
+            proto_landing_page = st.toggle("랜딩 웹페이지 동반 생성", value=True, key="proto_landing_tg")
+            proto_os_widgets = st.toggle("OS 홈스크린 위젯 컴포넌트 생성", value=True, key="proto_widgets_tg")
             st.markdown("""
             <p style='color: #9ca3af; font-size: 0.8rem; margin-top: 2px; margin-bottom: 12px; line-height: 1.45;'>
-                💡 모바일 앱 외에 함께 생성할 다중 채널 화면을 지정합니다. 랜딩 페이지 및 OS 홈스크린용 위젯 컴포넌트를 활성화하여 멀티 디바이스 환경을 구축합니다.
+                모바일 앱 외에 함께 생성할 다중 채널 화면을 지정합니다. 랜딩 페이지 및 OS 홈스크린용 위젯 컴포넌트를 활성화하여 멀티 디바이스 환경을 구축합니다.
             </p>
             """, unsafe_allow_html=True)
             
             st.divider()
             
-            st.markdown("<h4 style='color: #ec4899; margin: 0 0 5px 0;'>🎯 설계 정밀도 (Fidelity)</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color: #ec4899; margin: 0 0 5px 0;'>설계 정밀도 (Fidelity)</h4>", unsafe_allow_html=True)
             proto_fidelity = st.radio(
                 "피델리티 단계 지정",
                 options=["와이어프레임 (Wireframe)", "고정밀 디자인 (High fidelity)"],
@@ -467,14 +468,11 @@ with tab_ai:
             )
             st.markdown("""
             <p style='color: #9ca3af; font-size: 0.8rem; margin-top: 2px; margin-bottom: 12px; line-height: 1.45;'>
-                💡 <b>와이어프레임 (Wireframe)</b>: 불필요한 장식과 색상을 배제하고 레이아웃과 UI 그리드 뼈대만을 신속히 컴파일하여 직관적인 프로토타입을 설계합니다. (시뮬레이터에 무채색 회색조 테두리가 즉시 적용됩니다)<br>
-                🎨 <b>고정밀 디자인 (High fidelity)</b>: 선택한 디자인 시스템 토큰(HSL 컬러, 서체, 24px 둥근 모서리 곡률)을 풍부하게 적용하여 완성도 높은 고품질 앱을 주조합니다.
+                와이어프레임은 UI 뼈대를 신속하게 구축하며, 고정밀 디자인은 브랜드 컬러 토큰을 적용하여 완성도 높은 앱을 주조합니다.
             </p>
             """, unsafe_allow_html=True)
             
-            st.divider()
-            
-            st.markdown("<h4 style='color: #60a5fa; margin: 0 0 10px 0;'>🤖 앱 개발 요구사항 설명 (Application Prompt)</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color: #60a5fa; margin: 0 0 10px 0;'>앱 개발 요구사항 설명 (Application Prompt)</h4>", unsafe_allow_html=True)
             proto_prompt = st.text_area(
                 "앱의 핵심 기능 및 연동 모듈을 자연어로 기술해 주세요",
                 value="A highly secure personal privacy lockbox app featuring an encrypted biometric vault, a private daily mindful journal with local-only storage, and real-time sentinel biometric lock logs.",
@@ -485,16 +483,16 @@ with tab_ai:
         clean_ai_id = proto_package_name.replace(".", "_").lower()
         target_ai_path = os.path.join(BUILDS_DIR, clean_ai_id)
         
-        st.markdown(f"**Target Build Destination:** `{target_ai_path}`")
+        st.markdown(f"**대상 빌드 경로:** `{target_ai_path}`")
         
         act_ai_col1, act_ai_col2 = st.columns(2)
         with act_ai_col1:
-            start_ai_build = st.button("🚀 AI 브랜드 프로토타입 주조 가동 (Launch AI Forge)", key="btn_build_ai")
+            start_ai_build = st.button("AI 브랜드 프로토타입 주조 가동 (Launch AI Forge)", key="btn_build_ai")
         with act_ai_col2:
-            run_ai_verify = st.button("🛡️ AI 생성 앱 정적 무결성 스캔 (Verify AI Build)", key="btn_verify_ai")
+            run_ai_verify = st.button("AI 생성 앱 정적 무결성 스캔 (Verify AI Build)", key="btn_verify_ai")
             
     with ai_col2:
-        st.markdown("<h3 style='color: #a855f7; margin-top: 0;'>📱 인터랙티브 시뮬레이터 (Interactive Simulator)</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: #a855f7; margin-top: 0;'>인터랙티브 시뮬레이터 (Interactive Simulator)</h3>", unsafe_allow_html=True)
         st.markdown("<p style='color: #6b7280; font-size: 0.85rem; margin-top: 0;'>주조 중인 테넌트 앱의 디자인 토큰 및 구성 요소를 아래 시뮬레이터에서 실시간으로 조작해 보세요!</p>", unsafe_allow_html=True)
         
         # Real-time visual binding: override simulator colors immediately when selectbox is toggled!
@@ -891,7 +889,7 @@ with tab_ai:
             <div id="screen-home" class="screen active">
               <div class="header">
                 <h2>{app_n}</h2>
-                <span>Personal Privacy</span>
+                <span>개인 정보 보호</span>
               </div>
               <div class="hero-card">
                 <h3>{hero_t}</h3>
@@ -924,26 +922,26 @@ with tab_ai:
             <div id="screen-vault" class="screen">
               <div class="header">
                 <h2>{item1_t}</h2>
-                <span>Hardware Locked</span>
+                <span>하드웨어 잠금 활성화</span>
               </div>
               <div id="vault-lock-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center;">
                 <span class="material-icons" style="font-size: 60px; color: {p_c}; margin-bottom: 10px;">lock</span>
-                <h3 style="margin: 0; font-size: 15px;">Vault is Encrypted</h3>
-                <p style="font-size: 11px; color: #6b7280; margin: 5px 0 15px 0;">Requires biometric signature verification to scan credentials.</p>
-                <button class="lock-screen-btn" onclick="triggerBiometrics()">Verify Biometrics</button>
+                <h3 style="margin: 0; font-size: 15px;">보관소가 암호화되었습니다</h3>
+                <p style="font-size: 11px; color: #6b7280; margin: 5px 0 15px 0;">사용자 보안 서명을 확인하려면 생체 인식이 필요합니다.</p>
+                <button class="lock-screen-btn" onclick="triggerBiometrics()">생체 인식 검증</button>
               </div>
               
               <div id="vault-unlocked" style="display: none; padding: 5px;">
                 <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid #10b981; border-radius: 12px; padding: 10px; color: #047857; font-size: 11px; display: flex; align-items: center; margin-bottom: 15px;">
                   <span class="material-icons" style="font-size: 14px; margin-right: 6px;">verified</span>
-                  Access granted: Zero-knowledge hardware lock active.
+                  액세스 허용: 영지식 하드웨어 격리 잠금이 실행 중입니다.
                 </div>
                 <div style="background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 12px; padding: 10px; margin-bottom: 8px;">
-                  <div style="font-size: 10px; color: #9ca3af;">Personal Lock Password</div>
+                  <div style="font-size: 10px; color: #9ca3af;">개인 보안 보관 마스터 암호</div>
                   <div style="font-size: 12px; font-weight: bold; color: #374151;">••••••••••••</div>
                 </div>
                 <div style="background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 12px; padding: 10px; margin-bottom: 8px;">
-                  <div style="font-size: 10px; color: #9ca3af;">Recovery Backup Key</div>
+                  <div style="font-size: 10px; color: #9ca3af;">복구용 백업 키(AES)</div>
                   <div style="font-size: 11px; font-weight: bold; color: #374151;">safespace_private_2026_aes</div>
                 </div>
               </div>
@@ -953,29 +951,29 @@ with tab_ai:
             <div id="screen-sentinel" class="screen">
               <div class="header">
                 <h2>{item3_t}</h2>
-                <span>Threat Logs</span>
+                <span>위협 감지 로그</span>
               </div>
               <div style="display: flex; flex-direction: column; gap: 8px;">
                 <div style="background: white; border-radius: 12px; padding: 10px; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
                   <div>
-                    <div style="font-size: 11px; font-weight: bold; color: #1f2937;">Biometric Signature Match</div>
-                    <div style="font-size: 9px; color: #9ca3af;">Just now • Verified</div>
+                    <div style="font-size: 11px; font-weight: bold; color: #1f2937;">생체 서명 일치 확인</div>
+                    <div style="font-size: 9px; color: #9ca3af;">방금 전 • 인증 승인됨</div>
                   </div>
-                  <span style="background: #e6f4ea; color: #137333; font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: bold;">SECURE</span>
+                  <span style="background: #e6f4ea; color: #137333; font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: bold;">안전</span>
                 </div>
                 <div style="background: white; border-radius: 12px; padding: 10px; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
                   <div>
-                    <div style="font-size: 11px; font-weight: bold; color: #1f2937;">Intrusion Lock Attempt</div>
-                    <div style="font-size: 9px; color: #9ca3af;">2 hours ago • Failed Fingerprint</div>
+                    <div style="font-size: 11px; font-weight: bold; color: #1f2937;">임의 침입 잠금 시도 차단</div>
+                    <div style="font-size: 9px; color: #9ca3af;">2시간 전 • 지문 서명 불일치</div>
                   </div>
-                  <span style="background: #fce8e6; color: #c5221f; font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: bold;">BLOCKED</span>
+                  <span style="background: #fce8e6; color: #c5221f; font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: bold;">차단됨</span>
                 </div>
                 <div style="background: white; border-radius: 12px; padding: 10px; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
                   <div>
-                    <div style="font-size: 11px; font-weight: bold; color: #1f2937;">Hardware Lockbox Synced</div>
-                    <div style="font-size: 9px; color: #9ca3af;">Today 10:11 AM • Hardware API</div>
+                    <div style="font-size: 11px; font-weight: bold; color: #1f2937;">하드웨어 안전 금고 동기화</div>
+                    <div style="font-size: 9px; color: #9ca3af;">오늘 오전 10:11 • 로컬 API 연결</div>
                   </div>
-                  <span style="background: #e8f0fe; color: #1a73e8; font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: bold;">SYNCED</span>
+                  <span style="background: #e8f0fe; color: #1a73e8; font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: bold;">동기화됨</span>
                 </div>
               </div>
             </div>
@@ -983,60 +981,60 @@ with tab_ai:
             <!-- SCREEN: SETTINGS -->
             <div id="screen-settings" class="screen">
               <div class="header">
-                <h2>Settings</h2>
-                <span>App Config</span>
+                <h2>설정</h2>
+                <span>시스템 구성</span>
               </div>
               <div class="settings-row">
-                <label>Enable Local Biometrics</label>
+                <label>로컬 생체 인증 활성화</label>
                 <label class="switch">
                   <input type="checkbox" checked>
                   <span class="slider"></span>
                 </label>
               </div>
               <div class="settings-row">
-                <label>Hardware Zero-Leakage Guard</label>
+                <label>하드웨어 제로 유출 감시</label>
                 <label class="switch">
                   <input type="checkbox" checked>
                   <span class="slider"></span>
                 </label>
               </div>
               <div class="settings-row">
-                <label>Automatic Auto-Lock (5m)</label>
+                <label>자동 화면 잠금 (5분)</label>
                 <label class="switch">
                   <input type="checkbox" checked>
                   <span class="slider"></span>
                 </label>
               </div>
               <div style="margin-top: 20px; text-align: center; font-size: 10px; color: #9ca3af;">
-                Device Platform: {proto_target_platform}<br>
-                Fidelity Level: {proto_fidelity}<br>
-                Design Theme: {proto_design_system}
+                대상 플랫폼: {proto_target_platform}<br>
+                설계 정밀도: {proto_fidelity}<br>
+                브랜드 테마: {proto_design_system}
               </div>
             </div>
             
             <!-- BIOMETRIC OVERLAY -->
             <div id="bio-overlay" class="bio-overlay">
               <div id="bio-fingerprint" class="fingerprint-btn"><span class="material-icons" style="font-size: 44px;">fingerprint</span></div>
-              <p id="bio-status" style="color: white; font-size: 12px; margin-top: 15px; font-weight: bold;">Place Finger on Scanner</p>
+              <p id="bio-status" style="color: white; font-size: 12px; margin-top: 15px; font-weight: bold;">스캐너에 손가락을 올려놓으세요</p>
             </div>
             
             <!-- BOTTOM NAVIGATION -->
             <div class="nav-bar">
               <div class="nav-item active" onclick="switchScreen('screen-home', this)">
                 <span class="material-icons" style="font-size: 20px;">home</span>
-                <span>Home</span>
+                <span>홈</span>
               </div>
               <div class="nav-item" onclick="switchScreen('screen-vault', this)">
                 <span class="material-icons" style="font-size: 20px;">security</span>
-                <span>Vault</span>
+                <span>보관소</span>
               </div>
               <div class="nav-item" onclick="switchScreen('screen-sentinel', this)">
                 <span class="material-icons" style="font-size: 20px;">shield</span>
-                <span>Guard</span>
+                <span>감시</span>
               </div>
               <div class="nav-item" onclick="switchScreen('screen-settings', this)">
                 <span class="material-icons" style="font-size: 20px;">settings</span>
-                <span>Settings</span>
+                <span>설정</span>
               </div>
             </div>
           </div>
@@ -1082,7 +1080,7 @@ log_placeholder = st.empty()
 def run_app_forge(spec_path=None, design_src=None, use_ai=False, target_path="", app_id=""):
     status_placeholder.markdown("""
     <div class='glass-card' style='border-color: #a855f7;'>
-        <p style='color: #d8b4fe; font-weight: bold; margin:0;'>⚡ SYNTHESIS CORE STARTED: Restructuring design layout and package directories...</p>
+        <p style='color: #d8b4fe; font-weight: bold; margin:0;'>합성 코어 가동: 디자인 레이아웃 및 패키지 디렉토리를 재구성하는 중...</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -1133,8 +1131,8 @@ def run_app_forge(spec_path=None, design_src=None, use_ai=False, target_path="",
         if rc == 0:
             status_placeholder.markdown(f"""
             <div class='glass-card' style='border-color: #22c55e; background: rgba(34, 197, 94, 0.08);'>
-                <h4 style='color: #4ade80; margin: 0;'>🎉 APP FORGED SUCCESSFULLY!</h4>
-                <p style='color: #a7f3d0; margin: 5px 0 0 0;'>The tailored codebase has been structured at builds/{app_id}</p>
+                <h4 style='color: #4ade80; margin: 0;'>앱 생성 완료 (App Forged Successfully)</h4>
+                <p style='color: #a7f3d0; margin: 5px 0 0 0;'>맞춤형 코드베이스가 builds/{app_id} 경로에 성공적으로 구성되었습니다.</p>
             </div>
             """, unsafe_allow_html=True)
             log_placeholder.code("\n".join(logs_output), language="bash")
@@ -1142,7 +1140,7 @@ def run_app_forge(spec_path=None, design_src=None, use_ai=False, target_path="",
             # Start Phase 2: flutter build web --release inside builds/{app_id}
             status_placeholder.markdown(f"""
             <div class='glass-card' style='border-color: #3b82f6;'>
-                <p style='color: #93c5fd; font-weight: bold; margin:0;'>🌐 FLUTTER WEB COMPILATION ACTIVE: Generating high-performance static web assets...</p>
+                <p style='color: #93c5fd; font-weight: bold; margin:0;'>플러터 웹 컴파일 활성화: 고성능 정적 웹 에셋을 생성하는 중...</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -1174,47 +1172,47 @@ def run_app_forge(spec_path=None, design_src=None, use_ai=False, target_path="",
                     if success_symlink:
                         status_placeholder.markdown(f"""
                         <div class='glass-card' style='border-color: #22c55e; background: rgba(34, 197, 94, 0.08);'>
-                            <h4 style='color: #4ade80; margin: 0;'>🎉 APP FORGED & WEB SANDBOX LIVE!</h4>
-                            <p style='color: #a7f3d0; margin: 5px 0 0 0;'>The codebase has been fully compiled. Simulator is now running the LIVE interactive app!</p>
+                            <h4 style='color: #4ade80; margin: 0;'>앱 생성 및 웹 샌드박스 구동 완료! (App Forged & Web Sandbox Live)</h4>
+                            <p style='color: #a7f3d0; margin: 5px 0 0 0;'>코드베이스가 완전히 컴파일되었습니다. 시뮬레이터에서 실시간 인터랙션 앱이 구동됩니다!</p>
                         </div>
                         """, unsafe_allow_html=True)
                         log_placeholder.code("\n".join(web_logs), language="bash")
                     else:
-                        status_placeholder.warning("App forged, but active web preview symlink could not be established.")
+                        status_placeholder.warning("앱은 생성되었으나, 실시간 웹 프리뷰 심볼릭 링크를 생성하지 못했습니다.")
                 else:
                     status_placeholder.markdown(f"""
                     <div class='glass-card' style='border-color: #ef4444; background: rgba(239, 68, 68, 0.08);'>
-                        <h4 style='color: #fca5a5; margin: 0;'>❌ FLUTTER WEB COMPILATION FAILED</h4>
-                        <p style='color: #fecdd3; margin: 5px 0 0 0;'>Subprocess returned exit code {web_rc}. Review compilation logs below.</p>
+                        <h4 style='color: #fca5a5; margin: 0;'>플러터 웹 컴파일 실패 (Flutter Web Compilation Failed)</h4>
+                        <p style='color: #fecdd3; margin: 5px 0 0 0;'>하위 프로세스가 종료 코드 {web_rc}을(를) 반환했습니다. 아래 컴파일 로그를 검토하십시오.</p>
                     </div>
                     """, unsafe_allow_html=True)
                     log_placeholder.code("\n".join(web_logs), language="bash")
             except Exception as ex:
-                status_placeholder.error(f"Failed to compile web assets: {ex}")
+                status_placeholder.error(f"웹 에셋 컴파일 실패: {ex}")
         else:
             status_placeholder.markdown(f"""
             <div class='glass-card' style='border-color: #ef4444; background: rgba(239, 68, 68, 0.08);'>
-                <h4 style='color: #fca5a5; margin: 0;'>❌ APP FORGING ENCOUNTERED AN ERROR</h4>
-                <p style='color: #fecdd3; margin: 5px 0 0 0;'>Subprocess returned exit code {rc}. Review full trace below.</p>
+                <h4 style='color: #fca5a5; margin: 0;'>앱 생성 과정에서 오류가 발생했습니다</h4>
+                <p style='color: #fecdd3; margin: 5px 0 0 0;'>하위 프로세스가 종료 코드 {rc}을(를) 반환했습니다. 아래 전체 추적을 검토하십시오.</p>
             </div>
             """, unsafe_allow_html=True)
             log_placeholder.code("\n".join(logs_output), language="bash")
             
     except Exception as e:
-        status_placeholder.error(f"Failed to launch subprocess swap engine: {e}")
+        status_placeholder.error(f"하위 프로세스 교체 엔진 가동 실패: {e}")
 
 # Helper to run verify
 def run_app_verify(target_path=""):
     status_placeholder.markdown("""
     <div class='glass-card' style='border-color: #3b82f6;'>
-        <p style='color: #93c5fd; font-weight: bold; margin:0;'>🔍 INTEGRITY ANALYSIS ACTIVE: Triggering static analyzer code scans...</p>
+        <p style='color: #93c5fd; font-weight: bold; margin:0;'>무결성 분석 활성화: 정적 분석기 코드 스캔을 시작하는 중...</p>
     </div>
     """, unsafe_allow_html=True)
     
     if not os.path.exists(target_path):
         status_placeholder.markdown("""
         <div class='glass-card' style='border-color: #eab308; background: rgba(234, 179, 8, 0.08);'>
-            <p style='color: #fde047; font-weight: bold; margin:0;'>⚠️ NO BUILD FOUND: Please click [앱 생성 엔진 가동] before launching integrity test.</p>
+            <p style='color: #fde047; font-weight: bold; margin:0;'>빌드를 찾을 수 없음: 무결성 검증을 시작하기 전에 [앱 생성 엔진 가동]을 클릭하십시오.</p>
         </div>
         """, unsafe_allow_html=True)
         return
@@ -1247,16 +1245,16 @@ def run_app_verify(target_path=""):
         if rc == 0:
             status_placeholder.markdown(f"""
             <div class='glass-card' style='border-color: #22c55e; background: rgba(34, 197, 94, 0.08);'>
-                <h4 style='color: #4ade80; margin: 0;'>🛡️ STATIC INTEGRITY GUARANTEED: 100% SUCCESS</h4>
-                <p style='color: #a7f3d0; margin: 5px 0 0 0;'>Flutter analyzer returned clean status code with 0 syntax errors or warnings.</p>
+                <h4 style='color: #4ade80; margin: 0;'>정적 무결성 검증 통과: 100% 성공</h4>
+                <p style='color: #a7f3d0; margin: 5px 0 0 0;'>플러터 분석기가 구문 오류나 경고 없이 정상 종료 코드를 반환했습니다.</p>
             </div>
             """, unsafe_allow_html=True)
             log_placeholder.code("\n".join(logs_output), language="bash")
         else:
             status_placeholder.markdown(f"""
             <div class='glass-card' style='border-color: #ef4444; background: rgba(239, 68, 68, 0.08);'>
-                <h4 style='color: #fca5a5; margin: 0;'>⚠️ INTEGRITY FAILURE DETECTED</h4>
-                <p style='color: #fecdd3; margin: 5px 0 0 0;'>Flutter analyzer found syntax issues. Review lint trace below.</p>
+                <h4 style='color: #fca5a5; margin: 0;'>무결성 오류 감지</h4>
+                <p style='color: #fecdd3; margin: 5px 0 0 0;'>플러터 분석기가 구문 문제를 발견했습니다. 아래 린트 추적을 검토하십시오.</p>
             </div>
             """, unsafe_allow_html=True)
             log_placeholder.code("\n".join(logs_output), language="bash")
@@ -1322,10 +1320,10 @@ if run_ai_verify:
     run_app_verify(target_path=target_ai_path)
 
 # =========================================================================
-#  📂 PREMIUM REAL-TIME TAILORED CODEBASE PREVIEW (4번 항목 개선)
+#  PREMIUM REAL-TIME TAILORED CODEBASE PREVIEW
 # =========================================================================
-st.markdown("<h3 style='color: #6366f1; margin-top: 30px;'>📂 Dynamic Tailored Codebase & Spec Viewer</h3>", unsafe_allow_html=True)
-st.markdown("<p style='color: #6b7280; font-size: 0.85rem; margin-top: 0;'>Dynamically scans and renders all compiled tenant micro-app directories and configuration specifications.</p>", unsafe_allow_html=True)
+st.markdown("<h3 style='color: #6366f1; margin-top: 30px;'>실시간 생성 코드 및 명세 뷰어</h3>", unsafe_allow_html=True)
+st.markdown("<p style='color: #6b7280; font-size: 0.85rem; margin-top: 0;'>컴파일된 테넌트 마이크로 앱 디렉토리 및 구성 명세를 동적으로 스캔하여 표시합니다.</p>", unsafe_allow_html=True)
 
 # 1. Scan builds directories dynamically
 builds_dirs = [
@@ -1350,10 +1348,10 @@ for b_dir in builds_dirs:
 if detected_apps:
     app_options = [app["id"] for app in detected_apps]
     selected_app_id = st.selectbox(
-        "📂 Select Compiled Workspace to Inspect", 
+        "검사할 컴파일된 작업 공간 선택", 
         options=app_options, 
         index=0,
-        help="Select a tenant workspace to view its generated config files and synthesis spec."
+        help="생성된 구성 파일 및 합성 사양을 보려면 테넌트 작업 공간을 선택하십시오."
     )
     
     selected_app = next(app for app in detected_apps if app["id"] == selected_app_id)
@@ -1377,29 +1375,29 @@ if detected_apps:
     preview_col1, preview_col2 = st.columns(2)
     
     with preview_col1:
-        st.markdown(f"<h4 style='color: #a78bfa;'>🌸 app_config.dart (Tailored Flutter Theme)</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='color: #a78bfa;'>app_config.dart (맞춤형 플러터 테마)</h4>", unsafe_allow_html=True)
         try:
             with open(target_config_path, "r", encoding="utf-8") as f:
                 config_content = f.read()
             st.code(config_content, language="dart")
-            st.caption(f"Previewing tailored file: `builds/{selected_app_id}/lib/config/app_config.dart`")
+            st.caption(f"맞춤형 파일 미리보기: `builds/{selected_app_id}/lib/config/app_config.dart`")
         except Exception as e:
-            st.error(f"Failed to read tailored code: {e}")
+            st.error(f"맞춤형 코드를 읽지 못했습니다: {e}")
             
     with preview_col2:
-        st.markdown("<h4 style='color: #f472b6;'>📋 app_spec.json (AI Synthesized Specifications)</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='color: #f472b6;'>app_spec.json (AI 생성 명세 규격)</h4>", unsafe_allow_html=True)
         if target_spec_path:
             try:
                 with open(target_spec_path, "r", encoding="utf-8") as f:
                     spec_content = json.load(f)
                 st.json(spec_content)
-                st.caption(f"Previewing synthesis spec source: `{os.path.basename(target_spec_path)}`")
+                st.caption(f"합성 사양 소스 미리보기: `{os.path.basename(target_spec_path)}`")
             except Exception as e:
-                st.error(f"Failed to load spec file: {e}")
+                st.error(f"사양 파일을 불러오지 못했습니다: {e}")
         else:
-            st.info("📋 No synthesis specifications found for this build. Run the AI forge to stream live specifications.")
+            st.info("이 빌드에 대한 합성 명세가 없습니다. 실시간 명세 규격을 보려면 AI 프로토타입 주조를 가동하십시오.")
 else:
-    st.info("🟢 No compiled tenant micro-apps detected in builds/ folder yet. Click [앱 생성 엔진 가동] or [AI 디자인 주조 가동] above to generate a workspace.")
+    st.info("현재 builds/ 폴더 내에 컴파일된 테넌트 마이크로 앱이 존재하지 않습니다. 상단의 [앱 생성 엔진 가동] 또는 [AI 브랜드 프로토타입 주조 가동]을 실행하십시오.")
 
 # Real-time Auto-Refresh mechanism executed at the end of rendering
 if auto_refresh:
