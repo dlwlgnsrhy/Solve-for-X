@@ -1,0 +1,10 @@
+{
+  "app_name": "Simple Todo",
+  "package_name": "com.simpletodo.privacy",
+  "design_system": "Stripe",
+  "target_platform": "Responsive Web",
+  "landing_page": true,
+  "os_widgets": false,
+  "fidelity": "High fidelity",
+  "prompt": "An elegant, minimalist offline-first Todo List application featuring complete secure local storage, animated checklist actions, a productivity stats gauge, and a sleek modern card layout for organizing personal tasks."
+}
