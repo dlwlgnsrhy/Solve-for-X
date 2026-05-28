@@ -1,0 +1,31 @@
+{
+  "app_name": "SafeSpace",
+  "version": "1.3.0",
+  "api_base_url": "https://api.safespace-privacy.io",
+  "primary_color": "#a78bfa",
+  "secondary_color": "#f472b6",
+  "background_color": "#f9fafb",
+  "card_color": "#ffffff",
+  "enable_chat": true,
+  "enable_profile": true,
+  "enable_settings": true,
+  "hero_title": "Your Safe Haven",
+  "hero_subtitle": "A beautifully soft, highly secure environment protecting your private thoughts and secure data.",
+  "dynamic_items": [
+    {
+      "title": "Encrypted Vault",
+      "description": "Zero-knowledge hardware lockbox protecting your passwords and credentials.",
+      "icon": "security"
+    },
+    {
+      "title": "Mindful Journal",
+      "description": "A private safe diary to log your daily emotional highlights with zero cloud leakage.",
+      "icon": "favorite"
+    },
+    {
+      "title": "Sentinel Guard",
+      "description": "Real-time biometric threat logs capturing lock attempts.",
+      "icon": "shield"
+    }
+  ]
+}
