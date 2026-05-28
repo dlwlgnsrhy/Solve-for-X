@@ -1,0 +1,10 @@
+{
+  "app_name": "SafeTask",
+  "package_name": "com.safetask.privacy",
+  "design_system": "Nordic Breeze",
+  "target_platform": "Flutter Mobile",
+  "landing_page": true,
+  "os_widgets": true,
+  "fidelity": "High fidelity",
+  "prompt": "An offline-secure private task planner and Pomodoro focus tracker with zero network permissions, featuring local secure database tasks logs, Pomodoro focus timer with dynamic local records, and security Sentinel timelines."
+}
