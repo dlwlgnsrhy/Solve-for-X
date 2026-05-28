@@ -1,0 +1,13 @@
+# Milestone: SafeSpace App Factory & Sovereign Private Memory App Integration
+
+* **상태:** 진행 중 (In Progress)
+* **목표:** 로컬 기반 AI App Factory 엔진 구축 완료 및 100% 온디바이스 보안 프라이빗 메모 앱 SafeSpace의 완벽한 샌드박스 통합 및 검증.
+* **시작일:** 2026-05-29
+* **이슈 목록:**
+  * [#1] 로컬 앱 팩토리 엔진 연동 (완료 대기)
+  * [#2] 실시간 모니터링 대시보드 및 프리뷰 통합 (완료 대기)
+  * [#3] SafeSpace Core 앱 프레임워크 및 라우팅 (완료 대기)
+  * [#4] Obsidian 스타일 2D 물리 시뮬레이션 마인드 그래프 (완료 대기)
+  * [#5] Notion 스타일 마크다운 토글 파서 & DB 연동 (완료 대기)
+  * [#6] PIN 장벽 및 Sentinel 보안 감시 체계 (완료 대기)
+  * [#7] 빌드 검증 및 프로덕션 문서화 (완료 대기)
