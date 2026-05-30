@@ -1103,6 +1103,98 @@ Reference this playbook for future tenant forge requests targeting similar promp
     except Exception as e:
         log(f"Failed to codify Skill: {e}", "WARNING")
 
+def publish_to_brand_web(out_dir, spec):
+    """
+    Publishes compiled Flutter web build assets to the brand-web portal sub-path.
+    Auto-patches index.html <base href> to ensure relative path compatibility,
+    and updates the central apps_registry.json for the portal.
+    """
+    app_id = spec.get("package_name", "com.custom.app").replace(".", "_")
+    app_name = spec.get("app_name", "Custom App")
+    
+    brand_web_dir = "/Users/apple/development/soluni/Solve-for-X/architecture/brand-web"
+    public_apps_dir = os.path.join(brand_web_dir, "public", "apps", app_id)
+    registry_file = os.path.join(brand_web_dir, "assets", "apps_registry.json")
+    
+    # 1. Check if built web assets exist
+    web_build_dir = os.path.join(out_dir, "build", "web")
+    if not os.path.exists(web_build_dir):
+        log(f"No compiled web build found at {web_build_dir}. Skipping brand-web publication.", "WARNING")
+        return
+        
+    log(f"Publishing tailored app to brand-web: {app_id}...")
+    
+    # Ensure brand-web public & assets directories exist
+    os.makedirs(os.path.dirname(public_apps_dir), exist_ok=True)
+    os.makedirs(os.path.dirname(registry_file), exist_ok=True)
+    
+    # If target public_apps_dir exists, clear it first
+    if os.path.exists(public_apps_dir):
+        if os.path.islink(public_apps_dir):
+            os.unlink(public_apps_dir)
+        else:
+            shutil.rmtree(public_apps_dir)
+            
+    # Copy web build assets
+    shutil.copytree(web_build_dir, public_apps_dir, symlinks=True)
+    log(f"Web assets successfully copied to brand-web target: {public_apps_dir}")
+    
+    # 2. Patch index.html base href
+    index_html_path = os.path.join(public_apps_dir, "index.html")
+    if os.path.exists(index_html_path):
+        try:
+            with open(index_html_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            
+            import re
+            patched_content = re.sub(r'<base\s+href="[^"]*"', f'<base href="/apps/{app_id}/"', content)
+            
+            with open(index_html_path, "w", encoding="utf-8") as f:
+                f.write(patched_content)
+            log(f"Successfully patched <base href> to '/apps/{app_id}/' in index.html.")
+        except Exception as e:
+            log(f"Failed to patch base href in index.html: {e}", "WARNING")
+            
+    # 3. Synchronize apps_registry.json
+    registry_data = []
+    if os.path.exists(registry_file):
+        try:
+            with open(registry_file, "r", encoding="utf-8") as f:
+                registry_data = json.load(f)
+                if not isinstance(registry_data, list):
+                    registry_data = []
+        except Exception as e:
+            log(f"Failed to load existing apps_registry.json: {e}. Re-initializing...", "WARNING")
+            
+    # Check if app already registered
+    existing_app = None
+    for item in registry_data:
+        if item.get("app_id") == app_id:
+            existing_app = item
+            break
+            
+    app_entry = {
+        "app_id": app_id,
+        "app_name": app_name,
+        "design_system": spec.get("primary_color", "#000000"),
+        "path": f"/apps/{app_id}/",
+        "custom_pages": [p.get("file_path") for p in spec.get("custom_pages", [])]
+    }
+    
+    if existing_app:
+        existing_app.update(app_entry)
+        log(f"Updated registration for {app_name} in central apps_registry.json.")
+    else:
+        registry_data.append(app_entry)
+        log(f"Registered new app {app_name} in central apps_registry.json.")
+        
+    try:
+        with open(registry_file, "w", encoding="utf-8") as f:
+            json.dump(registry_data, f, indent=2, ensure_ascii=False)
+        log("apps_registry.json successfully synchronized.")
+    except Exception as e:
+        log(f"Failed to write central apps_registry.json: {e}", "WARNING")
+
 def main():
     parser = argparse.ArgumentParser(description="Cloud-Native App Factory Subprocessor Engine")
     parser.add_argument("--spec", help="Path to JSON file containing target app specifications (optional if design-source is provided)")
@@ -1284,6 +1376,12 @@ def main():
         log("  CUSTOMIZATION PIPELINE COMPLETED")
         log("=========================================")
         log(f"Forced project saved successfully at: {args.out}")
+        
+        # Publish web assets to brand-web portal
+        try:
+            publish_to_brand_web(args.out, spec)
+        except Exception as e:
+            log(f"Failed to publish to brand-web: {e}", "WARNING")
         
         # Successful tailing
         update_build_status("SUCCESS", "SYNTHESIS", 1.0, f"Forced project '{app_name}' tailored successfully! saved at: builds/{app_name}")
