@@ -99,10 +99,10 @@ def start_static_web_server():
     t.start()
 
 def update_web_preview_symlink(app_build_path):
-    web_build_dir = os.path.join(app_build_path, "build", "web")
+    brand_web_dir = "/Users/apple/development/soluni/Solve-for-X/architecture/brand-web"
     preview_dir = "/Users/apple/development/soluni/Solve-for-X/architecture/active_web_preview"
     
-    if not os.path.exists(web_build_dir):
+    if not os.path.exists(brand_web_dir):
         return False
         
     try:
@@ -112,7 +112,7 @@ def update_web_preview_symlink(app_build_path):
             else:
                 import shutil
                 shutil.rmtree(preview_dir)
-        os.symlink(web_build_dir, preview_dir)
+        os.symlink(brand_web_dir, preview_dir)
         return True
     except Exception:
         return False

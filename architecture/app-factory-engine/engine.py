@@ -1113,7 +1113,7 @@ def publish_to_brand_web(out_dir, spec):
     app_name = spec.get("app_name", "Custom App")
     
     brand_web_dir = "/Users/apple/development/soluni/Solve-for-X/architecture/brand-web"
-    public_apps_dir = os.path.join(brand_web_dir, "public", "apps", app_id)
+    public_apps_dir = os.path.join(brand_web_dir, "apps", app_id)
     registry_file = os.path.join(brand_web_dir, "assets", "apps_registry.json")
     
     # 1. Check if built web assets exist
