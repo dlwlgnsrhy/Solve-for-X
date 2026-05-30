@@ -875,6 +875,68 @@ def inject_custom_pages(dest_dir, spec):
             f.write(dart_code)
         log("Dynamic Dart page written successfully.")
 
+def parse_flutter_analyze_output(stdout_text):
+    """
+    Parses raw 'flutter analyze' output to pinpoint compilation errors and lint rule violations.
+    Returns a list of structured diagnostics.
+    """
+    diagnostics = []
+    for line in stdout_text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        
+        # Format 1: info • Avoid using brackets in case labels • lib/src/some.dart:12:15 • avoid_catching_errors
+        if "•" in line:
+            parts = [p.strip() for p in line.split("•")]
+            if len(parts) >= 3:
+                severity = parts[0].lower()
+                message = parts[1]
+                location = parts[2]
+                rule = parts[3] if len(parts) > 3 else "diagnostic_rule"
+                
+                loc_parts = location.split(":")
+                file_path = loc_parts[0]
+                line_num = int(loc_parts[1]) if len(loc_parts) > 1 and loc_parts[1].isdigit() else 1
+                col_num = int(loc_parts[2]) if len(loc_parts) > 2 and loc_parts[2].isdigit() else 1
+                
+                diagnostics.append({
+                    "severity": severity,
+                    "message": message,
+                    "file": file_path,
+                    "line": line_num,
+                    "column": col_num,
+                    "rule": rule
+                })
+        elif "(" in line and ")" in line and ":" in line:
+            # Format 2: [error] Expected to find ';' (lib/src/some.dart:12:9)
+            try:
+                severity_part = "info"
+                if "[error]" in line.lower():
+                    severity_part = "error"
+                elif "[warning]" in line.lower():
+                    severity_part = "warning"
+                
+                message_part = line.split("]")[-1].split("(")[0].strip()
+                loc_part = line.split("(")[-1].split(")")[0].strip()
+                
+                loc_parts = loc_part.split(":")
+                file_path = loc_parts[0]
+                line_num = int(loc_parts[1]) if len(loc_parts) > 1 and loc_parts[1].isdigit() else 1
+                col_num = int(loc_parts[2]) if len(loc_parts) > 2 and loc_parts[2].isdigit() else 1
+                
+                diagnostics.append({
+                    "severity": severity_part,
+                    "message": message_part,
+                    "file": file_path,
+                    "line": line_num,
+                    "column": col_num,
+                    "rule": "diagnostic_rule"
+                })
+            except:
+                pass
+    return diagnostics
+
 def run_self_correction_loop(dest_dir, spec, spec_path, sys_instruction, max_attempts=3):
     """
     Self-Correction Loop: Automatically verifies Dart syntax via 'flutter analyze' 
@@ -908,18 +970,66 @@ def run_self_correction_loop(dest_dir, spec, spec_path, sys_instruction, max_att
         rc = proc.wait()
         
         if rc == 0:
-            log("🎉 Self-Correction Loop: Syntax verification passed with 0 errors!")
+            log("Self-Correction Loop: Syntax verification passed with 0 errors!")
             # Author a Hermes-Agent Markdown Skill of successful compilation!
             author_compilation_skill(dest_dir, current_spec, attempt)
             return current_spec
             
         # Parse lint error logs
-        log(f"⚠️ Syntax Integrity Check Failed (Attempt {attempt}): Compiler found lint errors.", "WARNING")
+        log(f"Syntax Integrity Check Failed (Attempt {attempt}): Compiler found lint errors.", "WARNING")
         log("Parsing raw compiler diagnostic traces...")
         
-        error_lines = [line.strip() for line in stdout.splitlines() if "error" in line.lower() or "warning" in line.lower()][:5]
-        error_summary = "\n".join(error_lines)
-        log(f"Compiler Error Summary:\n{error_summary}", "WARNING")
+        diagnostics = parse_flutter_analyze_output(stdout)
+        
+        if not diagnostics:
+            # Fallback to simple extraction if no structured diagnostics found
+            error_lines = [line.strip() for line in stdout.splitlines() if "error" in line.lower() or "warning" in line.lower()][:5]
+            error_summary = "\n".join(error_lines)
+        else:
+            # Build high-fidelity AST pinpoint diagnostics
+            diagnostic_entries = []
+            file_contexts = {}
+            
+            # Read relevant files to extract error line context
+            for diag in diagnostics[:10]: # limit to top 10 diagnostic items to conserve context limit
+                fpath = diag["file"]
+                actual_fpath = os.path.join(dest_dir, fpath)
+                
+                context_code = ""
+                if os.path.exists(actual_fpath):
+                    if fpath not in file_contexts:
+                        try:
+                            with open(actual_fpath, "r", encoding="utf-8") as f:
+                                file_contexts[fpath] = f.readlines()
+                        except:
+                            file_contexts[fpath] = []
+                    
+                    lines = file_contexts[fpath]
+                    err_line = diag["line"]
+                    # Extract a window of 5 lines around the error
+                    start_idx = max(0, err_line - 3)
+                    end_idx = min(len(lines), err_line + 2)
+                    
+                    context_lines = []
+                    for idx in range(start_idx, end_idx):
+                        prefix = "--> " if idx + 1 == err_line else "    "
+                        context_lines.append(f"{prefix}{idx+1}: {lines[idx].rstrip()}")
+                    context_code = "\n".join(context_lines)
+                
+                entry = (
+                    f"- **File**: `{fpath}` (Line {diag['line']}, Column {diag['column']})\n"
+                    f"  - **Severity**: {diag['severity'].upper()}\n"
+                    f"  - **Message**: {diag['message']}\n"
+                    f"  - **Rule**: `{diag['rule']}`\n"
+                )
+                if context_code:
+                    entry += f"  - **Code Context**:\n  ```dart\n{context_code}\n  ```\n"
+                
+                diagnostic_entries.append(entry)
+            
+            error_summary = "\n".join(diagnostic_entries)
+            
+        log(f"Compiler Diagnostic Summary:\n{error_summary}", "WARNING")
         
         if attempt == max_attempts:
             break
@@ -927,9 +1037,10 @@ def run_self_correction_loop(dest_dir, spec, spec_path, sys_instruction, max_att
         # Call LLM to heal itself
         log("Initiating AI Self-Correction. Feeding compilation trace back to engine...")
         healing_prompt = (
-            f"The previously generated Dart source files failed to compile with the following syntax errors:\n"
-            f"```\n{error_summary}\n```\n"
-            f"Please rewrite the dynamic Dart source files to resolve all compilation errors. "
+            f"The previously generated Dart source files failed to compile with the following syntax/lint errors:\n\n"
+            f"{error_summary}\n\n"
+            f"Please rewrite the dynamic Dart source files to resolve all compilation and lint errors. "
+            f"Pay special attention to fixing the lint rule violations indicated above (e.g., using correct parameter patterns, fixing undefined classes/variables, etc.). "
             f"Ensure all import classes and variables are fully defined and match AppConfig theme. "
             f"Output the complete healed spec in strict JSON format."
         )
