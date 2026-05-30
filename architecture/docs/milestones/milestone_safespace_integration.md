@@ -1,6 +1,6 @@
 # Milestone: SafeSpace App Factory & Sovereign Private Memory App Integration
 
-* **상태:** 진행 중 (In Progress)
+* **상태:** 완료 (Completed)
 * **목표:** 로컬 기반 AI App Factory 엔진 구축 완료 및 100% 온디바이스 보안 프라이빗 메모 앱 SafeSpace의 완벽한 샌드박스 통합 및 검증.
 * **시작일:** 2026-05-29
 * **이슈 목록:**
@@ -14,5 +14,5 @@
   * [#8] 대시보드 한글화 개선 및 이모지 삭제 (완료)
   * [#9] 심플 투두 리스트 앱 생성 및 빌드 QA (완료)
   * [#10] 심플 투두 웹 시연 및 비디오 캡처 (완료)
-  * [#11] AST 기반 AI 자가치유(Self-Healing) 최적화 (진행 중)
-  * [#12] brand-web 하부 경로 동적 병합 및 relative base href 패치 (진행 중)
+  * [#11] AST 기반 AI 자가치유(Self-Healing) 최적화 (완료)
+  * [#12] brand-web 하부 경로 동적 병합 및 relative base href 패치 (완료)
