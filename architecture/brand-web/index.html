@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solve-for-X 로컬 브랜드 포털</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0813;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-color: #f3f4f6;
+            --text-muted: #9ca3af;
+            --primary: #8b5cf6;
+            --primary-hover: #a78bfa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            background: rgba(11, 8, 19, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            z-index: 10;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: rgba(11, 8, 19, 0.5);
+            border-right: 1px solid var(--card-border);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .apps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .app-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: left;
+        }
+
+        .app-card:hover {
+            border-color: var(--primary);
+            background: rgba(139, 92, 246, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .app-card.active {
+            border-color: var(--primary);
+            background: rgba(139, 92, 246, 0.1);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+        }
+
+        .app-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .app-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .viewport-container {
+            flex: 1;
+            background: #000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            max-width: 400px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .empty-state-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .empty-state-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <span class="logo-text">SOLVE FOR X</span>
+            <span class="subtitle">마이크로 브랜드 웹 포털</span>
+        </div>
+        <div id="active-app-title" class="subtitle">로드된 앱 없음</div>
+    </header>
+    <main>
+        <div class="sidebar">
+            <div>
+                <h3 class="section-title">주조된 마이크로 앱 목록</h3>
+                <div id="apps-list" class="apps-list">
+                    <!-- Dynamic rendering -->
+                </div>
+            </div>
+        </div>
+        <div class="viewport-container">
+            <div id="empty-state" class="empty-state">
+                <div class="empty-state-title">브랜드 샌드박스 뷰포트</div>
+                <div class="empty-state-desc">왼쪽 사이드바에서 주조 완료된 마이크로 앱을 선택하여 즉시 실시간 런타임 테스트를 진행하십시오.</div>
+            </div>
+            <iframe id="app-viewport"></iframe>
+        </div>
+    </main>
+
+    <script>
+        const appsListContainer = document.getElementById('apps-list');
+        const viewport = document.getElementById('app-viewport');
+        const emptyState = document.getElementById('empty-state');
+        const activeAppTitle = document.getElementById('active-app-title');
+
+        async function loadRegistry() {
+            try {
+                const response = await fetch('/assets/apps_registry.json');
+                const apps = await response.json();
+                renderApps(apps);
+            } catch (error) {
+                console.error('Failed to load apps registry:', error);
+                appsListContainer.innerHTML = '<div class="app-meta">앱 레지스트리를 불러오는 데 실패했습니다.</div>';
+            }
+        }
+
+        function renderApps(apps) {
+            if (!apps || apps.length === 0) {
+                appsListContainer.innerHTML = '<div class="app-meta">등록된 마이크로 앱이 없습니다. 대시보드에서 앱을 먼저 주조하십시오.</div>';
+                return;
+            }
+
+            appsListContainer.innerHTML = '';
+            apps.forEach(app => {
+                const card = document.createElement('button');
+                card.className = 'app-card';
+                card.innerHTML = `
+                    <div class="app-name">${app.app_name}</div>
+                    <div class="app-meta">
+                        <span class="indicator" style="background-color: ${app.design_system}"></span>
+                        ID: ${app.app_id}
+                    </div>
+                `;
+                card.addEventListener('click', () => selectApp(app, card));
+                appsListContainer.appendChild(card);
+            });
+        }
+
+        function selectApp(app, cardElement) {
+            document.querySelectorAll('.app-card').forEach(c => c.classList.remove('active'));
+            cardElement.classList.add('active');
+
+            emptyState.style.display = 'none';
+            viewport.style.display = 'block';
+            viewport.src = app.path;
+            activeAppTitle.textContent = `${app.app_name} (${app.app_id})`;
+        }
+
+        // Init load
+        loadRegistry();
+        
+        // Auto refresh every 5 seconds to catch new builds
+        setInterval(loadRegistry, 5000);
+    </script>
+</body>
+</html>
