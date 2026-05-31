@@ -117,6 +117,112 @@ def update_web_preview_symlink(app_build_path):
     except Exception:
         return False
 
+def publish_compiled_web_app(out_dir, app_id, app_name, spec):
+    """
+    Publishes compiled Flutter web build assets to BOTH:
+    1. Local Sandbox portal: architecture/brand-web/apps/[app_id]
+    2. Production Next.js portal: apps/brand-web/public/apps/[app_id]
+    Auto-patches index.html <base href> to ensure relative path compatibility,
+    and updates both central apps_registry.json files.
+    """
+    import shutil
+    import json
+    import re
+    
+    web_build_dir = os.path.join(out_dir, "build", "web")
+    if not os.path.exists(web_build_dir):
+        return False, "No compiled web build found."
+        
+    targets = [
+        {
+            "name": "Sandbox Portal",
+            "dir": os.path.join("/Users/apple/development/soluni/Solve-for-X/architecture/brand-web", "apps", app_id),
+            "registry": os.path.join("/Users/apple/development/soluni/Solve-for-X/architecture/brand-web", "assets", "apps_registry.json"),
+            "base_href": f"/apps/{app_id}/"
+        },
+        {
+            "name": "Production Next.js Portal",
+            "dir": os.path.join("/Users/apple/development/soluni/Solve-for-X/apps/brand-web/public", "apps", app_id),
+            "registry": os.path.join("/Users/apple/development/soluni/Solve-for-X/apps/brand-web/public", "assets", "apps_registry.json"),
+            "base_href": f"/Solve-for-X/apps/{app_id}/"
+        }
+    ]
+    
+    results = []
+    for target in targets:
+        public_apps_dir = target["dir"]
+        registry_file = target["registry"]
+        base_href = target["base_href"]
+        
+        # Ensure target directory exists
+        os.makedirs(os.path.dirname(public_apps_dir), exist_ok=True)
+        os.makedirs(os.path.dirname(registry_file), exist_ok=True)
+        
+        # Clear existing directory
+        if os.path.exists(public_apps_dir):
+            if os.path.islink(public_apps_dir):
+                os.unlink(public_apps_dir)
+            else:
+                shutil.rmtree(public_apps_dir)
+                
+        # Copy compiled files
+        shutil.copytree(web_build_dir, public_apps_dir, symlinks=True)
+        
+        # Patch index.html base href
+        index_html_path = os.path.join(public_apps_dir, "index.html")
+        if os.path.exists(index_html_path):
+            try:
+                with open(index_html_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                
+                patched_content = re.sub(r'<base\s+href="[^"]*"', f'<base href="{base_href}"', content)
+                
+                with open(index_html_path, "w", encoding="utf-8") as f:
+                    f.write(patched_content)
+            except Exception as e:
+                results.append(f"Failed to patch base href in {target['name']}: {e}")
+                continue
+                
+        # Synchronize registry file
+        registry_data = []
+        if os.path.exists(registry_file):
+            try:
+                with open(registry_file, "r", encoding="utf-8") as f:
+                    registry_data = json.load(f)
+                    if not isinstance(registry_data, list):
+                        registry_data = []
+            except Exception:
+                pass
+                
+        # Check if already registered
+        existing_app = None
+        for item in registry_data:
+            if item.get("app_id") == app_id:
+                existing_app = item
+                break
+                
+        app_entry = {
+            "app_id": app_id,
+            "app_name": app_name,
+            "design_system": spec.get("primary_color", "#000000"),
+            "path": f"apps/{app_id}/",
+            "custom_pages": [p.get("file_path") for p in spec.get("custom_pages", [])] if spec.get("custom_pages") else []
+        }
+        
+        if existing_app:
+            existing_app.update(app_entry)
+        else:
+            registry_data.append(app_entry)
+            
+        try:
+            with open(registry_file, "w", encoding="utf-8") as f:
+                json.dump(registry_data, f, indent=2, ensure_ascii=False)
+            results.append(f"Success for {target['name']}")
+        except Exception as e:
+            results.append(f"Failed registry update for {target['name']}: {e}")
+            
+    return True, ", ".join(results)
+
 # Initialize background web preview hosting daemon
 start_static_web_server()
 
@@ -1078,6 +1184,15 @@ log_placeholder = st.empty()
 
 # Helper to run builds
 def run_app_forge(spec_path=None, design_src=None, use_ai=False, target_path="", app_id=""):
+    spec_data = {}
+    if spec_path and os.path.exists(spec_path):
+        try:
+            with open(spec_path, 'r', encoding='utf-8') as f:
+                spec_data = json.load(f)
+        except Exception:
+            pass
+    app_name = spec_data.get("app_name", app_id)
+
     status_placeholder.markdown("""
     <div class='glass-card' style='border-color: #a855f7;'>
         <p style='color: #d8b4fe; font-weight: bold; margin:0;'>합성 코어 가동: 디자인 레이아웃 및 패키지 디렉토리를 재구성하는 중...</p>
@@ -1168,17 +1283,18 @@ def run_app_forge(spec_path=None, design_src=None, use_ai=False, target_path="",
                         
                 web_rc = web_proc.wait()
                 if web_rc == 0:
+                    pub_ok, pub_msg = publish_compiled_web_app(target_path, app_id, app_name, spec_data)
                     success_symlink = update_web_preview_symlink(target_path)
                     if success_symlink:
                         status_placeholder.markdown(f"""
                         <div class='glass-card' style='border-color: #22c55e; background: rgba(34, 197, 94, 0.08);'>
-                            <h4 style='color: #4ade80; margin: 0;'>앱 생성 및 웹 샌드박스 구동 완료! (App Forged & Web Sandbox Live)</h4>
-                            <p style='color: #a7f3d0; margin: 5px 0 0 0;'>코드베이스가 완전히 컴파일되었습니다. 시뮬레이터에서 실시간 인터랙션 앱이 구동됩니다!</p>
+                            <h4 style='color: #4ade80; margin: 0;'>앱 생성 및 다중 채널 통합 완료! (App Forged & Integrated Live)</h4>
+                            <p style='color: #a7f3d0; margin: 5px 0 0 0;'>코드베이스 컴파일 및 브랜드 웹 통합이 완결되었습니다. ({pub_msg})</p>
                         </div>
                         """, unsafe_allow_html=True)
                         log_placeholder.code("\n".join(web_logs), language="bash")
                     else:
-                        status_placeholder.warning("앱은 생성되었으나, 실시간 웹 프리뷰 심볼릭 링크를 생성하지 못했습니다.")
+                        status_placeholder.warning(f"앱은 생성 및 통합되었으나({pub_msg}), 프리뷰 샌드박스 심볼릭 링크를 생성하지 못했습니다.")
                 else:
                     status_placeholder.markdown(f"""
                     <div class='glass-card' style='border-color: #ef4444; background: rgba(239, 68, 68, 0.08);'>

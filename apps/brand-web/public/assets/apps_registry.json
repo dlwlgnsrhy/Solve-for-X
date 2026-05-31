@@ -1,0 +1,17 @@
+[
+  {
+    "app_id": "com_safespace_privacy",
+    "app_name": "SafeSpace Todo",
+    "design_system": "#a78bfa",
+    "path": "apps/com_safespace_privacy/",
+    "custom_pages": [
+      "lib/config/app_config.dart",
+      "lib/models/todo_item.dart",
+      "lib/views/todo_dashboard_page.dart",
+      "lib/views/productivity_stats_page.dart",
+      "lib/views/secure_chat_page.dart",
+      "lib/views/secure_settings_page.dart",
+      "lib/main.dart"
+    ]
+  }
+]
