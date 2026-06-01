@@ -45,12 +45,11 @@ jobs:
           cd apps/brand-web
           rm -rf .next out _site # 이전 빌드 잔재 완전 제거
           
-      - name: Patch API route for static export
+      - name: Exclude dynamic API routes for static export
         run: |
           cd apps/brand-web
-          sed -i "s/\/\/ export const dynamic = 'force-static';/export const dynamic = 'force-static';/" src/app/api/sre/health/route.ts
-          echo ">>> API ROUTE PATCHED:"
-          head -n 10 src/app/api/sre/health/route.ts
+          rm -rf src/app/api
+          echo ">>> Excluded src/app/api folder from static export build."
 
       - name: Build with Next.js (Safe Mode)
         run: |

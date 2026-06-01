@@ -164,6 +164,19 @@ interface PageProps {
   }>;
 }
 
+export async function generateStaticParams() {
+  const appIds = ['imjong-care', 'memento-mori', 'moon-whisper'];
+  const types = ['privacy', 'eula'];
+  const params = [];
+  
+  for (const appId of appIds) {
+    for (const type of types) {
+      params.push({ appId, type });
+    }
+  }
+  return params;
+}
+
 export default async function PolicyPage({ params }: PageProps) {
   const { appId, type } = await params;
   const appData = policiesDB[appId];
