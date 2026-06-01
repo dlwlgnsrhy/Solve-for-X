@@ -285,6 +285,100 @@
             transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(0, 255, 102, 0.4);
         }
+
+        /* AI App Forge UI styling */
+        .forge-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            background: rgba(14, 14, 20, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .form-label {
+            font-size: 0.72rem;
+            color: #888899;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            background: rgba(3, 3, 5, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            color: #ededed;
+            padding: 0.55rem;
+            font-family: inherit;
+            font-size: 0.8rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.15);
+        }
+
+        .btn-forge {
+            background: linear-gradient(90deg, #00ff66 0%, #00f0ff 100%);
+            color: #030305;
+            border: none;
+            padding: 0.65rem;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 15px rgba(0, 255, 102, 0.2);
+            text-align: center;
+        }
+
+        .btn-forge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 255, 102, 0.35);
+        }
+
+        .btn-forge:disabled {
+            background: #27272a;
+            color: #71717a;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .forge-console {
+            background: #020204;
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-family: monospace;
+            font-size: 0.7rem;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            color: #a1a1aa;
+            line-height: 1.4;
+        }
+
+        .console-line {
+            margin-bottom: 0.3rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .text-cyan { color: #00f0ff; }
+        .text-green { color: #00ff66; }
+        .text-red { color: #ff3366; }
     </style>
 </head>
 <body>
@@ -299,10 +393,53 @@
     </header>
     <main>
         <div class="sidebar">
-            <div>
-                <h3 class="section-title"><span>⚙️</span> 주조된 마이크로 앱 목록</h3>
-                <div id="apps-list" class="apps-list">
-                    <!-- Dynamic rendering -->
+            <div style="display: flex; flex-direction: column; gap: 1.8rem;">
+                <div>
+                    <h3 class="section-title"><span>⚙️</span> 주조된 마이크로 앱 목록</h3>
+                    <div id="apps-list" class="apps-list">
+                        <!-- Dynamic rendering -->
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="section-title"><span>✨</span> AI 신규 앱 주조소 (Design Forge)</h3>
+                    <div class="forge-form">
+                        <div class="form-group">
+                            <label class="form-label" for="forge-app-name">프로젝트 이름 (Project Name)</label>
+                            <input type="text" id="forge-app-name" class="form-input" value="SafeSpace" placeholder="예: SafeSpace" />
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="forge-design-system">브랜드 비주얼 컬러 preset</label>
+                            <select id="forge-design-system" class="form-select">
+                                <option value="미니멀 모던 (Neutral Modern)">미니멀 모던 (Neutral Modern)</option>
+                                <option value="포근한 파스텔 (Cozy Warm Pastel)" selected>포근한 파스텔 (Cozy Warm Pastel)</option>
+                                <option value="네온 사이버펑크 (Cyberpunk Neon)">네온 사이버펑크 (Cyberpunk Neon)</option>
+                                <option value="시크 다크 프로페셔널 (Sleek Dark Professional)">시크 다크 프로페셔널 (Sleek Dark Professional)</option>
+                                <option value="에메랄드 가든 (Emerald Garden)">에메랄드 가든 (Emerald Garden)</option>
+                                <option value="노을빛 선셋 (Sunset Glow)">노을빛 선셋 (Sunset Glow)</option>
+                                <option value="클래식 로열 (Royal Velvet)">클래식 로열 (Royal Velvet)</option>
+                                <option value="도쿄 나이트 (Tokyo Night)">도쿄 나이트 (Tokyo Night)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="forge-fidelity">디자인 정밀도 (Fidelity)</label>
+                            <select id="forge-fidelity" class="form-select">
+                                <option value="고정밀 디자인 (High fidelity)" selected>고정밀 디자인 (High fidelity)</option>
+                                <option value="와이어프레임 (Wireframe)">와이어프레임 (Wireframe)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="forge-prompt">앱 요구사항 설명 프롬프트 (Prompt)</label>
+                            <textarea id="forge-prompt" class="form-textarea" rows="4" placeholder="자연어로 만들고 싶은 앱의 기능을 묘사하세요.">A highly secure personal privacy lockbox app featuring an encrypted biometric vault, a private daily mindful journal with local-only storage, and real-time sentinel biometric lock logs.</textarea>
+                        </div>
+                        
+                        <button id="forge-btn" class="btn-forge" onclick="launchForge()">AI 브랜드 프로토타입 주조 가동 🛰️</button>
+                        
+                        <div id="forge-console" class="forge-console"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -320,6 +457,8 @@
         const viewport = document.getElementById('app-viewport');
         const emptyState = document.getElementById('empty-state');
         const activeAppTitle = document.getElementById('active-app-title');
+        const forgeBtn = document.getElementById('forge-btn');
+        const forgeConsole = document.getElementById('forge-console');
 
         async function loadRegistry() {
             try {
@@ -334,7 +473,7 @@
 
         function renderApps(apps) {
             if (!apps || apps.length === 0) {
-                appsListContainer.innerHTML = '<div class="app-meta">등록된 마이크로 앱이 없습니다. 대시보드에서 앱을 먼저 주조하십시오.</div>';
+                appsListContainer.innerHTML = '<div class="app-meta">등록된 마이크로 앱이 없습니다. 아래 주조소에서 앱을 먼저 주조하십시오.</div>';
                 return;
             }
 
@@ -362,6 +501,70 @@
             viewport.style.display = 'block';
             viewport.src = app.path;
             activeAppTitle.textContent = `${app.app_name} (${app.app_id})`;
+        }
+
+        async function launchForge() {
+            const appName = document.getElementById('forge-app-name').value.trim();
+            const designSystem = document.getElementById('forge-design-system').value;
+            const fidelity = document.getElementById('forge-fidelity').value;
+            const prompt = document.getElementById('forge-prompt').value.trim();
+
+            if (!appName || !prompt) {
+                alert('앱 이름과 프롬프트를 모두 입력해 주세요!');
+                return;
+            }
+
+            forgeBtn.disabled = true;
+            forgeBtn.innerText = '⚙️ AI 주조 엔진 가동 중...';
+            forgeConsole.style.display = 'block';
+            forgeConsole.innerHTML = '<div class="console-line text-cyan">> 🚀 [SRE GATEWAY]: Dispatching AI build request to local agent bridge...</div>';
+
+            try {
+                // Determine API host
+                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const apiHost = isLocal ? '' : 'http://localhost:3000'; // Bridges static page to local Next.js dev server
+
+                const response = await fetch(`${apiHost}/api/sre/forge`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ appName, designSystem, fidelity, prompt })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'SUCCESS') {
+                    forgeConsole.innerHTML = '<div class="console-line text-green">> 🎉 [SUCCESS]: AI Micro-App Forged and Published Successfully!</div>';
+                    if (data.logs) {
+                        data.logs.forEach(log => {
+                            const line = document.createElement('div');
+                            line.className = 'console-line';
+                            line.innerText = log;
+                            forgeConsole.appendChild(line);
+                        });
+                    }
+                    // Auto scroll console to bottom
+                    forgeConsole.scrollTop = forgeConsole.scrollHeight;
+                    // Refresh registry immediately
+                    loadRegistry();
+                } else {
+                    forgeConsole.innerHTML += `<div class="console-line text-red">> ❌ [ERROR]: Synthesis Failed. ${data.error || 'Unknown Exception'}</div>`;
+                    if (data.logs) {
+                        data.logs.forEach(log => {
+                            const line = document.createElement('div');
+                            line.className = 'console-line';
+                            line.innerText = log;
+                            forgeConsole.appendChild(line);
+                        });
+                    }
+                    forgeConsole.scrollTop = forgeConsole.scrollHeight;
+                }
+            } catch (err) {
+                forgeConsole.innerHTML += `<div class="console-line text-red">> ❌ [BRIDGE OFFLINE]: Local Next.js dev server is offline.\n> Please run 'npm run dev' locally to enable the SRE compiler!</div>`;
+                forgeConsole.scrollTop = forgeConsole.scrollHeight;
+            } finally {
+                forgeBtn.disabled = false;
+                forgeBtn.innerText = 'AI 브랜드 프로토타입 주조 가동 🛰️';
+            }
         }
 
         // Init load
