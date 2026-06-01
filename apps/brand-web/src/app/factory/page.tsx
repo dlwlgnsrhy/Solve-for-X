@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './factory.module.css';
 
-// Scanned Apps Map
+// Scanned Apps Map for SRE processes
 const APP_NAMES: Record<string, string> = {
   sfx_imjong_care: 'SFX Imjong Care',
   sfx_memento_mori: 'SFX Memento Mori',
@@ -13,7 +13,14 @@ const APP_NAMES: Record<string, string> = {
 };
 
 export default function FactoryDashboard() {
-  // App Factory Jobs State
+  const basePath = typeof window !== 'undefined' ? (window.location.hostname.endsWith('github.io') ? '/Solve-for-X' : '') : '';
+
+  // Active Tab: 'sre' | 'sandbox'
+  const [activeTab, setActiveTab] = useState<'sre' | 'sandbox'>('sre');
+
+  // =========================================================================
+  // 1. Sisyphus SRE Dashboard States
+  // =========================================================================
   const [jobs, setJobs] = useState<any[]>([]);
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [newJobCommand, setNewJobCommand] = useState('');
@@ -21,15 +28,12 @@ export default function FactoryDashboard() {
   const [isSubmittingJob, setIsSubmittingJob] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
 
-  // Dynamic 5-year roadmap goals state
   const [phases, setPhases] = useState<any[]>([]);
   const [isLoadingPhases, setIsLoadingPhases] = useState(true);
 
-  // App Background Processes State
   const [processes, setProcesses] = useState<Record<string, { pid: number; port: number; status: 'RUNNING' | 'IDLE' }>>({});
   const [isProcessLoading, setIsProcessLoading] = useState(false);
 
-  // Real-time Visual Terminal logs state
   const [terminalLogs, setTerminalLogs] = useState<string[]>([
     "🛰️ SYSTEM: Sisyphus App Factory dashboard loaded successfully.",
     "🟢 WATCHDOG: launchd background daemon 'com.sfx.unicorn' linked.",
@@ -37,37 +41,50 @@ export default function FactoryDashboard() {
     "🛡️ SECURITY: Local SQLite hybrids ready. Waiting for instructions..."
   ]);
   const terminalEndRef = useRef<HTMLDivElement>(null);
+  const forgeConsoleEndRef = useRef<HTMLDivElement>(null);
 
-  // Health and general SRE states
   const [sreStatus, setSreStatus] = useState<'LIVE' | 'OFFLINE' | 'CHECKING'>('CHECKING');
   const [sreLatency, setSreLatency] = useState<number | null>(null);
 
-  // SRE Health Check Polling
-  useEffect(() => {
-    const checkHealth = async () => {
-      try {
-        const basePath = '';
-        const res = await fetch(`${basePath}/api/sre/health`);
-        if (res.ok) {
-          const data = await res.json();
-          setSreStatus('LIVE');
-          setSreLatency(data.latency || 12);
-        } else {
-          setSreStatus('OFFLINE');
-          setSreLatency(null);
-        }
-      } catch (e) {
+  // =========================================================================
+  // 2. App Sandbox & AI Design Forge States
+  // =========================================================================
+  const [registryApps, setRegistryApps] = useState<any[]>([]);
+  const [activeApp, setActiveApp] = useState<any>(null);
+
+  const [forgeAppName, setForgeAppName] = useState('SafeSpace');
+  const [forgeDesignSystem, setForgeDesignSystem] = useState('포근한 파스텔 (Cozy Warm Pastel)');
+  const [forgeFidelity, setForgeFidelity] = useState('고정밀 디자인 (High fidelity)');
+  const [forgePrompt, setForgePrompt] = useState(
+    'A highly secure personal privacy lockbox app featuring an encrypted biometric vault, a private daily mindful journal with local-only storage, and real-time sentinel biometric lock logs.'
+  );
+  const [isForging, setIsForging] = useState(false);
+  const [forgeLogs, setForgeLogs] = useState<string[]>([]);
+  const [forgeError, setForgeError] = useState<string | null>(null);
+
+  // =========================================================================
+  // 3. Mount & Data Polling Logic
+  // =========================================================================
+
+  // SRE Health Check
+  const checkHealth = async () => {
+    try {
+      const res = await fetch(`${basePath}/api/sre/health`);
+      if (res.ok) {
+        const data = await res.json();
+        setSreStatus('LIVE');
+        setSreLatency(data.latency || 12);
+      } else {
         setSreStatus('OFFLINE');
         setSreLatency(null);
       }
-    };
-    
-    checkHealth();
-    const interval = setInterval(checkHealth, 15000);
-    return () => clearInterval(interval);
-  }, []);
+    } catch (e) {
+      setSreStatus('OFFLINE');
+      setSreLatency(null);
+    }
+  };
 
-  // Fetch Jobs function
+  // Fetch Jobs
   const loadJobs = () => {
     fetch('/api/sre/jobs')
       .then(res => res.json())
@@ -107,15 +124,34 @@ export default function FactoryDashboard() {
       });
   };
 
-  // Mount logic & setup polling
+  // Load apps registry
+  const loadRegistry = async () => {
+    try {
+      const response = await fetch(`${basePath}/assets/apps_registry.json?t=${Date.now()}`);
+      if (response.ok) {
+        const data = await response.json();
+        setRegistryApps(data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load apps registry:', error);
+    }
+  };
+
+  // Poll setup
   useEffect(() => {
+    checkHealth();
     loadJobs();
     loadProcesses();
     loadRoadmapPhases();
+    loadRegistry();
+
     const interval = setInterval(() => {
+      checkHealth();
       loadJobs();
       loadProcesses();
-    }, 4000);
+      loadRegistry();
+    }, 5000);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -137,6 +173,13 @@ export default function FactoryDashboard() {
       terminalEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [terminalLogs]);
+
+  // Forge console scroll to bottom
+  useEffect(() => {
+    if (forgeConsoleEndRef.current) {
+      forgeConsoleEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [forgeLogs]);
 
   // Append SRE dynamic logging simulation when job status changes
   const prevStatusRef = useRef<Record<string, string>>({});
@@ -181,7 +224,11 @@ export default function FactoryDashboard() {
     });
   }, [jobs]);
 
-  // Job triggering handler
+  // =========================================================================
+  // 4. API Request Handlers
+  // =========================================================================
+
+  // SRE Job Triggering
   const handleTriggerJob = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newJobCommand.trim()) return;
@@ -210,7 +257,6 @@ export default function FactoryDashboard() {
             ...prev,
             `📥 QUEUED: Autonomous order successfully pushed to SQLite Queue database (Job ID: ${data.job_id.substring(0, 8)})`
           ]);
-          // Refresh jobs
           loadJobs();
         } else {
           setSubmissionError(data.error || 'Failed to dispatch order');
@@ -225,7 +271,7 @@ export default function FactoryDashboard() {
       });
   };
 
-  // Toggle Background App Process Uptime Uptime Uptime
+  // Toggle Background App Process
   const handleToggleProcess = (appId: string, currentStatus: string) => {
     setIsProcessLoading(true);
     const action = currentStatus === 'RUNNING' ? 'KILL' : 'SPAWN';
@@ -259,14 +305,65 @@ export default function FactoryDashboard() {
       });
   };
 
+  // Launch dynamic AI App Forge compiler
+  const handleLaunchForge = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgeAppName.trim() || !forgePrompt.trim()) return;
+
+    setIsForging(true);
+    setForgeError(null);
+    setForgeLogs([`🚀 [SRE GATEWAY]: Dispatching AI build request to local agent bridge...`]);
+
+    try {
+      const response = await fetch('/api/sre/forge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appName: forgeAppName,
+          designSystem: forgeDesignSystem,
+          fidelity: forgeFidelity,
+          prompt: forgePrompt
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.status === 'SUCCESS') {
+        setForgeLogs(prev => [
+          ...prev,
+          `🎉 [SUCCESS]: AI Micro-App Forged and Published Successfully!`,
+          ...(data.logs || [])
+        ]);
+        // Reset name
+        setForgeAppName('');
+        // Reload registry list immediately
+        loadRegistry();
+      } else {
+        setForgeError(data.error || 'Synthesis Failed');
+        setForgeLogs(prev => [
+          ...prev,
+          `❌ [ERROR]: Synthesis Failed. Reason: ${data.error || 'Unknown Exception'}`,
+          ...(data.logs || [])
+        ]);
+      }
+    } catch (err: any) {
+      setForgeError('Local SRE Bridge Offline');
+      setForgeLogs(prev => [
+        ...prev,
+        `❌ [BRIDGE OFFLINE]: Local Next.js dev server is offline.`,
+        `> Please run 'npm run dev' locally to enable the SRE compiler!`
+      ]);
+    } finally {
+      setIsForging(false);
+    }
+  };
+
   return (
     <main className={styles.container}>
       <div className={styles.glowBall1} />
       <div className={styles.glowBall2} />
 
       <div className={styles.contentWrapper}>
-        
-        {/* Main futuristic Header */}
+        {/* Main Header */}
         <header className={styles.header}>
           <div>
             <span style={{ fontSize: '0.75rem', color: '#00f0ff', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', display: 'block', marginBottom: '0.4rem' }}>
@@ -279,7 +376,6 @@ export default function FactoryDashboard() {
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            {/* Global Sisyphus Daemon Daemon Status */}
             <div className={`${styles.systemStatus} ${sreStatus === 'OFFLINE' ? styles.systemStatusOffline : ''}`}>
               <span style={{
                 display: 'inline-block',
@@ -292,7 +388,6 @@ export default function FactoryDashboard() {
               CORE SRE: {sreStatus} {sreLatency !== null && `(${sreLatency}ms)`}
             </div>
             
-            {/* Local Agent Status */}
             <div className={styles.systemStatus} style={{ background: 'rgba(0, 240, 255, 0.05)', borderColor: 'rgba(0, 240, 255, 0.2)', color: '#00f0ff', boxShadow: 'none' }}>
               <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00f0ff' }} />
               DAEMON: ONLINE
@@ -300,441 +395,637 @@ export default function FactoryDashboard() {
           </div>
         </header>
 
-        {/* 🏆 SFX 5개년 로드맵 & 자율 공정 단계 */}
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(21, 21, 28, 0.6) 0%, rgba(14, 14, 18, 0.8) 100%)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
-          borderRadius: '16px',
-          padding: '1.8rem',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-          marginBottom: '2rem',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,255,102,0.1) 0%, transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <span style={{ fontSize: '0.75rem', color: '#00F0FF', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', display: 'block', marginBottom: '0.4rem' }}>
-                Enterprise SRE Roadmap Alignment
-              </span>
-              <h2 style={{ fontSize: '1.3rem', fontWeight: 900, color: '#ffffff', margin: 0 }}>
-                🏆 Solve-for-X (SFX) 자율 공정 5개년 로드맵
-              </h2>
-            </div>
-            <span style={{ fontSize: '0.8rem', color: '#888899', fontWeight: 600 }}>
-              자율 연동 규격: <a href="file:///Users/apple/development/soluni/Solve-for-X/docs/plans/goal.md" style={{ color: '#00FF66', textDecoration: 'none' }}>goal.md ↗</a>
-            </span>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem', position: 'relative' }}>
-            {isLoadingPhases ? (
-              Array.from({ length: 4 }).map((_, idx) => (
-                <div key={idx} style={{ background: 'rgba(255, 255, 255, 0.01)', border: '1px dashed rgba(0, 240, 255, 0.2)', padding: '1.5rem', borderRadius: '10px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', color: '#00f0ff', animation: 'pulseCyan 1.5s infinite' }}>🛰️ 로드맵 동기화 중...</span>
-                </div>
-              ))
-            ) : (
-              phases.map((ph: any) => {
-                const isCompleted = ph.status.includes('완료') || ph.status.includes('완수');
-                const isProgress = ph.status.includes('구축') || ph.status.includes('가동') || ph.status.includes('진행');
-                
-                let borderCol = 'rgba(255, 255, 255, 0.05)';
-                let bgCol = 'rgba(255, 255, 255, 0.01)';
-                let badgeColor = '#888899';
-                let icon: React.ReactNode = ph.phaseNum;
-                let iconBg = 'rgba(255, 255, 255, 0.03)';
-                let iconBorder = 'rgba(255, 255, 255, 0.1)';
-
-                if (isCompleted) {
-                  borderCol = 'rgba(0, 255, 102, 0.4)';
-                  bgCol = 'rgba(0, 255, 102, 0.02)';
-                  badgeColor = '#00FF66';
-                  icon = '✓';
-                  iconBg = 'rgba(0, 255, 102, 0.1)';
-                  iconBorder = '#00FF66';
-                } else if (isProgress) {
-                  borderCol = 'rgba(0, 240, 255, 0.4)';
-                  bgCol = 'rgba(0, 240, 255, 0.02)';
-                  badgeColor = '#00f0ff';
-                  icon = '⚡';
-                  iconBg = 'rgba(0, 240, 255, 0.1)';
-                  iconBorder = '#00f0ff';
-                }
-
-                return (
-                  <div key={ph.phaseNum} style={{ 
-                    background: bgCol, 
-                    border: `1px solid ${borderCol}`, 
-                    padding: '1.2rem', 
-                    borderRadius: '12px', 
-                    zIndex: 2,
-                    boxShadow: isCompleted ? '0 0 15px rgba(0, 255, 102, 0.03)' : isProgress ? '0 0 15px rgba(0, 240, 255, 0.03)' : 'none',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '0.8rem'
-                  }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
-                        <span style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          width: '24px', 
-                          height: '24px', 
-                          borderRadius: '50%', 
-                          background: iconBg, 
-                          border: `1px solid ${iconBorder}`, 
-                          color: badgeColor, 
-                          fontSize: '0.75rem', 
-                          fontWeight: 900 
-                        }}>{icon}</span>
-                        <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#ffffff' }}>
-                          {ph.phaseTitle}
-                        </span>
-                      </div>
-                      
-                      {ph.objective && (
-                        <div style={{ fontSize: '0.75rem', color: badgeColor, fontWeight: 700, marginBottom: '0.6rem', lineHeight: '1.4' }}>
-                          🎯 {ph.objective}
-                        </div>
-                      )}
-                      
-                      <ul style={{ paddingLeft: '1rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                        {ph.bullets.map((b: string, bIdx: number) => (
-                          <li key={bIdx} style={{ fontSize: '0.72rem', color: '#a1a1aa', lineHeight: '1.4' }}>
-                            {b}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div style={{ 
-                      fontSize: '0.68rem', 
-                      color: badgeColor, 
-                      fontWeight: 800, 
-                      textTransform: 'uppercase', 
-                      letterSpacing: '1px',
-                      background: 'rgba(255,255,255,0.02)',
-                      padding: '0.3rem 0.6rem',
-                      borderRadius: '4px',
-                      textAlign: 'center',
-                      border: '1px solid rgba(255,255,255,0.03)'
-                    }}>
-                      {ph.status}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+        {/* Tab Switcher */}
+        <div className={styles.tabsContainer}>
+          <button
+            onClick={() => setActiveTab('sre')}
+            className={`${styles.tabButton} ${activeTab === 'sre' ? styles.tabActive : ''}`}
+          >
+            ⚙️ Sisyphus SRE 관제 (Control Panel)
+          </button>
+          <button
+            onClick={() => setActiveTab('sandbox')}
+            className={`${styles.tabButton} ${activeTab === 'sandbox' ? styles.tabActive : ''}`}
+          >
+            ✨ 샌드박스 & AI 주조소 (Sandbox & Forge)
+          </button>
         </div>
 
-        {/* Responsive Dashboard Grid Grid */}
-        <div className={styles.dashboardLayout}>
-          
-          {/* Left Column: Config Panel & Order Submission */}
-          <div className={styles.leftColumn}>
-            
-            {/* 📬 Dispatch Order Panel */}
-            <div className={styles.card}>
-              <h2 className={styles.cardTitle}>
-                <span>🦄</span> 신규 자율 개발 지시 송출
-              </h2>
+        {/* =========================================================================
+           TAB 1: Sisyphus SRE Control Panel
+           ========================================================================= */}
+        {activeTab === 'sre' && (
+          <>
+            {/* Roadmap section */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(21, 21, 28, 0.6) 0%, rgba(14, 14, 18, 0.8) 100%)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              borderRadius: '16px',
+              padding: '1.8rem',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+              marginBottom: '2rem',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,255,102,0.1) 0%, transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
               
-              <form onSubmit={handleTriggerJob}>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>작업 지시사항 (Cyber Command Prompt)</label>
-                  <textarea
-                    value={newJobCommand}
-                    onChange={(e) => setNewJobCommand(e.target.value)}
-                    placeholder="예) Memento Mori 웹앱 UI 네온 버튼 글자 간격을 좁게 정렬해줘"
-                    className={styles.formTextarea}
-                    disabled={isSubmittingJob}
-                  />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.75rem', color: '#00F0FF', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', display: 'block', marginBottom: '0.4rem' }}>
+                    Enterprise SRE Roadmap Alignment
+                  </span>
+                  <h2 style={{ fontSize: '1.3rem', fontWeight: 900, color: '#ffffff', margin: 0 }}>
+                    🏆 Solve-for-X (SFX) 자율 공정 5개년 로드맵
+                  </h2>
                 </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>타겟 서비스 앱 (App Target Selection)</label>
-                  <select
-                    value={newJobApp}
-                    onChange={(e) => setNewJobApp(e.target.value)}
-                    className={styles.formSelect}
-                    disabled={isSubmittingJob}
-                  >
-                    {Object.entries(APP_NAMES).map(([id, name]) => (
-                      <option key={id} value={id}>{name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-                  {submissionError ? (
-                    <span style={{ color: '#FF3366', fontSize: '0.8rem', fontWeight: 600 }}>⚠️ {submissionError}</span>
-                  ) : (
-                    <span style={{ color: '#888899', fontSize: '0.75rem' }}>
-                      * 명령 전송 시 백그라운드 SRE 데몬이 실시간 빌드-QA를 구동합니다.
-                    </span>
-                  )}
-                  
-                  <button
-                    type="submit"
-                    disabled={isSubmittingJob || !newJobCommand.trim()}
-                    className={styles.submitBtn}
-                  >
-                    {isSubmittingJob ? '🛰️ 수신 처리 중...' : '자율 개발 오더 전송 🛰️'}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* 🛠️ Pluggable Background Services Monitor */}
-            <div className={styles.card}>
-              <h2 className={styles.cardTitle}>
-                <span>⚙️</span> Ephemeral Background Processes
-              </h2>
-              <p style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', color: '#888899', lineHeight: 1.4 }}>
-                Sisyphus Factory가 로컬 가상 포트(56000-60000)를 활용해 컴파일 상태 및 Live Preview 프리뷰어를 기동 및 셧다운하는 관리대장입니다.
-              </p>
-
-              <div className={styles.appList}>
-                {Object.entries(APP_NAMES).map(([id, name]) => {
-                  const proc = processes[id] || { status: 'IDLE', port: 0, pid: 0 };
-                  const isRunning = proc.status === 'RUNNING';
-                  return (
-                    <div key={id} className={styles.appItem}>
-                      <div className={styles.appMeta}>
-                        <span className={styles.appName}>{name}</span>
-                        <span className={styles.appPath}>
-                          Port: <b style={{ color: isRunning ? '#00f0ff' : '#666677' }}>{isRunning ? proc.port : '-'}</b> | PID: <b style={{ color: isRunning ? '#ff3366' : '#666677' }}>{isRunning ? proc.pid : '-'}</b>
-                        </span>
-                      </div>
-                      
-                      <button
-                        onClick={() => handleToggleProcess(id, proc.status)}
-                        disabled={isProcessLoading}
-                        style={{
-                          background: isRunning ? 'rgba(255, 51, 102, 0.15)' : 'rgba(0, 255, 102, 0.15)',
-                          color: isRunning ? '#ff3366' : '#00ff66',
-                          border: isRunning ? '1px solid rgba(255, 51, 102, 0.3)' : '1px solid rgba(0, 255, 102, 0.3)',
-                          padding: '0.4rem 0.8rem',
-                          borderRadius: '6px',
-                          fontWeight: 700,
-                          fontSize: '0.75rem',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        {isRunning ? 'Graceful Kill (SIGTERM)' : '웹 빌드 기동'}
-                      </button>
-                    </div>
-                  );
-                })}
               </div>
-            </div>
 
-            {/* 📋 SRE Active queue history */}
-            <div className={styles.card}>
-              <h2 className={styles.cardTitle} style={{ margin: '0 0 0.5rem 0' }}>
-                <span>📜</span> 자율 개발 작업 히스토리
-              </h2>
-              <p style={{ margin: '0 0 1.2rem 0', fontSize: '0.8rem', color: '#888899' }}>
-                SQLite 큐 데이터베이스에 기록된 작업 성과 리스트입니다. ({jobs.length}개 건 수립)
-              </p>
-
-              <div className={styles.jobHistoryList}>
-                {jobs.map((job) => {
-                  const isSelected = selectedJob?.job_id === job.job_id;
-                  let badgeClass = styles.jobQueued;
-                  if (job.status === 'RUNNING') badgeClass = styles.jobRunning;
-                  else if (job.status === 'SUCCESS') badgeClass = styles.jobSuccess;
-                  else if (job.status === 'FAILED') badgeClass = styles.jobFailed;
-
-                  return (
-                    <div
-                      key={job.job_id}
-                      onClick={() => setSelectedJob(job)}
-                      className={`${styles.jobItem} ${isSelected ? styles.jobItemActive : ''}`}
-                    >
-                      <div className={styles.jobHeader}>
-                        <span className={styles.jobId}>ID: {job.job_id.substring(0, 8)}...</span>
-                        <span className={`${styles.jobStatus} ${badgeClass}`}>
-                          {job.status}
-                        </span>
-                      </div>
-                      <h4 className={styles.jobCommand}>{job.command_text}</h4>
-                      <div className={styles.jobFooter}>
-                        <span className={styles.jobTargetApp}>{APP_NAMES[job.target_app] || job.target_app}</span>
-                        <span className={styles.jobTime}>
-                          {job.created_at ? new Date(job.created_at).toLocaleTimeString() : '-'}
-                        </span>
-                      </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem', position: 'relative' }}>
+                {isLoadingPhases ? (
+                  Array.from({ length: 4 }).map((_, idx) => (
+                    <div key={idx} style={{ background: 'rgba(255, 255, 255, 0.01)', border: '1px dashed rgba(0, 240, 255, 0.2)', padding: '1.5rem', borderRadius: '10px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: '0.8rem', color: '#00f0ff', animation: 'pulseCyan 1.5s infinite' }}>🛰️ 로드맵 동기화 중...</span>
                     </div>
-                  );
-                })}
+                  ))
+                ) : (
+                  phases.map((ph: any) => {
+                    const isCompleted = ph.status.includes('완료') || ph.status.includes('완수');
+                    const isProgress = ph.status.includes('구축') || ph.status.includes('가동') || ph.status.includes('진행');
+                    
+                    let borderCol = 'rgba(255, 255, 255, 0.05)';
+                    let bgCol = 'rgba(255, 255, 255, 0.01)';
+                    let badgeColor = '#888899';
+                    let icon: React.ReactNode = ph.phaseNum;
+                    let iconBg = 'rgba(255, 255, 255, 0.03)';
+                    let iconBorder = 'rgba(255, 255, 255, 0.1)';
 
-                {jobs.length === 0 && (
-                  <div className={styles.emptyState}>
-                    현재 기록된 자율 개발 작업이 없습니다.
-                  </div>
+                    if (isCompleted) {
+                      borderCol = 'rgba(0, 255, 102, 0.4)';
+                      bgCol = 'rgba(0, 255, 102, 0.02)';
+                      badgeColor = '#00FF66';
+                      icon = '✓';
+                      iconBg = 'rgba(0, 255, 102, 0.1)';
+                      iconBorder = '#00FF66';
+                    } else if (isProgress) {
+                      borderCol = 'rgba(0, 240, 255, 0.4)';
+                      bgCol = 'rgba(0, 240, 255, 0.02)';
+                      badgeColor = '#00f0ff';
+                      icon = '⚡';
+                      iconBg = 'rgba(0, 240, 255, 0.1)';
+                      iconBorder = '#00f0ff';
+                    }
+
+                    return (
+                      <div key={ph.phaseNum} style={{ 
+                        background: bgCol, 
+                        border: `1px solid ${borderCol}`, 
+                        padding: '1.2rem', 
+                        borderRadius: '12px', 
+                        zIndex: 2,
+                        boxShadow: isCompleted ? '0 0 15px rgba(0, 255, 102, 0.03)' : isProgress ? '0 0 15px rgba(0, 240, 255, 0.03)' : 'none',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        gap: '0.8rem'
+                      }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
+                            <span style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center', 
+                              width: '24px', 
+                              height: '24px', 
+                              borderRadius: '50%', 
+                              background: iconBg, 
+                              border: `1px solid ${iconBorder}`, 
+                              color: badgeColor, 
+                              fontSize: '0.75rem', 
+                              fontWeight: 900 
+                            }}>{icon}</span>
+                            <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#ffffff' }}>
+                              {ph.phaseTitle}
+                            </span>
+                          </div>
+                          
+                          {ph.objective && (
+                            <div style={{ fontSize: '0.75rem', color: badgeColor, fontWeight: 700, marginBottom: '0.6rem', lineHeight: '1.4' }}>
+                              🎯 {ph.objective}
+                            </div>
+                          )}
+                          
+                          <ul style={{ paddingLeft: '1rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            {ph.bullets.map((b: string, bIdx: number) => (
+                              <li key={bIdx} style={{ fontSize: '0.72rem', color: '#a1a1aa', lineHeight: '1.4' }}>
+                                {b}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div style={{ 
+                          fontSize: '0.68rem', 
+                          color: badgeColor, 
+                          fontWeight: 800, 
+                          textTransform: 'uppercase', 
+                          letterSpacing: '1px',
+                          background: 'rgba(255,255,255,0.02)',
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: '4px',
+                          textAlign: 'center',
+                          border: '1px solid rgba(255,255,255,0.03)'
+                        }}>
+                          {ph.status}
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
 
-          </div>
+            {/* SRE grid */}
+            <div className={styles.dashboardLayout}>
+              {/* Left Column: Command & Uptime Services */}
+              <div className={styles.leftColumn}>
+                {/* Custom Order Dispatcher */}
+                <div className={styles.card}>
+                  <h2 className={styles.cardTitle}>
+                    <span>🦄</span> 신규 자율 개발 지시 송출
+                  </h2>
+                  
+                  <form onSubmit={handleTriggerJob}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>작업 지시사항 (Cyber Command Prompt)</label>
+                      <textarea
+                        value={newJobCommand}
+                        onChange={(e) => setNewJobCommand(e.target.value)}
+                        placeholder="예) Memento Mori 웹앱 UI 네온 버튼 글자 간격을 좁게 정렬해줘"
+                        className={styles.formTextarea}
+                        disabled={isSubmittingJob}
+                      />
+                    </div>
 
-          {/* Right Column: Console Terminal Streams & Detailed Job Outputs */}
-          <div className={styles.rightColumn}>
-            
-            {/* 🛰️ Cyber high-contrast real-time terminal window */}
-            <div className={styles.card} style={{ padding: '1.2rem' }}>
-              <div className={styles.terminalWindow}>
-                <div className={styles.terminalHeader}>
-                  <span>🛰️ VEGA SRE AUTOMATION SHELL TERMINAL</span>
-                  <span style={{ fontSize: '0.65rem', color: '#888899' }}>watch -n 1 logs</span>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>타겟 서비스 앱 (App Target Selection)</label>
+                      <select
+                        value={newJobApp}
+                        onChange={(e) => setNewJobApp(e.target.value)}
+                        className={styles.formSelect}
+                        disabled={isSubmittingJob}
+                      >
+                        {Object.entries(APP_NAMES).map(([id, name]) => (
+                          <option key={id} value={id}>{name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                      {submissionError ? (
+                        <span style={{ color: '#FF3366', fontSize: '0.8rem', fontWeight: 600 }}>⚠️ {submissionError}</span>
+                      ) : (
+                        <span style={{ color: '#888899', fontSize: '0.75rem' }}>
+                          * 명령 전송 시 백그라운드 SRE 데몬이 실시간 빌드-QA를 구동합니다.
+                        </span>
+                      )}
+                      
+                      <button
+                        type="submit"
+                        disabled={isSubmittingJob || !newJobCommand.trim()}
+                        className={styles.submitBtn}
+                      >
+                        {isSubmittingJob ? '🛰️ 수신 처리 중...' : '자율 개발 오더 전송 🛰️'}
+                      </button>
+                    </div>
+                  </form>
                 </div>
-                {terminalLogs.map((log, idx) => (
-                  <div key={idx} className={styles.terminalLine}>
-                    {log}
+
+                {/* Uptime processes monitor */}
+                <div className={styles.card}>
+                  <h2 className={styles.cardTitle}>
+                    <span>⚙️</span> Ephemeral Background Processes
+                  </h2>
+                  <p style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', color: '#888899', lineHeight: 1.4 }}>
+                    Sisyphus Factory가 로컬 가상 포트를 활용해 컴파일 상태 및 Live Preview 프리뷰어를 기동 및 셧다운하는 관리대장입니다.
+                  </p>
+
+                  <div className={styles.appList}>
+                    {Object.entries(APP_NAMES).map(([id, name]) => {
+                      const proc = processes[id] || { status: 'IDLE', port: 0, pid: 0 };
+                      const isRunning = proc.status === 'RUNNING';
+                      return (
+                        <div key={id} className={styles.appItem}>
+                          <div className={styles.appMeta}>
+                            <span className={styles.appName}>{name}</span>
+                            <span className={styles.appPath}>
+                              Port: <b style={{ color: isRunning ? '#00f0ff' : '#666677' }}>{isRunning ? proc.port : '-'}</b> | PID: <b style={{ color: isRunning ? '#ff3366' : '#666677' }}>{isRunning ? proc.pid : '-'}</b>
+                            </span>
+                          </div>
+                          
+                          <button
+                            onClick={() => handleToggleProcess(id, proc.status)}
+                            disabled={isProcessLoading}
+                            style={{
+                              background: isRunning ? 'rgba(255, 51, 102, 0.15)' : 'rgba(0, 255, 102, 0.15)',
+                              color: isRunning ? '#ff3366' : '#00ff66',
+                              border: isRunning ? '1px solid rgba(255, 51, 102, 0.3)' : '1px solid rgba(0, 255, 102, 0.3)',
+                              padding: '0.4rem 0.8rem',
+                              borderRadius: '6px',
+                              fontWeight: 700,
+                              fontSize: '0.75rem',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            {isRunning ? 'Graceful Kill (SIGTERM)' : '웹 빌드 기동'}
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-                <div ref={terminalEndRef} />
+                </div>
+
+                {/* SQLite queue history */}
+                <div className={styles.card}>
+                  <h2 className={styles.cardTitle}>
+                    <span>📜</span> 자율 개발 작업 히스토리
+                  </h2>
+                  <p style={{ margin: '0 0 1.2rem 0', fontSize: '0.8rem', color: '#888899' }}>
+                    SQLite 큐 데이터베이스에 기록된 작업 성과 리스트입니다. ({jobs.length}개 건 수립)
+                  </p>
+
+                  <div className={styles.jobHistoryList}>
+                    {jobs.map((job) => {
+                      const isSelected = selectedJob?.job_id === job.job_id;
+                      let badgeClass = styles.jobQueued;
+                      if (job.status === 'RUNNING') badgeClass = styles.jobRunning;
+                      else if (job.status === 'SUCCESS') badgeClass = styles.jobSuccess;
+                      else if (job.status === 'FAILED') badgeClass = styles.jobFailed;
+
+                      return (
+                        <div
+                          key={job.job_id}
+                          onClick={() => setSelectedJob(job)}
+                          className={`${styles.jobItem} ${isSelected ? styles.jobItemActive : ''}`}
+                        >
+                          <div className={styles.jobHeader}>
+                            <span className={styles.jobId}>ID: {job.job_id.substring(0, 8)}...</span>
+                            <span className={`${styles.jobStatus} ${badgeClass}`}>
+                              {job.status}
+                            </span>
+                          </div>
+                          <h4 className={styles.jobCommand}>{job.command_text}</h4>
+                          <div className={styles.jobFooter}>
+                            <span className={styles.jobTargetApp}>{APP_NAMES[job.target_app] || job.target_app}</span>
+                            <span className={styles.jobTime}>
+                              {job.created_at ? new Date(job.created_at).toLocaleTimeString() : '-'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {jobs.length === 0 && (
+                      <div className={styles.emptyState}>
+                        현재 기록된 자율 개발 작업이 없습니다.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Terminal logs & Detailed job reports */}
+              <div className={styles.rightColumn}>
+                {/* Terminal logs */}
+                <div className={styles.card} style={{ padding: '1.2rem' }}>
+                  <div className={styles.terminalWindow}>
+                    <div className={styles.terminalHeader}>
+                      <span>🛰️ VEGA SRE AUTOMATION SHELL TERMINAL</span>
+                      <span style={{ fontSize: '0.65rem', color: '#888899' }}>watch -n 1 logs</span>
+                    </div>
+                    {terminalLogs.map((log, idx) => (
+                      <div key={idx} className={styles.terminalLine}>
+                        {log}
+                      </div>
+                    ))}
+                    <div ref={terminalEndRef} />
+                  </div>
+                </div>
+
+                {/* Job reports detail */}
+                <div className={`${styles.card} ${selectedJob ? styles.cardActive : ''}`}>
+                  {selectedJob ? (
+                    <div className={styles.detailPanel}>
+                      <div className={styles.detailHeader}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                          <span style={{ fontSize: '0.75rem', color: '#888899' }}>
+                            Job ID: <span style={{ fontFamily: 'monospace', color: '#00f0ff' }}>{selectedJob.job_id}</span>
+                          </span>
+                          <span style={{
+                            fontWeight: 800,
+                            fontSize: '0.8rem',
+                            color: selectedJob.status === 'SUCCESS' ? '#00ff66' : selectedJob.status === 'FAILED' ? '#ff3366' : '#ffcc00'
+                          }}>
+                            ● {selectedJob.status}
+                          </span>
+                        </div>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#ffffff', lineHeight: 1.4 }}>
+                          {selectedJob.command_text}
+                        </h2>
+                      </div>
+
+                      <div className={styles.detailMeta}>
+                        <div>• <b>대상 서비스:</b> <span style={{ color: '#00f0ff' }}>{APP_NAMES[selectedJob.target_app] || selectedJob.target_app}</span></div>
+                        <div>• <b>접수 시각:</b> {selectedJob.created_at ? new Date(selectedJob.created_at).toLocaleString() : '-'}</div>
+                        <div>• <b>완료 시각:</b> {selectedJob.updated_at ? new Date(selectedJob.updated_at).toLocaleString() : '-'}</div>
+                        <div>• <b>로그 경로:</b> <span style={{ fontFamily: 'monospace', color: '#888899' }}>{selectedJob.log_file_path || '-'}</span></div>
+                      </div>
+
+                      {/* QUEUED STATE */}
+                      {selectedJob.status === 'QUEUED' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '3rem 1rem', border: '1px dashed rgba(255,204,0,0.2)', borderRadius: '12px', background: 'rgba(255,204,0,0.01)' }}>
+                          <span style={{ fontSize: '1.8rem', animation: 'spin 4s linear infinite', display: 'inline-block' }}>⏳</span>
+                          <div style={{ fontSize: '0.9rem', color: '#ffcc00', fontWeight: 700 }}>
+                            작업 대기열(Database Queue)에 정렬되어 에이전트 할당을 대기하는 중입니다...
+                          </div>
+                        </div>
+                      )}
+
+                      {/* RUNNING STATE */}
+                      {selectedJob.status === 'RUNNING' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '3rem 1rem', border: '1px dashed rgba(0,240,255,0.2)', borderRadius: '12px', background: 'rgba(0,240,255,0.01)' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#00f0ff', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulseCyan 1.5s infinite' }}>
+                            <span style={{ fontSize: '1.2rem' }}>🛰️</span>
+                          </div>
+                          <div style={{ fontSize: '0.9rem', color: '#00f0ff', fontWeight: 700 }}>
+                            Sisyphus SRE 에이전트가 코드를 정적 분석하여 자율 패치 & 빌드를 수행하고 있습니다...
+                          </div>
+                        </div>
+                      )}
+
+                      {/* FAILED STATE */}
+                      {selectedJob.status === 'FAILED' && (
+                        <div style={{
+                          background: 'rgba(255, 51, 102, 0.02)',
+                          border: '1px solid rgba(255, 51, 102, 0.2)',
+                          borderRadius: '8px',
+                          padding: '1.2rem',
+                          color: '#ff3366',
+                          fontFamily: 'monospace',
+                          fontSize: '0.78rem',
+                          lineHeight: 1.5
+                        }}>
+                          <h4 style={{ margin: '0 0 0.5rem 0', fontWeight: 800 }}>❌ SRE EXCEPTION EXECUTOR REPORT:</h4>
+                          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{selectedJob.log_file_path || 'Unknown error occurred during build/deploy simulation.'}</pre>
+                        </div>
+                      )}
+
+                      {/* SUCCESS STATE */}
+                      {selectedJob.status === 'SUCCESS' && (
+                        <>
+                          {selectedJob.walkthrough_md && (
+                            <div className={styles.reportBox}>
+                              <h4 className={styles.reportTitle}>
+                                <span>📋</span> 자율 개발 완료 성과 보고서 (Walkthrough Report)
+                              </h4>
+                              <pre style={{
+                                margin: 0,
+                                whiteSpace: 'pre-wrap',
+                                fontFamily: 'inherit',
+                                fontSize: '0.8rem',
+                                lineHeight: 1.5,
+                                wordBreak: 'break-all'
+                              }}>
+                                {selectedJob.walkthrough_md}
+                              </pre>
+                            </div>
+                          )}
+
+                          {selectedJob.screenshot_path && (
+                            <div className={styles.screenshotBox}>
+                              <h4 className={styles.screenshotTitle}>
+                                🧪 SRE 물리적 Visual QA 실측본 (100% Passed)
+                              </h4>
+                              
+                              <div className={styles.screenshotFrame}>
+                                <img
+                                  src={`/api/sre/images/${selectedJob.screenshot_path.split('/').pop()}`}
+                                  alt="Sisyphus Visual QA Screen screenshot"
+                                  className={styles.screenshotImg}
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/api/sre/images/sfx_real_support_desk.png';
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className={styles.emptyState}>
+                      작업 히스토리 목록에서 분석할 작업을 탭하여 상세 성과 보고서 및 SRE 물리 실측본을 인계하십시오.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
+          </>
+        )}
 
-            {/* 📊 Active Detailed job report */}
-            <div className={`${styles.card} ${styles.cardActive}`}>
-              {selectedJob ? (
-                <div className={styles.detailPanel}>
-                  <div className={styles.detailHeader}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#888899' }}>
-                        Job ID: <span style={{ fontFamily: 'monospace', color: '#00f0ff' }}>{selectedJob.job_id}</span>
-                      </span>
-                      <span style={{
-                        fontWeight: 800,
-                        fontSize: '0.8rem',
-                        color: selectedJob.status === 'SUCCESS' ? '#00ff66' : selectedJob.status === 'FAILED' ? '#ff3366' : '#ffcc00'
-                      }}>
-                        ● {selectedJob.status}
-                      </span>
+        {/* =========================================================================
+           TAB 2: Interactive Sandbox & AI Design Forge
+           ========================================================================= */}
+        {activeTab === 'sandbox' && (
+          <div className={styles.sandboxLayout}>
+            {/* Left Sidebar column: Registry list & AI Design Forge */}
+            <div className={styles.leftColumn}>
+              
+              {/* App Registry list */}
+              <div className={styles.card}>
+                <h2 className={styles.cardTitle}>
+                  <span>⚙️</span> 주조된 마이크로 앱 목록
+                </h2>
+                <div className={styles.appsListContainer}>
+                  {registryApps.map((app) => {
+                    const isSelected = activeApp?.app_id === app.app_id;
+                    return (
+                      <button
+                        key={app.app_id}
+                        className={`${styles.appCard} ${isSelected ? styles.appCardActive || styles.jobItemActive : ''}`}
+                        onClick={() => setActiveApp(app)}
+                        style={{
+                          background: 'rgba(14, 14, 20, 0.85)',
+                          border: isSelected ? '1px solid #00ff66' : '1px solid rgba(255, 255, 255, 0.05)',
+                          borderRadius: '14px',
+                          padding: '1.1rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.5rem',
+                          textAlign: 'left',
+                          width: '100%',
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        <div className={styles.appName} style={{ fontSize: '0.95rem', fontWeight: 700 }}>
+                          {app.app_name}
+                        </div>
+                        <div className={styles.appPath} style={{ display: 'flex', alignItems: 'center', fontSize: '0.72rem' }}>
+                          <span
+                            className={styles.indicator}
+                            style={{
+                              display: 'inline-block',
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: app.design_system,
+                              marginRight: '0.5rem'
+                            }}
+                          />
+                          ID: {app.app_id}
+                        </div>
+                      </button>
+                    );
+                  })}
+
+                  {registryApps.length === 0 && (
+                    <div className={styles.appPath} style={{ textAlign: 'center', padding: '1rem' }}>
+                      등록된 마이크로 앱이 없습니다. 아래 주조소에서 첫 앱을 주조해 보십시오!
                     </div>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#ffffff', lineHeight: 1.4 }}>
-                      {selectedJob.command_text}
-                    </h2>
+                  )}
+                </div>
+              </div>
+
+              {/* AI App Design Forge */}
+              <div className={styles.card}>
+                <h2 className={styles.cardTitle}>
+                  <span>✨</span> AI 신규 앱 주조소 (Design Forge)
+                </h2>
+                <form onSubmit={handleLaunchForge} className={styles.forgeForm}>
+                  
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>프로젝트 이름 (Project Name)</label>
+                    <input
+                      type="text"
+                      className={styles.formInput}
+                      value={forgeAppName}
+                      onChange={(e) => setForgeAppName(e.target.value)}
+                      placeholder="예: SafeSpace"
+                      disabled={isForging}
+                    />
                   </div>
 
-                  <div className={styles.detailMeta}>
-                    <div>• <b>대상 서비스:</b> <span style={{ color: '#00f0ff' }}>{APP_NAMES[selectedJob.target_app] || selectedJob.target_app}</span></div>
-                    <div>• <b>접수 시각:</b> {selectedJob.created_at ? new Date(selectedJob.created_at).toLocaleString() : '-'}</div>
-                    <div>• <b>완료 시각:</b> {selectedJob.updated_at ? new Date(selectedJob.updated_at).toLocaleString() : '-'}</div>
-                    <div>• <b>로그 경로:</b> <span style={{ fontFamily: 'monospace', color: '#888899' }}>{selectedJob.log_file_path || '-'}</span></div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>브랜드 비주얼 컬러 preset</label>
+                    <select
+                      className={styles.formSelect}
+                      value={forgeDesignSystem}
+                      onChange={(e) => setForgeDesignSystem(e.target.value)}
+                      disabled={isForging}
+                    >
+                      <option value="미니멀 모던 (Neutral Modern)">미니멀 모던 (Neutral Modern)</option>
+                      <option value="포근한 파스텔 (Cozy Warm Pastel)">포근한 파스텔 (Cozy Warm Pastel)</option>
+                      <option value="네온 사이버펑크 (Cyberpunk Neon)">네온 사이버펑크 (Cyberpunk Neon)</option>
+                      <option value="시크 다크 프로페셔널 (Sleek Dark Professional)">시크 다크 프로페셔널 (Sleek Dark Professional)</option>
+                      <option value="에메랄드 가든 (Emerald Garden)">에메랄드 가든 (Emerald Garden)</option>
+                      <option value="노을빛 선셋 (Sunset Glow)">노을빛 선셋 (Sunset Glow)</option>
+                      <option value="클래식 로열 (Royal Velvet)">클래식 로열 (Royal Velvet)</option>
+                      <option value="도쿄 나이트 (Tokyo Night)">도쿄 나이트 (Tokyo Night)</option>
+                    </select>
                   </div>
 
-                  {/* QUEUED STATE */}
-                  {selectedJob.status === 'QUEUED' && (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '3rem 1rem', border: '1px dashed rgba(255,204,0,0.2)', borderRadius: '12px', background: 'rgba(255,204,0,0.01)' }}>
-                      <span style={{ fontSize: '1.8rem', animation: 'spin 4s linear infinite', display: 'inline-block' }}>⏳</span>
-                      <div style={{ fontSize: '0.9rem', color: '#ffcc00', fontWeight: 700 }}>
-                        작업 대기열(Database Queue)에 정렬되어 에이전트 할당을 대기하는 중입니다...
-                      </div>
-                    </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>디자인 정밀도 (Fidelity)</label>
+                    <select
+                      className={styles.formSelect}
+                      value={forgeFidelity}
+                      onChange={(e) => setForgeFidelity(e.target.value)}
+                      disabled={isForging}
+                    >
+                      <option value="고정밀 디자인 (High fidelity)">고정밀 디자인 (High fidelity)</option>
+                      <option value="와이어프레임 (Wireframe)">와이어프레임 (Wireframe)</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>앱 요구사항 설명 프롬프트 (Prompt)</label>
+                    <textarea
+                      className={styles.formTextarea}
+                      rows={4}
+                      value={forgePrompt}
+                      onChange={(e) => setForgePrompt(e.target.value)}
+                      placeholder="자연어로 만들고 싶은 앱의 기능을 묘사하세요."
+                      disabled={isForging}
+                    />
+                  </div>
+
+                  {forgeError && (
+                    <span style={{ color: '#FF3366', fontSize: '0.8rem', fontWeight: 600 }}>⚠️ {forgeError}</span>
                   )}
 
-                  {/* RUNNING STATE */}
-                  {selectedJob.status === 'RUNNING' && (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '3rem 1rem', border: '1px dashed rgba(0,240,255,0.2)', borderRadius: '12px', background: 'rgba(0,240,255,0.01)' }}>
-                      <div className="running-pulse" style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#00f0ff', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulseCyan 1.5s infinite' }}>
-                        <span style={{ fontSize: '1.2rem' }}>🛰️</span>
-                      </div>
-                      <div style={{ fontSize: '0.9rem', color: '#00f0ff', fontWeight: 700 }}>
-                        Sisyphus SRE 에이전트가 코드를 정적 분석하여 자율 패치 & 빌드를 수행하고 있습니다...
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: '#888899', textAlign: 'center', lineHeight: 1.4 }}>
-                        물리적 UI 왜곡을 차단하기 위한 Puppeteer Headless Chrome 비주얼 회귀 테스트(Layout Visual QA)가 병렬로 가속 가동되고 있습니다.
-                      </div>
-                    </div>
-                  )}
+                  <button
+                    type="submit"
+                    disabled={isForging || !forgeAppName.trim() || !forgePrompt.trim()}
+                    className={styles.submitBtn}
+                  >
+                    {isForging ? '⚙️ AI 주조 엔진 가동 중...' : 'AI 브랜드 프로토타입 주조 가동 🛰️'}
+                  </button>
 
-                  {/* FAILED STATE */}
-                  {selectedJob.status === 'FAILED' && (
-                    <div style={{
-                      background: 'rgba(255, 51, 102, 0.02)',
-                      border: '1px solid rgba(255, 51, 102, 0.2)',
-                      borderRadius: '8px',
-                      padding: '1.2rem',
-                      color: '#ff3366',
-                      fontFamily: 'monospace',
-                      fontSize: '0.78rem',
-                      lineHeight: 1.5
-                    }}>
-                      <h4 style={{ margin: '0 0 0.5rem 0', fontWeight: 800 }}>❌ SRE EXCEPTION EXECUTOR REPORT:</h4>
-                      <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{selectedJob.log_file_path || 'Unknown error occurred during build/deploy simulation.'}</pre>
-                    </div>
-                  )}
+                  {/* SRE Streaming compiler logs console */}
+                  {forgeLogs.length > 0 && (
+                    <div className={styles.forgeConsole}>
+                      {forgeLogs.map((log, idx) => {
+                        let colorClass = '';
+                        if (log.includes('[SUCCESS]') || log.includes('Successfully') || log.includes('Successfully published')) colorClass = styles.textGreen;
+                        else if (log.includes('[ERROR]') || log.includes('failed') || log.includes('Exception') || log.includes('Error')) colorClass = styles.textRed;
+                        else if (log.includes('[SRE') || log.includes('SPEC') || log.includes('🤖')) colorClass = styles.textCyan;
 
-                  {/* SUCCESS STATE */}
-                  {selectedJob.status === 'SUCCESS' && (
-                    <>
-                      {/* Walkthrough Report */}
-                      {selectedJob.walkthrough_md && (
-                        <div className={styles.reportBox}>
-                          <h4 className={styles.reportTitle}>
-                            <span>📋</span> 자율 개발 완료 성과 보고서 (Walkthrough Report)
-                          </h4>
-                          <pre style={{
-                            margin: 0,
-                            whiteSpace: 'pre-wrap',
-                            fontFamily: 'inherit',
-                            fontSize: '0.8rem',
-                            lineHeight: 1.5,
-                            wordBreak: 'break-all'
-                          }}>
-                            {selectedJob.walkthrough_md}
-                          </pre>
-                        </div>
-                      )}
-
-                      {/* Visual QA Image inspect viewer */}
-                      {selectedJob.screenshot_path && (
-                        <div className={styles.screenshotBox}>
-                          <h4 className={styles.screenshotTitle}>
-                            🧪 SRE 물리적 Visual QA 실측본 (100% Passed)
-                          </h4>
-                          
-                          <div className={styles.screenshotFrame}>
-                            <img
-                              src={`/api/sre/images/${selectedJob.screenshot_path.split('/').pop()}`}
-                              alt="Sisyphus Visual QA Screen screenshot"
-                              className={styles.screenshotImg}
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/api/sre/images/sfx_real_support_desk.png';
-                              }}
-                            />
+                        return (
+                          <div key={idx} className={`${styles.consoleLine} ${colorClass}`}>
+                            {log}
                           </div>
-                          
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: '#888899' }}>
-                            <span>* 렌더링 물리 실측 (최대 오차율: 0.00%)</span>
-                            <span>VERDICT: <b>PASS ✅</b></span>
-                          </div>
-                        </div>
-                      )}
-                    </>
+                        );
+                      })}
+                      <div ref={forgeConsoleEndRef} />
+                    </div>
                   )}
 
+                </form>
+              </div>
+
+            </div>
+
+            {/* Right main column: Smartphone Viewport Preview */}
+            <div className={styles.rightColumn} style={{ justifyContent: 'center' }}>
+              {activeApp ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '320px', fontSize: '0.8rem', color: '#888899', fontWeight: 600 }}>
+                    <span>🖥️ ACTIVE PREVIEW</span>
+                    <span style={{ color: '#00f0ff' }}>{activeApp.app_name}</span>
+                  </div>
+                  
+                  {/* Glowing smart phone body */}
+                  <div className={styles.glowingPhoneFrame}>
+                    <iframe
+                      className={styles.phoneScreen}
+                      src={`${basePath}/${activeApp.path}`}
+                      title={activeApp.app_name}
+                    />
+                  </div>
                 </div>
               ) : (
-                <div className={styles.emptyState}>
-                  작업 히스토리 목록에서 분석할 작업을 탭하여 상세 성과 보고서 및 SRE 물리 실측본을 인계하십시오.
+                <div className={styles.emptySandbox}>
+                  <div className={styles.emptySandboxTitle}>브랜드 샌드박스 뷰포트</div>
+                  <div className={styles.emptySandboxDesc}>
+                    왼쪽 사이드바에서 주조 완료된 마이크로 앱을 선택하여 즉시 실시간 런타임 테스트를 진행하십시오.
+                  </div>
                 </div>
               )}
             </div>
-
           </div>
-
-        </div>
+        )}
 
       </div>
     </main>
